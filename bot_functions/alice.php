@@ -1,5 +1,6 @@
 <?php
 global $bot;
+define('ALICE_ID', ''); // need an published alicebot id
 $bot->add_category('alice', array(), PUBLICY);
 $bot->add_allymsg_hook("Alice",                	// command key
                        "LouBot_alice",          // callback function
@@ -7,7 +8,7 @@ $bot->add_allymsg_hook("Alice",                	// command key
                        '/^'.$bot->bot_user_name.'[,:.-\?@]?$/i',  // optional regex für key
 function ($bot, $data) {
   if(!$bot->is_himself($data['user']) && preg_match('/^'.$bot->bot_user_name.'[,:.-\?@\s]?(.*)$/i', $data['message'], $match)) {
-    $request = array('botid' => 'dee29891ae341ca1',
+		$request = array('botid' => ALICE_ID,
                      'input' => urlencode($match[1]),
                      'custid' => urlencode($data['user'])
     );  
@@ -15,7 +16,6 @@ function ($bot, $data) {
     if ($response) {
       $bot->log("LoU -> get response from ALICE\n\r");
       $xml = simplexml_load_string($response);
-      //print_r($xml);
       $result = $xml->xpath('//that');
       $bot->add_allymsg($xml->that);
     } else $bot->add_allymsg(magic_8ball());
@@ -51,6 +51,7 @@ if(!function_exists('alice_call')) {
 }
 if(!function_exists('magic_8ball')) {
   function magic_8ball() {
+		// initial with german language
     $text[] = 'Da antworte ich lieber nicht, versuche es erneut :|';
     $text[] = 'Darauf reagier ich gar nicht...';
     $text[] = 'Besser nix sagen *hmpf*';
@@ -82,9 +83,9 @@ if(!function_exists('magic_8ball')) {
 }
 
 /*
-$request = array('botid' => 'dee29891ae341ca1',
+$request = array('botid' => ALICE_ID,
                  'input' => urlencode('Hi'),
-                 'custid' => urlencode('BloodHeart')
+                 'custid' => urlencode('Tester')
 );
 $response = do_call($request);
 print_r($response);
