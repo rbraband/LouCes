@@ -368,7 +368,7 @@ class LoU_Bot implements SplObserver {
     }
     
     public function is_himself($name) {
-      return ($name == $this->bot_user_name)? true : false;
+      return (mb_strtoupper($name) == mb_strtoupper($this->bot_user_name))? true : false;
     }
     
     public function is_ally_user($user) {
