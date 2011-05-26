@@ -75,23 +75,38 @@ function ($bot, $data) {
 $bot->add_allymsg_hook("Hello",                	// command key
                        "LouBot_hello",         	// callback function
                        false,                   // is a command PRE needet?
-                       '/^(hi|hallo|hello|moin|tach)[,]?$/i', // optional regex für key
+                       "/^(hi|hallo|hello|moin|tach|tachen|nabend|abend|huhu)[,]? ({$bot->ally_name}|{$bot->ally_shortname})$/i", // optional regex für key
 function ($bot, $data) {
   $text[] = 'Hi ';
   $text[] = 'Hallo ';
-  $text[] = 'Moin ';
-  $text[] = 'Tach ';
+  $text[] = 'Moin Moin ';
   $nick = $data['params'][0];
   shuffle($text);
   $rand_key = array_rand($text, 1);
-  if (strtoupper($nick) == strtoupper($bot->bot_user_name) && !$bot->is_himself($data['user']))
+  if (!$bot->is_himself($data['user']))
+    $bot->add_allymsg($text[$rand_key] . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
+}, 'default'); // explicitly
+
+$bot->add_allymsg_hook("ByeBye",                // command key
+                       "LouBot_bye",         	  // callback function
+                       false,                   // is a command PRE needet?
+                       "/^(bb|byebye|goodbye|tschüss|tschau|n8|n8ti|gn8|n8t)[,]? ({$bot->ally_name}|{$bot->ally_shortname})$/i", // optional regex für key
+function ($bot, $data) {
+  $text[] = 'bb ';
+  $text[] = 'tschau ';
+  $text[] = 'n8ti ';
+  $text[] = 'n8 ';
+  $nick = $data['params'][0];
+  shuffle($text);
+  $rand_key = array_rand($text, 1);
+  if (!$bot->is_himself($data['user']))
     $bot->add_allymsg($text[$rand_key] . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
 }, 'default'); // explicitly
 
 $bot->add_allymsg_hook("Danke",                	// command key
                        "LouBot_thx",         	  // callback function
                        false,                   // is a command PRE needet?
-                       '/^(thx|danke|ty)[,]?$/i', // optional regex für key
+                       "/^(thx|danke|ty)[,]? {$bot->bot_user_name}$/i", // optional regex für key
 function ($bot, $data) {
   $text[] = 'NoP ';
   $text[] = '^^ immer wieder  ';
@@ -101,7 +116,7 @@ function ($bot, $data) {
   shuffle($text);
   $rand_key = array_rand($text, 1);
   $nick = $data['params'][0];
-  if (strtoupper($nick) == strtoupper($bot->bot_user_name) && !$bot->is_himself($data['user']))
+  if (!$bot->is_himself($data['user']))
     $bot->add_allymsg($text[$rand_key] . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
 }, 'toys');
 

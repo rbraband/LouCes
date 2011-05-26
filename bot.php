@@ -184,6 +184,7 @@ class Hook implements SplSubject {
 
 class LoU_Bot implements SplObserver {
     public $ally_name = BOT_ALLY_NAME;
+    public $ally_shortname = BOT_ALLY_SHORTNAME;
     public $bot_user_name = BOT_USER_NAME;
     public $server = BOT_SERVER;
     public $email = BOT_EMAIL;
@@ -352,6 +353,10 @@ class LoU_Bot implements SplObserver {
     
     public function set_ally_name($name) {
        $this->ally_name = $name;
+    }
+    
+    public function set_ally_shortname($name) {
+       $this->ally_shortname = $name;
     }
     
     public function set_bot_user_id($id) {

@@ -2,6 +2,7 @@
 error_reporting(E_ALL);
 // bot configuration
 define('BOT_ALLY_NAME', 'YouAlliance');
+define('BOT_ALLY_SHORTNAME', 'YouAlliance');
 define('BOT_USER_NAME', 'BotName');
 define('BOT_EMAIL', 'botemail@whatever.com');
 define('BOT_PASSWORD', 'botpassword');
