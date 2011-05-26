@@ -387,9 +387,11 @@ class LoU_Bot implements SplObserver {
     
     public function get_random_nick($user) {
       global $redis;
-      if (empty($user)||!$redis->status()) return false;
-      $uid = $redis->HGET('aliase', mb_strtoupper($user));
-      return $redis->SRANDMEMBER("user:{$uid}:alias");
+      if (empty($user)) return false;
+      else if ($redis->status()) {
+        $uid = $redis->HGET('aliase', mb_strtoupper($user));
+        return $redis->SRANDMEMBER("user:{$uid}:alias");
+      } else return $user;
     }
 	
     public function is_op_user($user) {
