@@ -184,6 +184,7 @@ class Hook implements SplSubject {
 
 class LoU_Bot implements SplObserver {
     public $ally_name = BOT_ALLY_NAME;
+    public $ally_shortname = BOT_ALLY_SHORTNAME;
     public $bot_user_name = BOT_USER_NAME;
     public $server = BOT_SERVER;
     public $email = BOT_EMAIL;
@@ -354,6 +355,10 @@ class LoU_Bot implements SplObserver {
        $this->ally_name = $name;
     }
     
+    public function set_ally_shortname($name) {
+       $this->ally_shortname = $name;
+    }
+    
     public function set_bot_user_id($id) {
        $this->bot_user_id = $id;
     }
@@ -363,7 +368,7 @@ class LoU_Bot implements SplObserver {
     }
     
     public function is_himself($name) {
-      return ($name == $this->bot_user_name)? true : false;
+      return (mb_strtoupper($name) == mb_strtoupper($this->bot_user_name))? true : false;
     }
     
     public function is_ally_user($user) {
@@ -387,9 +392,11 @@ class LoU_Bot implements SplObserver {
     
     public function get_random_nick($user) {
       global $redis;
-      if (empty($user)||!$redis->status()) return false;
-      $uid = $redis->HGET('aliase', mb_strtoupper($user));
-      return $redis->SRANDMEMBER("user:{$uid}:alias");
+      if (empty($user)) return false;
+      else if ($redis->status()) {
+        $uid = $redis->HGET('aliase', mb_strtoupper($user));
+        return $redis->SRANDMEMBER("user:{$uid}:alias");
+      } else return $user;
     }
 	
     public function is_op_user($user) {
