@@ -213,7 +213,7 @@ class LoU_Bot implements SplObserver {
       $this->load_hooks();
       $this->lou->attach($this);
       if ($this->globalchat) $this->lou->set_global_chat();
-      while ($this->lou->isConnected()) {
+      while ($this->lou->isConnected(true)) {
         $chat = $this->lou->get_chat();
         if ($this->getalliance) $alliance = $this->lou->get_alliance();
         if (!$chat || ($this->getalliance && !$alliance)) break;

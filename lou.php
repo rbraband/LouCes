@@ -13,16 +13,12 @@ You should have received a copy of the GNU General Public License along with thi
 
 class LoU implements SplSubject { 
     public $server;
-    
     public $email;
     public $passwd;
     public $note;
 
     private $stack = array();
     private $messages = array();
-    
-    public $errno;
-    public $errstr;
     
     private $handle;
     private $header;
@@ -31,9 +27,11 @@ class LoU implements SplSubject {
     private $msgId;
     private $connected;
     private $logging;
+    private $time;
     
     const ajaxEndpoint = "/Presentation/Service.svc/ajaxEndpoint/";
     const ajaxRetrys = 3;
+    const jsonClue = "\f";
     
     protected $observers= array ();
     
@@ -51,6 +49,7 @@ class LoU implements SplSubject {
         $lou->msgId = 0;
         $lou->connected = false;
         $lou->logging = true;
+        $lou->time = time();
         // Connect to $server
         $lou->login();
         
@@ -60,8 +59,6 @@ class LoU implements SplSubject {
     
     public function set_global_chat($c = 0) {
       $this->output("LoU set chat: ". $c);	
-      if(!$this->connected)
-        return false;
       $this->doPoll(array("CHAT:/continent $c"), true);
       $chat = @$this->stack[0]['D'];
       if(is_array($chat)) foreach($chat as $i => $c) {
@@ -76,13 +73,11 @@ class LoU implements SplSubject {
     private function connect() {
             $_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/login?destination=%40homepage%3F';
             $_fields = array(
-                'mail'=>$this->email,
-                'password'=>$this->passwd,
+                'mail' => $this->email,
+                'password' => $this->passwd,
                 'remember_me' => 'on'
             );
-            $_fields_string = "";
-            foreach($_fields as $_key=>$_value) { $_fields_string .= $_key.'='.$_value.'&'; }
-            rtrim($_fields_string,'&');
+            $_map_fields = array_map(create_function('$key, $value', 'return $key."=".$value;'), array_keys($_fields), array_values($_fields));
             
       $this->output('LoU login');
             $this->handle = curl_init();
@@ -90,7 +85,7 @@ class LoU implements SplSubject {
 						curl_setopt($this->handle, CURLOPT_USERAGENT, $_useragent);
             curl_setopt($this->handle, CURLOPT_URL, $_url);
             curl_setopt($this->handle, CURLOPT_POST, 1);
-            curl_setopt($this->handle, CURLOPT_POSTFIELDS, $_fields_string);
+            curl_setopt($this->handle, CURLOPT_POSTFIELDS, implode("&", $_map_fields));
 						curl_setopt($this->handle, CURLOPT_AUTOREFERER, true);
             curl_setopt($this->handle, CURLOPT_COOKIEFILE, PERM_DATA.'cookies.txt');
             curl_setopt($this->handle, CURLOPT_COOKIEJAR, PERM_DATA.'cookies.txt');
@@ -109,12 +104,12 @@ class LoU implements SplSubject {
 
             preg_match("/<input type=\"hidden\" name=\"sessionId\" id=\"sessionId\" value=\"([^\"].*)\" \/>/i", $this->data, $_match, PREG_OFFSET_CAPTURE);
             $_session = @$_match[1][0];
-      $this->output('LoU try '.$_session);
+      $this->output("LoU try session: {$_session}");
 
             $this->stack = $this->get("OpenSession", array("session" => $_session, "reset" => true));
             $this->session = @$this->stack[i];
-      $this->output('LoU get session: '.$this->session);
-            return $this->session;
+      $this->output("LoU get session: {$this->session}");
+            return true;
     }
 
     private function get($endpoint, $data, $noerror = false) {
@@ -142,39 +137,39 @@ class LoU implements SplSubject {
       return true;
     }
     
-    public function isConnected() {
-      if(!$this->connected)
-        return false;
-      else
+    public function isConnected($force = false) {
+      if(!$this->connected) {
+        if ($force) return $this->login();
+        else return false;
+      } else {
         return true;
+      }
     }
 	
-    private function testSess($session) {
-      $d = array(
-                "session"	=> $session,
-                "requestid"	=> $this->getMsgId(),
-                "requests"	=> "CAT:1\fPLAYER:\f"
-                );
-      $result = $this->get("Poll", $d);
-      if(!is_array($result) || $result[1]['D']['m'] == "") return false;
-      else return true;
+    private function testSess() {
+      $this->output("LoU test session: {$this->session}");
+      $this->doPoll(array("PLAYER:"));
+      $test = ($this->stack[0]['C'] == 'PLAYER' || ($this->stack[0]['C'] == 'VERSION' && $this->stack[1]['C'] == 'PLAYER')) ? true : false;
+      $this->output('LoU session is: ' . (($test) ? 'valid' : 'invalid'));
+      return $test;
     }
     
     public function login() {
       if($this->connected){
         $this->output("already logged in.");
-        return false;
+        return true;
       }
       while ($this->connect() === false) {
 				$this->output("Login error... retry!");
 				usleep(mt_rand(500, 15000) * 10000);
 			}
-      if(!$this->testSess($this->session)) {
-        $this->output("Invalid session.");
+      if($this->testSess() === false) {
+        return false;
       }
       else {
+        $this->time = $this->get_time();
         $this->connected = true;
-      //  $this->addCron(array('cmd'=>LOUEVENT,'interval'=>1)); //later implemented
+        //$this->addCron(array('cmd'=>LOUEVENT,'interval'=>1)); //later implemented
         $this->output("Login done.");
         return true;
       }
@@ -200,25 +195,22 @@ class LoU implements SplSubject {
         // Check it is not empty (and we not accept empty data!)
         if (empty($this->data) && !$accept_empty_data) {
             if(!$retry) {
-              $this->output("Sorry, no data available. Error: ('$url')" . curl_getinfo($this->handle, CURLINFO_HTTP_CODE));
+              $this->output("Sorry, no data available. Error: (".curl_errno($this->handle).")" . curl_getinfo($this->handle, CURLINFO_HTTP_CODE));
               $this->data = false;
             }
         } else $retry = 0;
+        if (curl_errno($this->handle)) $this->connected = false;
+        else curl_close($this->handle);
       } while($retry);
-      curl_close($this->handle);
       return $this->data;
     }
 	
     public function doPoll($requests, $noerror = false) {
-      $reqString="";
-      foreach ($requests as $req) {
-        $reqString .= $req."\f";
-      }
-      if(empty($reqString)) return false;
+      if (empty($requests)) return false;
       $d = array(
           "session"   => $this->session,
           "requestid" => $this->getMsgId(),
-          "requests"  => $reqString
+          "requests"  =>  implode(self::jsonClue, $requests).self::jsonClue
       );
       $this->stack = $this->get("Poll", $d, $noerror);
     }
@@ -227,9 +219,7 @@ class LoU implements SplSubject {
       $message = $this->get_message();
       if (!$message) ;//$this->output("LoU check ...");	
       else $this->output("LoU send ". $message);	
-      if(!$this->connected)
-        return false;
-      $this->doPoll(array("CHAT:$message"), true);
+      $this->doPoll(array("CHAT:{$message}"), true);
       $chat = ($this->stack[0]['C'] == 'CHAT') ? @$this->stack[0]['D'] : null;
       if(is_array($chat)) foreach($chat as $i => $c) {
         $this->note = $this->analyse_chat($c);
@@ -240,9 +230,15 @@ class LoU implements SplSubject {
       return true;
     }
     
+    public function get_time() {
+      $this->output("LoU try time: {$this->time}");
+      $this->doPoll(array("TIME:{$this->time}"));
+      $time = ($this->stack[0]['C'] == 'TIME') ? @$this->stack[0]['D']['Ref'] : time();
+      $this->output("LoU get time: {$time}");
+      return $time;
+    }
+    
     public function get_alliance() {
-      if(!$this->connected)
-        return false;
       $this->doPoll(array("ALLIANCE:"), true);
       $alliance = ($this->stack[0]['C'] == 'ALLIANCE') ? @$this->stack[0]['D'] : null;
       if(is_array($alliance)) {
