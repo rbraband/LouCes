@@ -49,7 +49,7 @@ class LoU implements SplSubject {
         $lou->msgId = 0;
         $lou->connected = false;
         $lou->logging = true;
-        $lou->time = time();
+        $lou->time = time()*1000;
         // Connect to $server
         $lou->login();
         
@@ -233,7 +233,7 @@ class LoU implements SplSubject {
     public function get_time() {
       $this->output("LoU try time: {$this->time}");
       $this->doPoll(array("TIME:{$this->time}"));
-      $time = ($this->stack[0]['C'] == 'TIME') ? @$this->stack[0]['D']['Ref'] : time();
+      $time = ($this->stack[0]['C'] == 'TIME') ? ($this->time + @$this->stack[0]['D']['Diff']) : time()*1000;
       $this->output("LoU get time: {$time}");
       return $time;
     }
