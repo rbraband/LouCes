@@ -13,7 +13,7 @@ define('BOT_LANG','de'); // your prefered language for login
 define('REDIS_CONNECTION', '/tmp/redis.socket'); // localhost:6379 or socket
 define('REDIS_NAMESPACE', 'lou:'); // use custom prefix on all keys
 // time settings
-date_default_timezone_set("Europe/Berlin"); // your default timezone
+date_default_timezone_set("UTC"); // server default timezone
 // extension configuration
 define('ALICE_ID', ''); // need an published alicebot id  
 // prefix for commands to the bot
