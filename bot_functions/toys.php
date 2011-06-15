@@ -135,7 +135,7 @@ $bot->add_globlmsg_hook("Willkommen",         // command key
                        '', 				            // optional regex für key
 function ($bot, $data) {
   if($data['user'] == '@Info') {
-	  //$bot->add_allymsg("^^ da isser :)");
+	  $bot->add_allymsg("^^ da isser :)");
   };
 }, 'toys');
 
