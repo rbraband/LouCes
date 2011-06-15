@@ -68,4 +68,19 @@ function ($bot, $data) {
     ));
   }
 }, 'alliance');
+
+$bot->add_alliance_hook("SetAllyShort",                        // command key
+                        "LouBot_alliance_update_shortname",    // callback function
+function ($bot, $data) {
+  if (empty($data['id'])||$data['id'] != $bot->ally_id) return;
+  $bot->set_ally_shortname($data['short']);
+  $bot->log("Set AllianceShort: " . $bot->ally_shortname);
+}, 'alliance');
+
+$bot->add_tick_event(Cron::TICK5,							 						// Cron key
+										"GetAllyUpdate",                      // command key
+										"LouBot_alliance_update_cron",    		// callback function
+function ($bot, $data) {
+  $bot->lou->get_alliance();
+}, 'alliance');
 ?>

@@ -90,7 +90,7 @@ function ($bot, $data) {
 $bot->add_allymsg_hook("ByeBye",                // command key
                        "LouBot_bye",         	  // callback function
                        false,                   // is a command PRE needet?
-                       "/^(bb|byebye|goodbye|tschüss|tschau|n8|n8ti|gn8|n8t)[,]? ({$bot->ally_name}|{$bot->ally_shortname})$/i", // optional regex für key
+                       "/^(bb|bye|byebye|goodbye|tschüss|tschau|n8|n8ti|gn8|n8t)[,]? ({$bot->ally_name}|{$bot->ally_shortname})+$/i", // optional regex für key
 function ($bot, $data) {
   $text[] = 'bb ';
   $text[] = 'tschau ';
@@ -145,55 +145,54 @@ $bot->add_allymsg_hook("UTR",                	// command key
                        '/^utr$/i', 				    // optional regex für key
 function ($bot, $data) {
   global $redis;
+  if (!$redis->status()) return;
+  $redis->setnx('toys:utr', 0);
   if (!$bot->is_himself($data['user'])) {
-    if ($redis->status()) {
-			$redis->setnx('toys:utr', 0);
-			if(preg_match('/^(preis|preise|gewinn|gewinner)$/i', $data['params'][0])) {
-				$c = $redis->get('toys:utr');
-				switch ($c) {
-					case ($c < 100):
-						$bot->add_allymsg("UTR: nächster Level 100");
-						break;
-					case ($c > 100 and $c < 200):
-						$utr_100 = $redis->get('toys:utr_100');
-						$bot->add_allymsg("UTR 100: $utr_100");
-						$bot->add_allymsg("UTR: nächster Level 200");
-						break;
-					case ($c > 200 and $c < 400):
-						$utr_200 = $redis->get('toys:utr_200');
-						$bot->add_allymsg("UTR 200: $utr_200");
-						$bot->add_allymsg("UTR: nächster Level 400");
-						break;
-					case ($c > 400 and $c < 600):
-						$utr_400 = $redis->get('toys:utr_400');
-						$bot->add_allymsg("UTR 400: $utr_400");
-						$bot->add_allymsg("UTR: nächster Level 600");
-						break;
-					case ($c > 600 and $c < 800):
-						$utr_600 = $redis->get('toys:utr_600');
-						$bot->add_allymsg("UTR 600: $utr_600");
-						$bot->add_allymsg("UTR: nächster Level 800");
-						break;
-					case ($c > 800 and $c < 1000):
-						$utr_800 = $redis->get('toys:utr_800');
-						$bot->add_allymsg("UTR 800: $utr_800");
-						$bot->add_allymsg("UTR: nächster Level 1000");
-						break;
-					default:
-						$bot->add_allymsg("UTR: sollte schon tod sein ;)");
-				}
-			} else {
-				$c = $redis->incr('toys:utr');
-				$bot->add_allymsg("Tod UTR!!!");
-				$nick = $bot->get_random_nick($data['user']);
-				if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:utr_100', $data['user']);}
-				if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:utr_200', $data['user']);}
-				if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:utr_400', $data['user']);}
-				if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:utr_600', $data['user']);}
-				if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:utr_800', $data['user']);}
-				if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:utr_1000', $data['user']);}
-			}
-		} else $bot->add_allymsg("Tod UTR!!!");
+    if(preg_match('/^(preis|preise|gewinn|gewinne|gewinner)$/i', $data['params'][0])) {
+      $c = $redis->get('toys:utr');
+      switch ($c) {
+        case ($c < 100):
+          $bot->add_allymsg("UTR: nächster Level 100");
+          break;
+        case ($c > 100 and $c < 200):
+          $utr_100 = $redis->get('toys:utr_100');
+          $bot->add_allymsg("UTR 100: $utr_100");
+          $bot->add_allymsg("UTR: nächster Level 200");
+          break;
+        case ($c > 200 and $c < 400):
+          $utr_200 = $redis->get('toys:utr_200');
+          $bot->add_allymsg("UTR 200: $utr_200");
+          $bot->add_allymsg("UTR: nächster Level 400");
+          break;
+        case ($c > 400 and $c < 600):
+          $utr_400 = $redis->get('toys:utr_400');
+          $bot->add_allymsg("UTR 400: $utr_400");
+          $bot->add_allymsg("UTR: nächster Level 600");
+          break;
+        case ($c > 600 and $c < 800):
+          $utr_600 = $redis->get('toys:utr_600');
+          $bot->add_allymsg("UTR 600: $utr_600");
+          $bot->add_allymsg("UTR: nächster Level 800");
+          break;
+        case ($c > 800 and $c < 1000):
+          $utr_800 = $redis->get('toys:utr_800');
+          $bot->add_allymsg("UTR 800: $utr_800");
+          $bot->add_allymsg("UTR: nächster Level 1000");
+          break;
+        default:
+          $bot->add_allymsg("UTR: sollte schon tod sein ;)");
+      }
+    } else {
+      $c = $redis->incr('toys:utr');
+      $bot->add_allymsg("Tod UTR!!!");
+			$nick = $bot->get_random_nick($data['user']);
+      if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:utr_100', $data['user']);}
+      if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:utr_200', $data['user']);}
+      if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:utr_400', $data['user']);}
+      if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:utr_600', $data['user']);}
+      if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:utr_800', $data['user']);}
+      if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:utr_1000', $data['user']);}
+    }
   }
 }, 'toys');
 
@@ -203,6 +202,8 @@ $bot->add_allymsg_hook("Krieg",                	// command key
                        '/^krieg$/i', 				    // optional regex für key
 function ($bot, $data) {
 	global $redis;
+  if (!$redis->status()) return;
+  $redis->setnx('toys:krieg', 0);
 	$text[] = 'Nieder mit dem Schlumpf!!!';
 	$text[] = 'Wir sind SPARTA... äh... ALSEN!!!';
 	$text[] = 'Jeder nur ein Kreuz!';
@@ -212,54 +213,51 @@ function ($bot, $data) {
 	shuffle($text);
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user'])) {
-		if ($redis->status()) {
-			$redis->setnx('toys:krieg', 0);
-			if(preg_match('/^(preis|preise|gewinn|gewinner)$/i', $data['params'][0])) {
-				$c = $redis->get('toys:krieg');
-				switch ($c) {
-					case ($c < 100):
-						$bot->add_allymsg("Krieg: nächster Level 100");
-						break;
-					case ($c > 100 and $c < 200):
-						$krieg_100 = $redis->get('toys:krieg_100');
-						$bot->add_allymsg("Krieg 100: $krieg_100");
-						$bot->add_allymsg("Krieg: nächster Level 200");
-						break;
-					case ($c > 200 and $c < 400):
-						$krieg_200 = $redis->get('toys:krieg_200');
-						$bot->add_allymsg("Krieg 200: $krieg_200");
-						$bot->add_allymsg("Krieg: nächster Level 400");
-						break;
-					case ($c > 400 and $c < 600):
-						$krieg_400 = $redis->get('toys:krieg_400');
-						$bot->add_allymsg("Krieg 400: $krieg_400");
-						$bot->add_allymsg("Krieg: nächster Level 600");
-						break;
-					case ($c > 600 and $c < 800):
-						$krieg_600 = $redis->get('toys:krieg_600');
-						$bot->add_allymsg("Krieg 600: $krieg_600");
-						$bot->add_allymsg("Krieg: nächster Level 800");
-						break;
-					case ($c > 800 and $c < 1000):
-						$krieg_800 = $redis->get('toys:krieg_800');
-						$bot->add_allymsg("Krieg 800: $krieg_800");
-						$bot->add_allymsg("Krieg: nächster Level 1000");
-						break;
-					default:
-						$bot->add_allymsg("Krieg: sollte schon vorbei sein ;)");
-				}
-			} else {
-				$c = $redis->incr('toys:krieg');
-				$bot->add_allymsg($text[$rand_key]);
-				$nick = $bot->get_random_nick($data['user']);
-				if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:krieg_100', $data['user']);}
-				if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:krieg_200', $data['user']);}
-				if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:krieg_400', $data['user']);}
-				if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:krieg_600', $data['user']);}
-				if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:krieg_800', $data['user']);}
-				if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:krieg_1000', $data['user']);}
-			}
-		} else $bot->add_allymsg($text[$rand_key]);
+		if(preg_match('/^(preis|preise|gewinn|gewinne|gewinner)$/i', $data['params'][0])) {
+      $c = $redis->get('toys:krieg');
+      switch ($c) {
+        case ($c < 100):
+          $bot->add_allymsg("Krieg: nächster Level 100");
+          break;
+        case ($c > 100 and $c < 200):
+          $krieg_100 = $redis->get('toys:krieg_100');
+          $bot->add_allymsg("Krieg 100: $krieg_100");
+          $bot->add_allymsg("Krieg: nächster Level 200");
+          break;
+        case ($c > 200 and $c < 400):
+          $krieg_200 = $redis->get('toys:krieg_200');
+          $bot->add_allymsg("Krieg 200: $krieg_200");
+          $bot->add_allymsg("Krieg: nächster Level 400");
+          break;
+        case ($c > 400 and $c < 600):
+          $krieg_400 = $redis->get('toys:krieg_400');
+          $bot->add_allymsg("Krieg 400: $krieg_400");
+          $bot->add_allymsg("Krieg: nächster Level 600");
+          break;
+        case ($c > 600 and $c < 800):
+          $krieg_600 = $redis->get('toys:krieg_600');
+          $bot->add_allymsg("Krieg 600: $krieg_600");
+          $bot->add_allymsg("Krieg: nächster Level 800");
+          break;
+        case ($c > 800 and $c < 1000):
+          $krieg_800 = $redis->get('toys:krieg_800');
+          $bot->add_allymsg("Krieg 800: $krieg_800");
+          $bot->add_allymsg("Krieg: nächster Level 1000");
+          break;
+        default:
+          $bot->add_allymsg("Krieg: sollte schon vorbei sein ;)");
+      }
+    } else {
+			$c = $redis->incr('toys:krieg');
+			$bot->add_allymsg($text[$rand_key]);
+			$nick = $bot->get_random_nick($data['user']);
+      if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:krieg_100', $data['user']);}
+      if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:krieg_200', $data['user']);}
+      if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:krieg_400', $data['user']);}
+      if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:krieg_600', $data['user']);}
+      if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:krieg_800', $data['user']);}
+      if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:krieg_1000', $data['user']);}
+		}
 	}
 }, 'toys');
 
@@ -269,63 +267,62 @@ $bot->add_allymsg_hook("IMP21",                	// command key
                        '/^(imp21|imp)$/i', 			// optional regex für key
 function ($bot, $data) {
 	global $redis;
+  if (!$redis->status()) return;
+  $redis->setnx('toys:imp21', 0);
   if (!$bot->is_himself($data['user'])) {
-		if ($redis->status()) {
-			$redis->setnx('toys:imp21', 0);
-			$text[] = 'Steinigt sie!';
-			$text[] = 'Nieder mit dem Pöbel..';
-			$text[] = 'Sollen wir sie wieder zu Poden Chleudern?';
-			$text[] = 'Jeder nur ein Schwert... und dann feste druff *gg*';
-			$text[] = 'Schmeisst diese pösen Purschen zu Poden!';
-			$text[] = $bot->get_random_nick($data['user']) . " hat {$data['params'][0]} gesagt";
-			shuffle($text);
-			$rand_key = array_rand($text, 1);
-			if(preg_match('/^(preis|preise|gewinn|gewinner)$/i', $data['params'][0])) {
-				$c = $redis->get('toys:imp21');
-				switch ($c) {
-					case ($c < 100):
-						$bot->add_allymsg("IMP21: nächster Level 100");
-						break;
-					case ($c > 100 and $c < 200):
-						$imp21_100 = $redis->get('toys:imp21_100');
-						$bot->add_allymsg("IMP21 100: $imp21_100");
-						$bot->add_allymsg("IMP21: nächster Level 200");
-						break;
-					case ($c > 200 and $c < 400):
-						$imp21_200 = $redis->get('toys:imp21_200');
-						$bot->add_allymsg("IMP21 200: $imp21_200");
-						$bot->add_allymsg("IMP21: nächster Level 400");
-						break;
-					case ($c > 400 and $c < 600):
-						$imp21_400 = $redis->get('toys:imp21_400');
-						$bot->add_allymsg("IMP21 400: $imp21_400");
-						$bot->add_allymsg("IMP21: nächster Level 600");
-						break;
-					case ($c > 600 and $c < 800):
-						$imp21_600 = $redis->get('toys:imp21_600');
-						$bot->add_allymsg("IMP21 600: $imp21_600");
-						$bot->add_allymsg("IMP21: nächster Level 800");
-						break;
-					case ($c > 800 and $c < 1000):
-						$imp21_800 = $redis->get('toys:imp21_800');
-						$bot->add_allymsg("IMP21 800: $imp21_800");
-						$bot->add_allymsg("IMP21: nächster Level 1000");
-						break;
-					default:
-						$bot->add_allymsg("IMP21: sollte schon tod sein ;)");
-				}
-			} else {
-				$c = $redis->incr('toys:imp21');
-				$bot->add_allymsg($text[$rand_key]);
-				$nick = $bot->get_random_nick($data['user']);
-				if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:imp21_100', $data['user']);}
-				if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:imp21_200', $data['user']);}
-				if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:imp21_400', $data['user']);}
-				if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:imp21_600', $data['user']);}
-				if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:imp21_800', $data['user']);}
-				if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:imp21_1000', $data['user']);}
-			}
-		} else $bot->add_allymsg($text[$rand_key]);
+		$text[] = 'Steinigt sie!';
+		$text[] = 'Nieder mit dem Pöbel..';
+		$text[] = 'Sollen wir sie wieder zu Poden Chleudern?';
+		$text[] = 'Jeder nur ein Schwert... und dann feste druff *gg*';
+		$text[] = 'Schmeisst diese pösen Purschen zu Poden!';
+		$text[] = $bot->get_random_nick($data['user']) . " hat {$data['params'][0]} gesagt";
+		shuffle($text);
+		$rand_key = array_rand($text, 1);
+    if(preg_match('/^(preis|preise|gewinn|gewinner)$/i', $data['params'][0])) {
+      $c = $redis->get('toys:imp21');
+      switch ($c) {
+        case ($c < 100):
+          $bot->add_allymsg("IMP21: nächster Level 100");
+          break;
+        case ($c > 100 and $c < 200):
+          $imp21_100 = $redis->get('toys:imp21_100');
+          $bot->add_allymsg("IMP21 100: $imp21_100");
+          $bot->add_allymsg("IMP21: nächster Level 200");
+          break;
+        case ($c > 200 and $c < 400):
+          $imp21_200 = $redis->get('toys:imp21_200');
+          $bot->add_allymsg("IMP21 200: $imp21_200");
+          $bot->add_allymsg("IMP21: nächster Level 400");
+          break;
+        case ($c > 400 and $c < 600):
+          $imp21_400 = $redis->get('toys:imp21_400');
+          $bot->add_allymsg("IMP21 400: $imp21_400");
+          $bot->add_allymsg("IMP21: nächster Level 600");
+          break;
+        case ($c > 600 and $c < 800):
+          $imp21_600 = $redis->get('toys:imp21_600');
+          $bot->add_allymsg("IMP21 600: $imp21_600");
+          $bot->add_allymsg("IMP21: nächster Level 800");
+          break;
+        case ($c > 800 and $c < 1000):
+          $imp21_800 = $redis->get('toys:imp21_800');
+          $bot->add_allymsg("IMP21 800: $imp21_800");
+          $bot->add_allymsg("IMP21: nächster Level 1000");
+          break;
+        default:
+          $bot->add_allymsg("IMP21: sollte schon tod sein ;)");
+      }
+    } else {
+			$c = $redis->incr('toys:imp21');
+			$bot->add_allymsg($text[$rand_key]);
+			$nick = $bot->get_random_nick($data['user']);
+      if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:imp21_100', $data['user']);}
+      if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:imp21_200', $data['user']);}
+      if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:imp21_400', $data['user']);}
+      if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:imp21_600', $data['user']);}
+      if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:imp21_800', $data['user']);}
+      if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:imp21_1000', $data['user']);}
+		}
 	}
 }, 'toys');
 

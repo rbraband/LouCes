@@ -15,6 +15,7 @@ echo "Start...\r\n";
 include_once('config.php');
 include_once('lou.php');
 include_once('redis.php');
+include_once('cron.php');
 
 class Category implements SplObserver {
   private $enabled;
@@ -29,6 +30,7 @@ class Category implements SplObserver {
   private $spamsafe;
   
   public $name;
+  public $dobreak;
   
   static function factory($name,
                           $rules,
@@ -63,6 +65,7 @@ class Category implements SplObserver {
     $this->schedule = intval(@$this->rules['schedule']);
     $this->randomice = (@$this->rules['randomice']) ? true : false;
     $this->spamsafe = (@$this->rules['spamsafe']) ? true : false;
+    $this->dobreak = (@$this->rules['dobreak']) ? true : false;
   }
   
   public function update(SplSubject $subject) {
@@ -180,43 +183,53 @@ class Hook implements SplSubject {
     }
     return $return;
   }
+  
+  public function breakThis() {
+    $return = false;
+    foreach ($this->observers as $obj) {
+      $return = $obj->dobreak;
+    }
+    return $return;
+  }
 }
 
 class LoU_Bot implements SplObserver {
-    public $ally_name = BOT_ALLY_NAME;
-    public $ally_shortname = BOT_ALLY_SHORTNAME;
-    public $bot_user_name = BOT_USER_NAME;
+    public $ally_name;
+    public $ally_id;
+    public $ally_shortname;
+    public $bot_user_name;
+    public $bot_user_id;
     public $server = BOT_SERVER;
     public $email = BOT_EMAIL;
     public $password = BOT_PASSWORD;
     public $owner = BOT_OWNER;
     public $globalchat = false;
-    public $getalliance = true;
     
+    public $cron;
     public $lou;
     public $categories = array();
     
-    private $hooks = array(GLOBALIN => array(), SYSTEMIN => array(), ALLYIN => array(), PRIVATEIN => array(), PRIVATEOUT => array(), ALLIANCE => array(), USER => array());
-    private $privhooks = array();
-    private $allyhooks = array();
+    private $hooks = array();
+    private $events = array();
     
     private $stop = false;
-    private $ally_id;
-    private $bot_user_id;
     private $debug = false;
     
     public function run() {
-      $this->lou = LoU::factory($this->server,
+      $this->add_category('default', array('humanice' => true), PUBLICY);
+      $this->cron = Cron::factory();
+			$this->cron->attach($this);
+			$this->lou = LoU::factory($this->server,
                                 $this->email,
                                 $this->password);
-      $this->add_category('default', array('humanice' => true), PUBLICY);
-      $this->load_hooks();
       $this->lou->attach($this);
+      $this->lou->get_self();        
+      $this->load_hooks();
       if ($this->globalchat) $this->lou->set_global_chat();
       while ($this->lou->isConnected(true)) {
-        $chat = $this->lou->get_chat();
-        if ($this->getalliance) $alliance = $this->lou->get_alliance();
-        if (!$chat || ($this->getalliance && !$alliance)) break;
+        $event = $this->cron->check();
+				$chat = $this->lou->get_chat();
+        if (!$chat) break;
         usleep(POLLTRIP * 1000);
       }
       $this->log("Terminated!");
@@ -286,6 +299,15 @@ class LoU_Bot implements SplObserver {
                                               $this->get_category($category));
     }
 		
+		public function add_bot_hook($command, $name, $function, $category = 'bot') {
+      $this->hooks[BOT][md5($name)] = Hook::factory(trim($command),
+                                              $name,
+                                              false,
+                                              null,
+                                              $function,
+                                              $this->get_category($category));
+    }
+		
 		public function add_alliance_hook($command, $name, $function, $category = 'alliance') {
       $this->hooks[ALLIANCE][md5($name)] = Hook::factory(trim($command),
                                               $name,
@@ -303,35 +325,115 @@ class LoU_Bot implements SplObserver {
                                               $function,
                                               $this->get_category($category));
     }
+		
+		public function add_statistic_hook($command, $name, $function, $category = 'statistic') {
+      $this->hooks[STATISTICS][md5($name)] = Hook::factory(trim($command),
+                                              $name,
+                                              false,
+                                              null,
+                                              $function,
+                                              $this->get_category($category));
+    }
+		
+		public function add_tick_event($events, $command, $name, $function, $category = 'tick') {
+      if (!is_array($events)) $events = array($events);
+			foreach($events as $event) {
+				if (!empty($event)) $this->events[$event][md5($name)] = Hook::factory(trim($command),
+                                              $name,
+                                              false,
+                                              null,
+                                              $function,
+                                              $this->get_category($category));
+			}
+    }
+		
+		public function add_cron_event($events, $command, $name, $function, $category = 'cron') {
+      if (!is_array($events)) $events = array($events);
+			foreach($events as $event) {
+				if (!empty($event)) $this->events[$event][md5($name)] = Hook::factory(trim($command),
+                                              $name,
+                                              false,
+                                              null,
+                                              $function,
+                                              $this->get_category($category));
+			}
+    }
 
     public function update(SplSubject $subject) {
       while($this->stop) {
         $this->log("Wait for reload!");
         usleep(25 * 1000);
       }
-      $this->log("FireEvents :)");
       $input = $subject->note;
-      print_r($input);
       switch($input['type']) {
         case CHAT:
-          foreach (@$this->hooks[$input['channel']] AS $hook) {
+          $this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['channel']})");
+					print_r($input);
+					$hooks = @$this->hooks[$input['channel']];
+					if (is_array($hooks)) foreach ($hooks as $hook) {
             if ($hook->compCommand($input)) {
               $hook->callFunction($this, $input);
+              if ($hook->breakThis()) break;
             }
           }
           break;
         case ALLIANCE:
-          if($input['name'] == $this->ally_name) $this->ally_id = $input['id'];
-          foreach (@$this->hooks[$input['type']] AS $hook) {
+          $this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
+					$hooks = @$this->hooks[$input['type']];
+					if (is_array($hooks)) foreach ($hooks as $hook) {
             $hook->callFunction($this, $input);
+            if ($hook->breakThis()) break;
+          }
+          break;
+        case STATISTICS:
+          $this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['id']})");
+					$hooks = @$this->hooks[$input['type']];
+					if (is_array($hooks)) foreach ($hooks as $hook) {
+            $hook->callFunction($this, $input);
+            if ($hook->breakThis()) break;
           }
           break;
         case USER:
-          if($input['name'] == $this->bot_user_name) $this->bot_user_id = $input['id'];
-          foreach (@$this->hooks[$input['type']] AS $hook) {
+          $this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
+					$hooks = @$this->hooks[$input['type']];
+					if (is_array($hooks)) foreach ($hooks as $hook) {
             $hook->callFunction($this, $input);
+            if ($hook->breakThis()) break;
           }
           break;
+        case BOT:
+          $this->log("Set Bot-Data ++++++++++++++++++++");
+          $this->set_bot_user_id($input['id']);
+          $this->log("Set UserId: " . $this->bot_user_id);
+          $this->set_bot_user_name($input['name']);
+          $this->log("Set Name: " . $this->bot_user_name);
+          $this->set_ally_name($input['alliance']);
+          $this->log("Set Alliance: " . $this->ally_name);
+          $this->set_ally_id($input['alliance_id']);
+          $this->log("Set AllianceId: " . $this->ally_id);
+          $this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
+					$hooks = @$this->hooks[$input['type']];
+					if (is_array($hooks)) foreach ($hooks as $hook) {
+            $hook->callFunction($this, $input);
+            if ($hook->breakThis()) break;
+          }
+          break;
+				case CRON:
+					$this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
+					$events = @$this->events[$input['name']];
+					if (is_array($events)) foreach ($events as $event) {
+            $event->callFunction($this, $input);
+            if ($event->breakThis()) break;
+          }
+					break;
+				case TICK:
+					$this->log("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
+					$events = @$this->events[$input['name']];
+					if (is_array($events)) foreach ($events as $event) {
+            $event->callFunction($this, $input);
+            if ($event->breakThis()) break;
+          }
+					break;
       }
     }
     
@@ -400,7 +502,17 @@ class LoU_Bot implements SplObserver {
     }
 	
     public function is_op_user($user) {
-      return ($user == $this->owner) ? true : false; //later implemented
+      global $redis;
+      if (empty($user)) return false;
+      if (!$redis->status()) return ($user == $this->owner) ? true : false;
+      $_op = array(1471, 1472, 1473);
+      $alliance_key = "alliance:{$this->ally_id}";
+      if ($redis->SISMEMBER("{$alliance_key}:member", $user)) {
+        $alias = $redis->HGET('aliase', mb_strtoupper($user));
+        if (in_array($redis->HGET("user:{$alias}:data", 'role'), $_op)) return true;
+        else return ($user == $this->owner) ? true : false;
+      }
+      else return false;
     }
 		
     public function is_owner($user) {

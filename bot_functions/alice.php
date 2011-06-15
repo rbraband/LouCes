@@ -8,7 +8,7 @@ $bot->add_allymsg_hook("Alice",                	// command key
 function ($bot, $data) {
   if(!$bot->is_himself($data['user'])) {
 		$request = array('botid' => ALICE_ID,
-                     'input' => urlencode($match[1]),
+                     'input' => urlencode($data['message']),
                      'custid' => urlencode($data['user'])
     );
     $response = alice_call($request);
@@ -75,7 +75,7 @@ if(!function_exists('magic_8ball')) {
     $text_de[] = 'Wie jetzt?';
     $text_de[] = 'Dir antworte ich nicht!';
     $text_de[] = 'Sorry, jetzt muss ich gerade was anderes tun...';
-    /7 en
+    // en
     $text_en[] = 'As I see it, yes.';
     $text_en[] = 'Ask again later.';
     $text_en[] = 'Better not tell you now.';
