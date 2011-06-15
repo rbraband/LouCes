@@ -162,10 +162,17 @@ class Hook implements SplSubject {
   public function compCommand($compare) {
 		if ($this->isCommand()) {
 			if ($compare['command'][0] != PRE) return false;
-			else return preg_match($this->regex, substr($compare['command'], 1));
+			else return preg_match($this->evalRegex(), substr($compare['command'], 1));
 		} else {
-			return (preg_match($this->regex, $compare['command']) || preg_match($this->regex, $compare['message']));
+			return (preg_match($this->evalRegex(), $compare['command']) || preg_match($this->evalRegex(), $compare['message']));
 		}
+  }
+  
+  private function evalRegex() {
+    global $bot;
+    $regex = $this->regex;
+    eval ("\$regex = \"$regex\";");
+    return $regex;
   }
   
   public function attach(SplObserver $observer) {
