@@ -72,7 +72,7 @@ function ($bot, $data) {
 $bot->add_alliance_hook("SetAllyShort",                        // command key
                         "LouBot_alliance_update_shortname",    // callback function
 function ($bot, $data) {
-  if (empty($data['id'])||$data['id'] != $bot->ally_id) return;
+  if (empty($data['id'])||$data['id'] != $bot->ally_id||$bot->ally_shortname == $data['short']) return;
   $bot->set_ally_shortname($data['short']);
   $bot->log("Set AllianceShort: " . $bot->ally_shortname);
 }, 'alliance');
