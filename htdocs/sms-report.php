@@ -42,7 +42,7 @@ function getHash(array $data, $password) {
   return $hash_md5;
 }
 
-$databases = array(2,3,4); 
+$databases = array(1); 
 
 $data = array('msg_id'    => $_POST['messageId'],
               'status'    => $_POST['dlrStatus'],
