@@ -349,9 +349,9 @@ $post_update = "[u]Legende[/u]:
 
 // test get report
 $bot->add_privmsg_hook("ReportTest",          // command key
-                       "LouBot_report_test", 	// callback function
+                       "LouBot_report_test",   // callback function
                        true,                  // is a command PRE needet?
-                       '',	  								// optional regex für key
+                       '',                    // optional regex für key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->lou->get_report($data['params'][0]);

@@ -41,9 +41,9 @@ function ($bot, $attacks) {
   }
 }, 'attacks');
 
-$bot->add_tick_event(Cron::TICK1,							 						// Cron key
-										"GetAllyAtts",                        // command key
-										"LouBot_alliance_atts_cron",    		  // callback function
+$bot->add_tick_event(Cron::TICK1,                           // Cron key
+                    "GetAllyAtts",                        // command key
+                    "LouBot_alliance_atts_cron",          // callback function
 function ($bot, $data) {
   $bot->lou->get_alliance_atts();
 }, 'attacks');

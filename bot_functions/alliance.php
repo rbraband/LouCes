@@ -48,20 +48,20 @@ function ($bot, $data) {
     $uid = $redis->HGET('users', $old);
     // needs an extra event for delete user from alliance and bot?
     // aliase
-		/*$aliase = $redis->SMEMBERS("user:{$uid}:alias");
+    /*$aliase = $redis->SMEMBERS("user:{$uid}:alias");
     if (is_array($aliase)) foreach($aliase as $alias) {
       $redis->HDEL('aliase', $alias);
     }
     $redis->DEL("user:{$uid}:alias");*/
-		// bookmarks
-		$bookmarks = $redis->SMEMBERS("user:{$uid}:bookmarks");
+    // bookmarks
+    $bookmarks = $redis->SMEMBERS("user:{$uid}:bookmarks");
     if (is_array($bookmarks)) foreach($bookmarks as $bookmark) {
       $redis->HDEL('bookmarks', $bookmark);
     }
-		$redis->DEL("user:{$uid}:bookmarks");
+    $redis->DEL("user:{$uid}:bookmarks");
   }
-	$diff_new = $redis->SDIFF("{$alliance_key}:member","{$alliance_key}:_member");
-	if (is_array($diff_new)) foreach($diff_new as $new) {
+  $diff_new = $redis->SDIFF("{$alliance_key}:member","{$alliance_key}:_member");
+  if (is_array($diff_new)) foreach($diff_new as $new) {
     $bot->log("Redis: try to welcome user to alliance and bot: {$new}");
     $uid = $redis->HGET('users', $new);
     // needs an extra event for welcome user to alliance and bot
@@ -93,9 +93,9 @@ function ($bot, $data) {
   $bot->log("Set AllianceShort: " . $bot->ally_shortname);
 }, 'alliance');
 
-$bot->add_tick_event(Cron::TICK5,							 						// Cron key
-										"GetAllyUpdate",                      // command key
-										"LouBot_alliance_update_cron",    		// callback function
+$bot->add_tick_event(Cron::TICK5,                           // Cron key
+                    "GetAllyUpdate",                      // command key
+                    "LouBot_alliance_update_cron",        // callback function
 function ($bot, $data) {
   $bot->lou->get_self_alliance();
 }, 'alliance');

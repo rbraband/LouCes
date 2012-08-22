@@ -13,24 +13,24 @@ You should have received a copy of the GNU General Public License along with thi
 define('WITHSCORES', true);
 class RedisWrapper {
   // Singleton instance 
-	private static $instance;
+  private static $instance;
   // Redis instance
-	private $redis;
+  private $redis;
   // Redis connect status
-	private $connect;
+  private $connect;
   // Redis PID
   private $pid;
 
-	// private constructor function 
-	// to prevent external instantiation 
+  // private constructor function 
+  // to prevent external instantiation 
   private function __construct($pid = 0) { 
-		if (class_exists('Redis')) {
+    if (class_exists('Redis')) {
       try {
-			$this->redis = new Redis(); // needs https://github.com/nicolasff/phpredis
-			$this->connect = $this->redis->connect(REDIS_CONNECTION);
+      $this->redis = new Redis(); // needs https://github.com/nicolasff/phpredis
+      $this->connect = $this->redis->connect(REDIS_CONNECTION);
         //$redis->auth('foobared');
         $this->select(REDIS_DB);
-			$this->redis->setOption(Redis::OPT_PREFIX, REDIS_NAMESPACE);
+      $this->redis->setOption(Redis::OPT_PREFIX, REDIS_NAMESPACE);
         $this->pid = $pid;
       } catch (RedisException $e){
         $line = trim(date("[d/m @ H:i:s]") . "Redis connect Error: " . $e->getMessage()) . "\n";  
@@ -52,11 +52,11 @@ class RedisWrapper {
     if(is_null($prozessor)) $prozessor = posix_getpid();
     if(!self::$instance[$prozessor]) {
       self::$instance[$prozessor] = new self($prozessor); 
-		}
+    }
     return self::$instance[$prozessor]; 
-	} 
+  } 
 
-	// getInstance method 
+  // getInstance method 
   public function reInstance($prozessor = null) { 
     if(is_null($prozessor)) $prozessor = posix_getpid();
     $this->__construct($prozessor); 
@@ -67,29 +67,29 @@ class RedisWrapper {
     if(is_null($prozessor)) $prozessor = posix_getpid();
     if(!self::$instance[$prozessor]) {
       return false;
-		} 
+    } 
     return (self::$instance[$prozessor]->pid == $prozessor) ? $prozessor : false; 
-	} 
+  } 
 
-	//... 
-	
-	// Call a dynamically wrapper...
-	public function __call($method, $args) { 
-		if(method_exists($this->redis, $method)) { 
+  //... 
+  
+  // Call a dynamically wrapper...
+  public function __call($method, $args) { 
+    if(method_exists($this->redis, $method)) { 
       try {
-			return call_user_func_array(array($this->redis, $method), $args); 
+      return call_user_func_array(array($this->redis, $method), $args); 
       } catch (RedisException $e){
         $line = trim(date("[d/m @ H:i:s]") . "Redis command ('{$method}') Error: " . $e->getMessage()) . "\n";  
         error_log($line, 3, REDIS_LOG_FILE);
         return false;
       }
-		} else { 
-			return false;
-		} 
-	}
+    } else { 
+      return false;
+    } 
+  }
 
   // Return an error
-	public function status() {
+  public function status() {
     return ($this->connect && $this->PING() == '+PONG') ? true : false;
   }
   
@@ -111,7 +111,7 @@ class RedisWrapper {
     $_keys = preg_replace($pattern, '', $keys, $limit);
     if(count($_keys) == 1 && $force_array) return $_keys[0];
     else return $_keys;
-	}
+  }
 }
 
 // get instance of redis db

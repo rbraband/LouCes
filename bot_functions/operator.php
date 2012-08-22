@@ -4,17 +4,17 @@ $bot->add_category('operator', array(), OPERATOR);
 $bot->add_privmsg_hook("ReloadHooks",           // command key
                        "LouBot_reload_hooks",   // callback function
                        true,                    // is a command PRE needet?
-                       '',  										// optional regex für key
+                       '',                      // optional regex für key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     if ($bot->reload()) $bot->add_privmsg("Funktionen neu geladen!", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 
-$bot->add_privmsg_hook("Say",                	// command key
-                       "LouBot_say",         	// callback function
+$bot->add_privmsg_hook("Say",                  // command key
+                       "LouBot_say",           // callback function
                        true,                  // is a command PRE needet?
-                       '/^say$/i',	  			  // optional regex für key
+                       '/^say$/i',            // optional regex für key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->add_allymsg(implode(' ', $data['params']));
@@ -34,10 +34,10 @@ function ($bot, $data) {
 } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 
-$bot->add_privmsg_hook("Ping",                	// command key
+$bot->add_privmsg_hook("Ping",                  // command key
                        "LouBot_ping_pong",      // callback function
                        false,                   // is a command PRE needet?
-                       '/^[!]?(Ping|Pong)$/',	  	  // optional regex für key
+                       '/^[!]?(Ping|Pong)$/',        // optional regex für key
 function ($bot, $data) {
   if($bot->is_himself($data['user'])) {
     if ($data['message'] == 'Ping') $bot->add_privmsg("Pong", $bot->bot_user_name);
@@ -47,10 +47,10 @@ function ($bot, $data) {
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 
-$bot->add_privmsg_hook("OC",                	// command key
+$bot->add_privmsg_hook("OC",                  // command key
                        "LouBot_ochat",        // callback function
                        true,                  // is a command PRE needet?
-                       '',	  								// optional regex für key
+                       '',                    // optional regex für key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->add_globlmsg(implode(' ', $data['params']));
@@ -60,8 +60,8 @@ function ($bot, $data) {
 
 $bot->add_privmsg_hook("ReloadPhrases",         // command key
                        "LouBot_reload_phrases", // callback function
-                       true,                 		// is a command PRE needet?
-                       '', 	                    // optional regex für key
+                       true,                     // is a command PRE needet?
+                       '',                       // optional regex für key
 function ($bot, $data) {
   global $phrases;
   if($bot->is_op_user($data['user'])) {
@@ -70,23 +70,23 @@ function ($bot, $data) {
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 
-$bot->add_privmsg_hook("RedisTest",         		// command key
-                       "LouBot_redis_test", 		// callback function
-                       true,                 		// is a command PRE needet?
-                       '', 	                    // optional regex für key
+$bot->add_privmsg_hook("RedisTest",             // command key
+                       "LouBot_redis_test",     // callback function
+                       true,                     // is a command PRE needet?
+                       '',                       // optional regex für key
 function ($bot, $data) {
   global $redis;
-	if($bot->is_op_user($data['user'])) {
+  if($bot->is_op_user($data['user'])) {
     $redis->setnx('operator:test', 0);
-		$a = $redis->get('operator:test');
-		$b = $redis->incr('operator:test');
+    $a = $redis->get('operator:test');
+    $b = $redis->incr('operator:test');
     $bot->add_privmsg("Redis test return: $b>$a", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 
-$bot->add_tick_event(Cron::TICK15,							 					// Cron key
-										"DoRedisTest",                        // command key
-										"LouBot_redis_test_cron",    		      // callback function
+$bot->add_tick_event(Cron::TICK15,                         // Cron key
+                    "DoRedisTest",                        // command key
+                    "LouBot_redis_test_cron",              // callback function
 function ($bot, $data) {
   global $redis;
   $error = false;
@@ -103,10 +103,10 @@ function ($bot, $data) {
 }, 'operator');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "SetUserAlias",          // command key
-									 "LouBot_set_user_alias", // callback function
-									 true,                    // is a command PRE needet?
-									 '', 		                  // optional regex für key
+                   "SetUserAlias",          // command key
+                   "LouBot_set_user_alias", // callback function
+                   true,                    // is a command PRE needet?
+                   '',                       // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -156,14 +156,14 @@ function ($bot, $data) {
     }
     $bot->add_privmsg('Alias Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "DelUserAlias",            // command key
-									 "LouBot_del_user_alias",   // callback function
-									 true,                      // is a command PRE needet?
-									 '', 		                    // optional regex für key
+                   "DelUserAlias",            // command key
+                   "LouBot_del_user_alias",   // callback function
+                   true,                      // is a command PRE needet?
+                   '',                         // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -213,6 +213,6 @@ function ($bot, $data) {
     }
     $bot->add_privmsg('Alias Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
 ?>

@@ -1,9 +1,9 @@
 <?php
 global $bot;
 $bot->add_category('alice', array('humanice' => true), PUBLICY);
-$bot->add_allymsg_hook("Alice",                	// command key
+$bot->add_allymsg_hook("Alice",                 // command key
                        "LouBot_alice",          // callback function
-                       false,                 	// is a command PRE needet?
+                       false,                   // is a command PRE needet?
                        "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[ ]?[.!?]?)$/i",  // optional regex für key
 function ($bot, $data) {
   global $redis;
@@ -72,7 +72,7 @@ if(!function_exists('alice_call')) {
 
 if(!function_exists('magic_8ball')) {
   function magic_8ball() {
-		// de
+    // de
     $text_de[] = 'Da antworte ich lieber nicht, versuche es erneut :|';
     $text_de[] = 'Darauf reagier ich gar nicht...';
     $text_de[] = 'Besser nix sagen *hmpf*';

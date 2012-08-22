@@ -7,7 +7,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Points",                  // command key
                        "LouBot_points",           // callback function
                        true,                      // is a command PRE needet?
-                       '/^(points|punkte)$/i',  	// optional regex für key
+                       '/^(points|punkte)$/i',    // optional regex für key
 function ($bot, $data) {
   global $redis, $hwords;
   $games_key = "games:alliance:{$bot->ally_id}";
@@ -44,10 +44,10 @@ function ($bot, $data) {
 
 // *** Slot machine
 
-$bot->add_allymsg_hook("Slot",                	    // command key
+$bot->add_allymsg_hook("Slot",                      // command key
                        "LouBot_slot_maschine",      // callback function
                        true,                        // is a command PRE needet?
-                       '/^slot$/i',  	              // optional regex für key
+                       '/^slot$/i',                  // optional regex für key
 function ($bot, $data) {
   global $redis;
   if(!$bot->is_himself($data['user'])) {
@@ -82,10 +82,10 @@ function ($bot, $data) {
     $stop3 = rand(count($wheel3) + $start3, 10*count($wheel3)) % count($wheel3);
     /*
     shuffle($wheel1);
-		shuffle($wheel2);
-		shuffle($wheel3);
+    shuffle($wheel2);
+    shuffle($wheel3);
     
-		$stop1 = array_rand($wheel1, 1) + $start1;
+    $stop1 = array_rand($wheel1, 1) + $start1;
     $stop2 = array_rand($wheel2, 1) + $start2;
     $stop3 = array_rand($wheel3, 1) + $start3;
     */
@@ -115,7 +115,7 @@ define('HANGMAN', 'HANGMAN');
 $bot->add_allymsg_hook("Hangman",                   // command key
                        "LouBot_hangman",           // callback function
                        false,                       // is a command PRE needet?
-                       '/^[!]?hangman$/i',  	      // optional regex für key
+                       '/^[!]?hangman$/i',          // optional regex für key
 function ($bot, $data) {
   global $redis, $hwords;
   if(!$bot->is_himself($data['user'])) {
@@ -238,7 +238,7 @@ define('QUIZZER', 'QUIZZER');
 $bot->add_allymsg_hook("Quiz",                   // command key
                        "LouBot_quiz",            // callback function
                        false,                    // is a command PRE needet?
-                       '/^[!]?(quiz|quizzer)$/i',  	       // optional regex für key
+                       '/^[!]?(quiz|quizzer)$/i',           // optional regex für key
 function ($bot, $data) {
   global $redis, $questions;
   if(!$bot->is_himself($data['user'])) {

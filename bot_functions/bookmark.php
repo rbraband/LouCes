@@ -3,10 +3,10 @@ global $bot;
 $bot->add_category('bookmark', array('humanice' => false, 'spamsafe' => true), PUBLICY);
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "Bookmark",               // command key
-									 "LouBot_bookmark",        // callback function
-									 false,                    // is a command PRE needet?
-									 '/^[!]?(My)?Bo{1,2}[ck]+mar[ck]+$/', 		     // optional regex für key
+                   "Bookmark",               // command key
+                   "LouBot_bookmark",        // callback function
+                   false,                    // is a command PRE needet?
+                   '/^[!]?(My)?Bo{1,2}[ck]+mar[ck]+$/',          // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -84,14 +84,14 @@ function ($bot, $data) {
       
     $bot->add_privmsg('Bookmark Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "DelBookmark",               // command key
-									 "LouBot_delbookmark",        // callback function
-									 true,                        // is a command PRE needet?
-									 '/^(De|Del|Rm)(My)?Bo{1,2}[ck]+mar[ck]+$/', 		     // optional regex für key
+                   "DelBookmark",               // command key
+                   "LouBot_delbookmark",        // callback function
+                   true,                        // is a command PRE needet?
+                   '/^(De|Del|Rm)(My)?Bo{1,2}[ck]+mar[ck]+$/',          // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -132,7 +132,7 @@ function ($bot, $data) {
       
     $bot->add_privmsg('Bookmark Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 ?>

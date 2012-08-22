@@ -80,7 +80,7 @@ function ($bot, $data) {
 $bot->add_privmsg_hook("ReloadDoku",           // command key
                        "LouBot_reload_doku",   // callback function
                        true,                   // is a command PRE needet?
-                       '',  									 // optional regex für key
+                       '',                     // optional regex für key
 function ($bot, $data) {
   global $redis;
   if($bot->is_op_user($data['user'])) {

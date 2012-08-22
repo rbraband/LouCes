@@ -28,9 +28,9 @@ define ('PHP_FORK_RETURN_METHOD', -2);
  * Own exception for the PHP_Fork
  */
 class PHP_ForkException extends Exception{
-	function __construct($strMessage, $code = 0){
-		parent::__construct($strMessage, $code);
-	}
+  function __construct($strMessage, $code = 0){
+    parent::__construct($strMessage, $code);
+  }
 }
 /**
  * PHP_Fork class. Wrapper around the pcntl_fork() stuff
@@ -212,7 +212,7 @@ class PHP_Fork {
      * creating the pseudo-threads instances is very simple:
      *
      * <code>
-     * 	...
+     *   ...
      *       $executeThread1 = new executeThread ("executeThread-1");
      *       $executeThread2 = new executeThread ("executeThread-2");
      *     ...
@@ -452,7 +452,7 @@ class PHP_Fork {
      * Causes this pseudo-thread to begin parallel execution.
      *
      * <code>
-     * 	...
+     *   ...
      *       $executeThread1->start();
      *     ...
      * </code>
@@ -506,7 +506,7 @@ class PHP_Fork {
      *
      *
      * <code>
-     * 	...
+     *   ...
      *       $executeThread1->stop();
      *     ...
      * </code>
@@ -546,7 +546,7 @@ class PHP_Fork {
      *
      *
      * <code>
-     * 	...
+     *   ...
      *       $executeThread1->wait();
      *     ...
      * </code>

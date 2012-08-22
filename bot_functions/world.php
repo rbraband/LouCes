@@ -525,7 +525,7 @@ function ($bot, $stat) {
 }, 'statistic');
 
 $bot->add_msg_hook(array(PRIVATEIN, GLOBALIN),
-                       "Stats",                	// command key
+                       "Stats",                  // command key
                        "LouBot_statistik",      // callback function
                        true,                    // is a command PRE needet?
                        '/^(stat|stats|statistik)$/i',// optional regex für key

@@ -412,7 +412,7 @@ header("Content-type: text/html; charset=utf-8");
  <head>
   <title><?php echo $world;?> - Stats</title>
   <link type="text/css" href="script/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
-  <link type="text/css" href="script/chosen/chosen.css" rel="stylesheet" />	
+  <link type="text/css" href="script/chosen/chosen.css" rel="stylesheet" />  
   <script type="text/javascript" src="script/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="script/jquery-ui-1.8.16.custom.min.js"></script>
   <script type="text/javascript" src="script/jquery.cookie.js"></script>
@@ -536,7 +536,7 @@ header("Content-type: text/html; charset=utf-8");
     </select>
    </div-->
    <!--div id="autocompleter" style="margin-left: 5px; margin-top: 2px;float: left;">
-		<input id="autoName" name="name" style="z-index: 100; position: relative;" title="type &quot;name&quot;" value="<?=$user_name?>"/>
+    <input id="autoName" name="name" style="z-index: 100; position: relative;" title="type &quot;name&quot;" value="<?=$user_name?>"/>
    </div-->
    <div style="margin-left: 5px; float: left;">
     <button type="submit" id="submitBtn">Anzeigen</button>
@@ -612,15 +612,15 @@ header("Content-type: text/html; charset=utf-8");
   <p>Spieler nicht bekannt!</p>
   <?php } ?>
   <div class="ui-widget" style="margin-left: 5px; width: 707px;">
-		<div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-		 <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-		 <strong>Hey!</strong> Wer hilft bei nem netten Design?</p>
-		</div>
-	</div>
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+     <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+     <strong>Hey!</strong> Wer hilft bei nem netten Design?</p>
+    </div>
+  </div>
   <div class="ui-widget" style="margin-left: 5px; width: 707px;">
-		<div class="ui-state-error ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-		 <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-		  <script type='text/javascript'><!--// <![CDATA[
+    <div class="ui-state-error ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+     <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+      <script type='text/javascript'><!--// <![CDATA[
         var OA_source = '56356';
         // ]]> -->
       </script>
@@ -630,7 +630,7 @@ header("Content-type: text/html; charset=utf-8");
         // ]]> -->
       </script>
       <noscript><a target='_blank' href='http://ads.simplyroot.de/www/delivery/ck.php?n=a8b4e575'><img border='0' alt='' src='http://ads.simplyroot.de/www/delivery/avw.php?zoneid=7&n=a8b4e575' /></a></noscript>
-		</div>
-	</div>
+    </div>
+  </div>
  </body>
 <html>

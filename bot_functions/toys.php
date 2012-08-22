@@ -41,8 +41,8 @@ function ($bot, $data) {
 } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'toys');
 
-$bot->add_privmsg_hook("Gold",                	// command key
-                       "LouBot_gold",         	// callback function
+$bot->add_privmsg_hook("Gold",                  // command key
+                       "LouBot_gold",           // callback function
                        true,                    // is a command PRE needet?
                        '/^(gold|goldtaler|goldsack)$/i',  // optional regex für key
 function ($bot, $data) {
@@ -52,10 +52,10 @@ function ($bot, $data) {
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'toys');
 
-$bot->add_privmsg_hook("Keks",                	// command key
-                       "LouBot_keks",         	// callback function
+$bot->add_privmsg_hook("Keks",                  // command key
+                       "LouBot_keks",           // callback function
                        true,                    // is a command PRE needet?
-                       '/^(keks|kekse|co{1,2}kie[s]?)$/i',  	// optional regex für key
+                       '/^(keks|kekse|co{1,2}kie[s]?)$/i',    // optional regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user'])) {
     $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
@@ -64,10 +64,10 @@ function ($bot, $data) {
 }, 'toys');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "R3stl33s",                	     // command key
-                       "LouBot_R3stl33s",         	     // callback function
+                       "R3stl33s",                       // command key
+                       "LouBot_R3stl33s",                // callback function
                        false,                            // is a command PRE needet?
-                       '/r3stl33s/i',  	                       // optional regex für key
+                       '/r3stl33s/i',                           // optional regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("Uhhh was für'n Geheimniss Xd");
@@ -75,10 +75,10 @@ function ($bot, $data) {
 }, 'toys2');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "Ruh3los",                	    // command key
-                       "LouBot_Ruh3los",         	    // callback function
+                       "Ruh3los",                      // command key
+                       "LouBot_Ruh3los",               // callback function
                        false,                         // is a command PRE needet?
-                       '/ruh3los/i',  	                    // optional regex für key
+                       '/ruh3los/i',                        // optional regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("Ruh3los ... Ich wünschte er wäre hier");
@@ -86,10 +86,10 @@ function ($bot, $data) {
 }, 'toys2');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "Silence",                	    // command key
-                       "LouBot_silence",         	    // callback function
+                       "Silence",                      // command key
+                       "LouBot_silence",               // callback function
                        false,                         // is a command PRE needet?
-                       '/silence/i',  	                    // optional regex für key
+                       '/silence/i',                        // optional regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("... I KIll You!");
@@ -97,20 +97,20 @@ function ($bot, $data) {
 }, 'toys2');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "Magier",                	    // command key
-                       "LouBot_mages",         	    // callback function
+                       "Magier",                      // command key
+                       "LouBot_mages",               // callback function
                        false,                         // is a command PRE needet?
-                       '/(magier|mages)/i',  	                    // optional regex für key
+                       '/(magier|mages)/i',                        // optional regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("Magier sind gut gegen Schiffe! ...  sagt Bier immer :D");
   }
 }, 'toys2');
 
-$bot->add_privmsg_hook("SpamTest",                	// command key
-                       "LouBot_spam_test",         	// callback function
+$bot->add_privmsg_hook("SpamTest",                  // command key
+                       "LouBot_spam_test",           // callback function
                        true,                        // is a command PRE needet?
-                       '',  	// optional regex für key
+                       '',    // optional regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user'])) {
     $bot->add_privmsg("SpamCheck!", $data['user']);
@@ -120,12 +120,12 @@ function ($bot, $data) {
 $bot->add_privmsg_hook("Giveaway",              // command key
                        "LouBot_giveaway",       // callback function
                        true,                    // is a command PRE needet?
-                       '/^(give|gib|geb|gebe)$/i',  	// optioneal regex für key
+                       '/^(give|gib|geb|gebe)$/i',    // optioneal regex für key
 function ($bot, $data) {
   if($bot->is_ally_user($data['user'])) {
     $giveaway = '';
     $nick = array_shift($data['params']);
-		$nick = ($bot->is_ally_user($nick)) ? ucfirst(strtolower($bot->get_random_nick($nick))) : $nick;
+    $nick = ($bot->is_ally_user($nick)) ? ucfirst(strtolower($bot->get_random_nick($nick))) : $nick;
     foreach($data['params'] as $item){
       $giveaway .= ucfirst($item);
     }
@@ -134,8 +134,8 @@ function ($bot, $data) {
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'toys');
 
-$bot->add_allymsg_hook("Hello",                	// command key
-                       "LouBot_hello",         	// callback function
+$bot->add_allymsg_hook("Hello",                  // command key
+                       "LouBot_hello",           // callback function
                        false,                   // is a command PRE needet?
                        "/^(hi|hallo|hello|moin|tach|tachen|nabend|abend|huhu)[,]? ({$bot->ally_name}|{$bot->ally_shortname})$/i", // optional regex für key
 function ($bot, $data) {
@@ -150,7 +150,7 @@ function ($bot, $data) {
 }, 'default'); // explicitly
 
 $bot->add_allymsg_hook("ByeBye",                // command key
-                       "LouBot_bye",         	  // callback function
+                       "LouBot_bye",             // callback function
                        false,                   // is a command PRE needet?
                        "/^(bb|bye|byebye|goodbye|tschüss|tschau|n8|n8ti|gn8|n8t)[,]? ({$bot->ally_name}|{$bot->ally_shortname})+$/i", // optional regex für key
 function ($bot, $data) {
@@ -166,19 +166,19 @@ function ($bot, $data) {
 }, 'default'); // explicitly
 
 
-$bot->add_allymsg_hook("Re",                	// command key
-                       "LouBot_re",         	// callback function
+$bot->add_allymsg_hook("Re",                  // command key
+                       "LouBot_re",           // callback function
                        false,                 // is a command PRE needet?
-                       '/^re[,]?$/i', 				    // optional regex für key
+                       '/^re[,]?$/i',             // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg("wb " . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
 }, 'toys');
 
-$bot->add_allymsg_hook("Sex",                	// command key
-                       "LouBot_sex",         	// callback function
+$bot->add_allymsg_hook("Sex",                  // command key
+                       "LouBot_sex",           // callback function
                        false,                 // is a command PRE needet?
-                       '/sex/i', 				      // optional regex für key
+                       '/sex/i',               // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
   $bot->add_allymsg("Katzenbaaaaabbbbyyyyysss");
@@ -187,10 +187,10 @@ function ($bot, $data) {
 $bot->add_globlmsg_hook("Willkommen",         // command key
                        "LouBot_startup",      // callback function
                        false,                 // is a command PRE needet?
-                       '', 				            // optional regex für key
+                       '',                     // optional regex für key
 function ($bot, $data) {
   if($data['user'] == '@Info') {
-	  //$bot->add_allymsg("^^ da isser :)");
+    //$bot->add_allymsg("^^ da isser :)");
   };
 }, 'toys');
 
@@ -203,7 +203,7 @@ function ($bot, $data) {
     $text[] = 'Gerade Schoberl geschenkt *gg*';
     $text[] = 'Ein Tütü für Schoberl? Bitte sehr *Tütügeb*';
     shuffle($text);
-		$rand_key = array_rand($text, 1);
+    $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
   }
 }, 'toys');
@@ -228,29 +228,29 @@ function ($bot, $data) {
     $text[] = 'Im gonna make your life so sweet';
 
     shuffle($text);
-		$rand_key = array_rand($text, 1);
+    $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
   }
 }, 'toys');
 
-$bot->add_allymsg_hook("VB",                	  // command key
-                       "LouBot_VB",         	  // callback function
+$bot->add_allymsg_hook("VB",                    // command key
+                       "LouBot_VB",             // callback function
                        false,                   // is a command PRE needet?
-                       '/^(vb|viking|blades)$/i', 		  // optional regex für key
+                       '/^(vb|viking|blades)$/i',       // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
   $redis->setnx('toys:utr', 0);
   if (!$bot->is_himself($data['user'])) {
     $text[] = 'Steinigt sie!';
-		$text[] = 'Unter jedem Stein und jedem Gebüsch steckt ein Feind, [i]husch husch[/i]!';
-		$text[] = 'Nieder mit dem Pöbel..';
-		$text[] = 'Sollen wir sie wieder zu Poden Chleudern?';
-		$text[] = 'Jeder nur ein Schwert... und dann feste druff *gg*';
-		$text[] = 'Schmeisst diese pösen Purschen zu Poden!';
-		$text[] = $bot->get_random_nick($data['user']) . " hat {$data['command']} gesagt";
+    $text[] = 'Unter jedem Stein und jedem Gebüsch steckt ein Feind, [i]husch husch[/i]!';
+    $text[] = 'Nieder mit dem Pöbel..';
+    $text[] = 'Sollen wir sie wieder zu Poden Chleudern?';
+    $text[] = 'Jeder nur ein Schwert... und dann feste druff *gg*';
+    $text[] = 'Schmeisst diese pösen Purschen zu Poden!';
+    $text[] = $bot->get_random_nick($data['user']) . " hat {$data['command']} gesagt";
     shuffle($text);
-		$rand_key = array_rand($text, 1);
+    $rand_key = array_rand($text, 1);
     if($data['params'][0] && preg_match('/^(preis|preise|gewinn|gewinne|gewinner)$/i', $data['params'][0])) {
       $c = $redis->get('toys:utr');
       switch ($c) {
@@ -288,7 +288,7 @@ function ($bot, $data) {
     } else {
       $c = $redis->incr('toys:utr');
       $bot->add_allymsg($text[$rand_key]);
-			$nick = $bot->get_random_nick($data['user']);
+      $nick = $bot->get_random_nick($data['user']);
       if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:utr_100', $data['user']);}
       if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:utr_200', $data['user']);}
       if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:utr_400', $data['user']);}
@@ -299,24 +299,24 @@ function ($bot, $data) {
   }
 }, 'toys');
 
-$bot->add_allymsg_hook("Krieg",                	// command key
-                       "LouBot_krieg",         	// callback function
-                       false,                 	// is a command PRE needet?
-                       '/^(krieg|rache)$/i', 				    // optional regex für key
+$bot->add_allymsg_hook("Krieg",                  // command key
+                       "LouBot_krieg",           // callback function
+                       false,                   // is a command PRE needet?
+                       '/^(krieg|rache)$/i',             // optional regex für key
 function ($bot, $data) {
-	global $redis;
+  global $redis;
   if (!$redis->status()) return;
   $redis->setnx('toys:krieg', 0);
-	$text[] = 'Nieder mit dem Pöbel!!!';
-	$text[] = 'Wir sind Vandalen... kein Zurück!';
-	$text[] = 'Jeder nur ein Kreuz!';
-	$text[] = 'Ist hier Weibsvolk anwesend?';
-	$text[] = 'Also gut, ich bin der Messias... und jetzt... ANGRIFF!';
-	$text[] = 'Nein, nein, ich hab euch verulkt. In Wirklichkeit ist es eine Kreuzigung.';
-	shuffle($text);
+  $text[] = 'Nieder mit dem Pöbel!!!';
+  $text[] = 'Wir sind Vandalen... kein Zurück!';
+  $text[] = 'Jeder nur ein Kreuz!';
+  $text[] = 'Ist hier Weibsvolk anwesend?';
+  $text[] = 'Also gut, ich bin der Messias... und jetzt... ANGRIFF!';
+  $text[] = 'Nein, nein, ich hab euch verulkt. In Wirklichkeit ist es eine Kreuzigung.';
+  shuffle($text);
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user'])) {
-		if(preg_match('/^(preis|preise|gewinn|gewinne|gewinner)$/i', $data['params'][0])) {
+    if(preg_match('/^(preis|preise|gewinn|gewinne|gewinner)$/i', $data['params'][0])) {
       $c = $redis->get('toys:krieg');
       switch ($c) {
         case ($c < 100):
@@ -351,56 +351,56 @@ function ($bot, $data) {
           $bot->add_allymsg("Krieg: sollte schon vorbei sein ;)");
       }
     } else {
-			$c = $redis->incr('toys:krieg');
-			$bot->add_allymsg($text[$rand_key]);
-			$nick = $bot->get_random_nick($data['user']);
+      $c = $redis->incr('toys:krieg');
+      $bot->add_allymsg($text[$rand_key]);
+      $nick = $bot->get_random_nick($data['user']);
       if ($c == 100) {$bot->add_allymsg("and the Winner is {$nick} 10.000.000 Gold");$redis->setnx('toys:krieg_100', $data['user']);}
       if ($c == 200) {$bot->add_allymsg("and the Winner is {$nick} 20.000.000 Gold");$redis->setnx('toys:krieg_200', $data['user']);}
       if ($c == 400) {$bot->add_allymsg("and the Winner is {$nick} 30.000.000 Gold");$redis->setnx('toys:krieg_400', $data['user']);}
       if ($c == 600) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:krieg_600', $data['user']);}
       if ($c == 800) {$bot->add_allymsg("and the Winner is {$nick} 40.000.000 Gold");$redis->setnx('toys:krieg_800', $data['user']);}
       if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:krieg_1000', $data['user']);}
-		}
-	}
+    }
+  }
 }, 'toys');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "Slap",                	// command key
-                       "LouBot_slap",         	// callback function
-                       true,                 		// is a command PRE needet?
-                       '/^slap[s]?$/i', 				// optional regex für key
+                       "Slap",                  // command key
+                       "LouBot_slap",           // callback function
+                       true,                     // is a command PRE needet?
+                       '/^slap[s]?$/i',         // optional regex für key
 function ($bot, $data) {
-	$text[] = 'mit Erfahrung!';
-	$text[] = 'mit seinem Witz!';
-	$text[] = 'mit seiner Sammlung Abziehbilder!';
-	$text[] = 'beim schummeln ;)';
-	$text[] = 'mit einer Bratpfanne *zonk*';
-	$text[] = 'mit ner dreischwänzigen Katze *huh*';
-	$text[] = 'auf jede Art.';
-	$text[] = 'beim weit pi*****';
-	$text[] = 'im nächsten Leben :/';
-	$text[] = 'an Unerfahrung ;)';
-	$text[] = 'an Überheblichkeit.';
-	$text[] = 'mit Weitsicht.';
-	$text[] = 'mit ner Forelle *Yihaa*';
-	$text[] = 'im Leben... nicht :/';
-	shuffle($text);
+  $text[] = 'mit Erfahrung!';
+  $text[] = 'mit seinem Witz!';
+  $text[] = 'mit seiner Sammlung Abziehbilder!';
+  $text[] = 'beim schummeln ;)';
+  $text[] = 'mit einer Bratpfanne *zonk*';
+  $text[] = 'mit ner dreischwänzigen Katze *huh*';
+  $text[] = 'auf jede Art.';
+  $text[] = 'beim weit pi*****';
+  $text[] = 'im nächsten Leben :/';
+  $text[] = 'an Unerfahrung ;)';
+  $text[] = 'an Überheblichkeit.';
+  $text[] = 'mit Weitsicht.';
+  $text[] = 'mit ner Forelle *Yihaa*';
+  $text[] = 'im Leben... nicht :/';
+  shuffle($text);
   $rand_key = array_rand($text, 1);
-	if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
-		$nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
-		$bot->add_allymsg("schlägt {$nick} " . $text[$rand_key]);
+  if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
+    $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
+    $bot->add_allymsg("schlägt {$nick} " . $text[$rand_key]);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'toys');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "Danke",                	// command key
-                       "LouBot_thx",         	  // callback function
+                       "Danke",                  // command key
+                       "LouBot_thx",             // callback function
                        false,                   // is a command PRE needet?
                        "/^(thx|danke|ty)[,]? {$bot->bot_user_name}$/i", // optional regex für key
 function ($bot, $data) {
   $text[] = 'NoP ';
   $text[] = '^^ immer wieder gerne ';
-	$text[] = 'Gerne ';
+  $text[] = 'Gerne ';
   $text[] = 'Wie du mir so ich dir ';
   $text[] = '[i]Return of invenst[/i] ';
   shuffle($text);
@@ -411,37 +411,37 @@ function ($bot, $data) {
 }, 'toys');
 
 
-$bot->add_allymsg_hook("Ressis",                	// command key
-                       "LouBot_ressis",         	// callback function
-                       false,                 		// is a command PRE needet?
-                       '/^(res{1,2}i[s]?|holz|eisen|stein)[,]?$/i', 				    // optional regex für key
+$bot->add_allymsg_hook("Ressis",                  // command key
+                       "LouBot_ressis",           // callback function
+                       false,                     // is a command PRE needet?
+                       '/^(res{1,2}i[s]?|holz|eisen|stein)[,]?$/i',             // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg("einer für Alle, Alle für Einen!");
 }, 'toys');
 
-$bot->add_allymsg_hook("Gallis",                	// command key
-                       "LouBot_gallis",         	// callback function
-                       false,                 		// is a command PRE needet?
-                       '/^gal{1,2}ie?s[,]?$/i', 	// optional regex für key
+$bot->add_allymsg_hook("Gallis",                  // command key
+                       "LouBot_gallis",           // callback function
+                       false,                     // is a command PRE needet?
+                       '/^gal{1,2}ie?s[,]?$/i',   // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg("Gallis am Morgen vertreiben Kummer und Sorgen :)");
 }, 'toys');
 
 $bot->add_allymsg_hook("EinSatzMitX",       // command key
-                       "LouBot_x",         	// callback function
+                       "LouBot_x",           // callback function
                        false,               // is a command PRE needet?
-                       '/^x$/i', 				    // optional regex für key
+                       '/^x$/i',             // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg("Ein Satz mit x, war wohl nix " . $data['user']);
 }, 'toys');
 
-$bot->add_allymsg_hook("AfKippe",                	// command key
-                       "LouBot_afkippe",         	// callback function
-                       false,                 		// is a command PRE needet?
-                       '/^af[k]{1,2}i[p]{1,2}e[,]?$/i', 				    // optional regex für key
+$bot->add_allymsg_hook("AfKippe",                  // command key
+                       "LouBot_afkippe",           // callback function
+                       false,                     // is a command PRE needet?
+                       '/^af[k]{1,2}i[p]{1,2}e[,]?$/i',             // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user'])) {
     $text[] = 'Schäuble freut sich :)';
@@ -454,10 +454,10 @@ function ($bot, $data) {
   }
 }, 'toys');
 
-$bot->add_allymsg_hook("AfKaffee",                	// command key
-                       "LouBot_afkaffee",         	// callback function
-                       false,                 		  // is a command PRE needet?
-                       '/^af[k]{1,2}a[f]{1,2}[e]{1,2}[,]?$/i', 				    // optional regex für key
+$bot->add_allymsg_hook("AfKaffee",                  // command key
+                       "LouBot_afkaffee",           // callback function
+                       false,                       // is a command PRE needet?
+                       '/^af[k]{1,2}a[f]{1,2}[e]{1,2}[,]?$/i',             // optional regex für key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user'])) {
     $text[] = 'Jakobs freut sich :)';
@@ -470,10 +470,10 @@ function ($bot, $data) {
   }
 }, 'toys');
 
-$bot->add_allymsg_hook("Zitat",                	// command key
+$bot->add_allymsg_hook("Zitat",                  // command key
                        "LouBot_phrases",        // callback function
-                       true,                 		// is a command PRE needet?
-                       '/^(zitate|zitat|phrase)$/i', 	// optional regex für key
+                       true,                     // is a command PRE needet?
+                       '/^(zitate|zitat|phrase)$/i',   // optional regex für key
 function ($bot, $data) {
   global $phrases;
   if (!$bot->is_himself($data['user'])) {
@@ -492,7 +492,7 @@ function ($bot, $data) {
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Slogan",                // command key
                        "LouBot_slogans",        // callback function
-                       true,                 		// is a command PRE needet?
+                       true,                     // is a command PRE needet?
                        '/^(slogan|slogans)$/i', // optional regex für key
 function ($bot, $data) {
   global $phrases;
@@ -561,7 +561,7 @@ if(!function_exists('slogan_call')) {
 }
 if(!function_exists('magic_slogan')) {
   function magic_slogan() {
-		// de
+    // de
     $text_de[] = 'Lord of Ultima bleibt Lord of Ultima: Doch Alsius hilft!';
     $text_de[] = 'Der Lord of Ultimae Bürger will Alsius. Warum wohl?';
     $text_de[] = 'Besser nix sagen *hmpf*';

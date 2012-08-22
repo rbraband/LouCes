@@ -3,10 +3,10 @@ global $bot;
 $bot->add_category('user', array(), PUBLICY);
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "UV",               // command key
-									 "LouBot_uv",           // callback function
-									 false,                 // is a command PRE needet?
-									 '/^[!]?UV$/i', 		      // optional regex für key
+                   "UV",               // command key
+                   "LouBot_uv",           // callback function
+                   false,                 // is a command PRE needet?
+                   '/^[!]?UV$/i',           // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -82,14 +82,14 @@ function ($bot, $data) {
     }
     $bot->add_privmsg('Alias Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "Alias",               // command key
-									 "LouBot_alias",        // callback function
-									 false,                 // is a command PRE needet?
-									 '/^[!]?Alias$/', 		  // optional regex für key
+                   "Alias",               // command key
+                   "LouBot_alias",        // callback function
+                   false,                 // is a command PRE needet?
+                   '/^[!]?Alias$/',       // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -150,14 +150,14 @@ function ($bot, $data) {
     }
     $bot->add_privmsg('Alias Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "DeAlias",             // command key
-									 "LouBot_dealias",      // callback function
-									 true,                  // is a command PRE needet?
-									 '', 		                // optional regex für key
+                   "DeAlias",             // command key
+                   "LouBot_dealias",      // callback function
+                   true,                  // is a command PRE needet?
+                   '',                     // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -198,69 +198,69 @@ function ($bot, $data) {
     }
     $bot->add_privmsg('Alias Fehler: falsche Parameter!', $data['user']);
 
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "Seen",             		// command key
-									 "LouBot_seen",      		// callback function
-									 true,                  // is a command PRE needet?
-									 '/^(lastseen|seen)$/i',// optional regex für key
+                   "Seen",                 // command key
+                   "LouBot_seen",          // callback function
+                   true,                  // is a command PRE needet?
+                   '/^(lastseen|seen)$/i',// optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
-	if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
-		if ($bot->is_ally_user($data['params'][0])) {
-			$uid = $bot->get_user_id($data['params'][0]);
-			$nick = $redis->HGET("user:{$uid}:data", 'name');
-			$lastlogin = $redis->HGET("user:{$uid}:data", 'lastlogin');
-			$summer = substr(date('O', strtotime($lastlogin)),0,3);
+  if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
+    if ($bot->is_ally_user($data['params'][0])) {
+      $uid = $bot->get_user_id($data['params'][0]);
+      $nick = $redis->HGET("user:{$uid}:data", 'name');
+      $lastlogin = $redis->HGET("user:{$uid}:data", 'lastlogin');
+      $summer = substr(date('O', strtotime($lastlogin)),0,3);
       $date = date('d.M.Y H:i:s', strtotime("$lastlogin $summer hours"));
-			$message = ucfirst(mb_strtolower($data['params'][0])) . "'s letzter Login war {$date}";
+      $message = ucfirst(mb_strtolower($data['params'][0])) . "'s letzter Login war {$date}";
         if ($data["channel"] == ALLYIN)
           $bot->add_allymsg($message);
         else 
           $bot->add_privmsg($message, $data['user']);
-		}
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+    }
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "Chat",             		// command key
-									 "LouBot_chat",      		// callback function
-									 true,                  // is a command PRE needet?
-									 '/^chat$/', 		        // optional regex für key
+                   "Chat",                 // command key
+                   "LouBot_chat",          // callback function
+                   true,                  // is a command PRE needet?
+                   '/^chat$/',             // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
-	if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
-		if ($bot->is_ally_user($data['params'][0])) {
-			$uid = $bot->get_user_id($data['params'][0]);
-			$nick = $redis->HGET("user:{$uid}:data", 'name');
-			$lastchat = $redis->HGET("user:{$uid}:data", 'lastchat');
-			$date = date('d.M.Y H:i:s', strtotime($lastchat));
-			$message = ucfirst(mb_strtolower($data['params'][0])) . "'s letzter Chat war {$date}";
+  if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
+    if ($bot->is_ally_user($data['params'][0])) {
+      $uid = $bot->get_user_id($data['params'][0]);
+      $nick = $redis->HGET("user:{$uid}:data", 'name');
+      $lastchat = $redis->HGET("user:{$uid}:data", 'lastchat');
+      $date = date('d.M.Y H:i:s', strtotime($lastchat));
+      $message = ucfirst(mb_strtolower($data['params'][0])) . "'s letzter Chat war {$date}";
         if ($data["channel"] == ALLYIN)
           $bot->add_allymsg($message);
         else 
           $bot->add_privmsg($message, $data['user']);
-		}
-	} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+    }
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'user');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-									 "LastChat",             		// command key
-									 "LouBot_last_chat",      	// callback function
-									 false,                  		// is a command PRE needet?
-									 '/.*/i', 		              // optional regex für key
+                   "LastChat",                 // command key
+                   "LouBot_last_chat",        // callback function
+                   false,                      // is a command PRE needet?
+                   '/.*/i',                   // optional regex für key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
-	if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
-		$uid = $bot->get_user_id($data['user']);
-		$redis->HMSET("user:{$uid}:data", array(
+  if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
+    $uid = $bot->get_user_id($data['user']);
+    $redis->HMSET("user:{$uid}:data", array(
       'lastchat' => date("m/d/Y H:i:s")
     ));
-	};
+  };
 }, 'user');
 ?>
