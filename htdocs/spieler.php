@@ -10,16 +10,18 @@
   include_once($_SERVER['ENV']['LIB'].'charts/pChart/pCache.class');
 
   // whitch world?
-  $worlds = array('w09' => array('name' => 'W9', 'start' => 0),
-                  'w10' => array('name' => 'W10', 'start' => 1321952400),
-                  'w12' => array('name' => 'W12', 'start' => 1333008000),
-                  'w13' => array('name' => 'W13', 'start' => 1337839200),
-                  'w14' => array('name' => 'W14', 'start' => 1342771200)
+  $server_world = $redis->GET('server:world');
+  // todo: fetch service with proper data
+  $worlds = array('Welt 9'  => array('name' => 'W9', 'start' => 0),
+                  'Welt 10' => array('name' => 'W10', 'start' => 1321952400),
+                  'Welt 12' => array('name' => 'W12', 'start' => 1333008000),
+                  'Welt 13' => array('name' => 'W13', 'start' => 1337839200),
+                  'Welt 14' => array('name' => 'W14', 'start' => 1342771200)
   );
 
-  if (empty($_SERVER['ENV']['WORLD'])) die('no world selected!');
-  $world = $worlds[$_SERVER['ENV']['WORLD']]['name'];
-  $wstart = $worlds[$_SERVER['ENV']['WORLD']]['start'];
+  if (!($server_world])) die('no world selected!');
+  $world = $worlds[$server_world]['name'];
+  $wstart = $worlds[$server_world]['start'];
   
   // find definitions
   $use_cache = (isset($_GET['c'])) ? (bool) $_GET['c'] : true;
