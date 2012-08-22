@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>settler</key>
+  <title>##BOTNAME## siedelt für Dich.</title>
+  <author>BloodHeart</author>
+  <date>26.05.2012</date>
+  <version>1.1</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[[b]##BOTNAME## koordiniert unsere Siedlungen![/b]
+
+... Nein nicht so ganz aber er hilft euch diese besser zu organisieren *g
+
+Das ist soweit ganz einfach im Handling und es bringt die Vorteile des Forums und die Siedlungsmails zusammen.
+
+[u]Aber ganz langsam...[/u]
+##BOTNAME## durchforstet stündlich die gesammte Welt, speichert Statistiken und natürlich findet er auch Lawless. Diese Daten schreibt ##BOTNAME## ins 'Siedlungen' Forum, unter dem Kontinent erstellt ##BOTNAME## jeweils Einträge für:
+
+➀ alle Allianz Siedler/Spieler auf dem Kontinent
+➁ gefundene Lawless, mit Information ob schon ein Member darauf siedelt
+➂ aktuelle Siedler die Unterwegs sind
+➃ ein Infopost zum Datum der letzen Aktualisierung
+
+[u]Wie siedele ich nun?[/u]
+Ganz einfach, schreibe im Chat (auch flüstern funktioniert!)
+[quote][b]!Siedeln[/b] [i]123:123[/i][/quote]
+##BOTNAME## nimmt die Daten auf und meldet einen Fehler oder er schreib zur Bestätigung die Siedlungsmail direkt an alle Siedler/Spieler auf dem Kontinent des Ziels [i]123:123[/i]. Das funktioniert auch mit Lawless, man kann auch den Befehl benutzen
+
+[quote][b]!Lawless[/b] [i]123:123[/i][/quote]
+oder
+[quote][b]!LL[/b] [i]123:123[/i][/quote]
+##BOTNAME## prüft dann sogar vorher ob dort eine Lawless ist!
+
+[u]Weitere Befehle:[/u]
+Mit
+[quote][b]Siedeln[/b] [i]123:123[/i][/quote]
+(ohne Ausrufezeichen) antwortet ##BOTNAME## ob diese Koordinate noch frei ist und kein anderer darauf siedelt, das gilt auch für Lawless *g
+
+Mit
+[quote][b]!Siedeln DEL[/b] [i]123:123[/i][/quote]
+löscht du Deine Siedlermeldung!
+
+]]>
+  </entry>
+  <entry id="2"><![CDATA[[b]Erweiterung[/b]
+Viele hatten sich ja gegen Siedelmails ausgesprochen, man kann sich von dem Mailverteiler abmelden!
+
+Das Forum wird auf jeden Fall immer 5 minütlich aktualisiert und täglich einmal eine komplette Prüfung. Bitte geht mit bedacht vor, ohne die Siedelmails hab ihr nur das Forum zur Kontrolle der aktuellen Siedlungen.
+
+[u]Wie melde ich mich ab?[/u]
+[quote][b]!Siedeln OFF[/b][/quote]
+
+[u]Wie melde ich mich wieder an?[/u]
+[quote][b]!Siedeln ON[/b][/quote]
+
+[u]Wie kontrolliere ich ob ich angemeldet bin?[/u]
+[quote][b]!Siedeln MAIL[/b][/quote]
+
+]]>
+  </entry>
+</doku>

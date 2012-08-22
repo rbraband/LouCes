@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>stats</key>
+  <title>##BOTNAME## beobachtet Dich ;)</title>
+  <author>BloodHeart</author>
+  <date>17.08.2012</date>
+  <version>1.7</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[##BOTNAME## erstellt stündliche Statistiken für euch.
+
+[b]Achtung Geheim:[/b] Ihr könnt eure eigene Statistik und die eines jeden beliebigen Spielers ganz einfach mit [url]http://stats.malkone.lou-bot.de/spieler.php?name=StrammerMax[/url] aufrufen.
+
+[b]Die Stats sind Passwort geschützt: malk | m4lk4ever[/b]
+Die Webseite und die Grafik aktualisieren sich automatisch :)
+
+[u]Features[/u]
+Man kann sich die Statistik für 24, 48 und 72 Stunden anzeigen lassen, die Buttons dafür sind oben links angeordnet. Ausserdem ist es möglich einen jeden Spieler auf W14 zu erfassen, einfach in das Feld oben mittig eintragen. Hier hilft eine automatische Suchhilfe bei der richtigen Schreibweise des Namens.
+
+[u]Befehle[/u]
+Wenn man sich den Link nicht merken kann oder möchte schreibt ihn ##BOTNAME## in den Chat:
+[quote][b]!Stats[/b][/quote]
+gibt dir den Link mit Max Statistiken!
+
+[quote][b]!Stats[/b] [i]StrammerMax[/i][/quote]
+oder mit dem Alias ;)
+[quote][b]!Stats[/b] [i]Mx[/i][/quote]
+schreibt ##BOTNAME## den Link für einen anderen Spieler (das [i]Max[/i] funktioniert wenn StrammerMax einen [b]Alias[/b] [i]Max[/i] gesetzt hat ;;).
+
+[u]Probleme?[/u]
+Bei manchen Browsern aktualisiert sich das Bild nicht oder nach dem öffnen des Links erscheint ein altes Bild.
+Hierbei hilft ein Einfaches drücken auf die F5 Taste und der Browser erholt sich ;)
+
+Gebt diese Links nicht weiter, nicht das da Probleme entstehen!]]>
+  </entry>
+</doku>

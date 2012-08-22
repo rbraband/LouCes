@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>alias</key>
+  <title>##BOTNAME## merkt sich deinen Namen!?</title>
+  <author>BloodHeart</author>
+  <date>26.05.2012</date>
+  <version>1.1</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[[b]Alias[/b] ist die Funktion.
+
+Der ##BOTNAME## sagt euch wer einen Alias/Nickname hat oder setzt einen für euch :)
+Ein Alias sollte zwei Zeichen lang sein, mit einem Großbuchstaben anfangen und ist uniqe.
+
+So kann er sich Nicknamen der Member merken, ##BOTNAME## dann weiss wer gemeint ist wenn man Max schreibt oder er sich merkt wer ihn am liebsten hat ;)
+
+Wie geht das? Ganz einfach Alias ist ein Befehl und eine Frage zugleich.
+
+[u]Fragen[/u]
+Wenn man nur
+[quote][b]Alias[/b][/quote]
+eintippt bekommt man seine eigene Alias-Liste angezeit.
+
+Wenn man
+[quote][b]Alias[/b] [i]Max[/i][/quote]
+eintippt bekommt man eine Liste von Max und seine Aliase. Wenn der Alias nicht belegt ist kommt eine entsprechende Antwort.
+
+[u]Befehle (mit dem Ausrufezeichen davor[b]![/b])[/u]
+Mit
+[quote][b]!Alias[/b] [i]Max[/i][/quote]
+wird euch der Alias Max gegeben, nur wenn er schon belegt ist kommt eine Fehlermeldung!
+
+Mit
+[quote][b]!DeAlias[/b] [i]Maxi[/i][/quote]
+wird ein gesetzter Alias wieder gelöscht, beim vertippen ganz nützlich :)
+
+Ach ja, als kleiner Tipp um den Chat nicht so voll zu spammen, man kann die Alias Funktion auch dem ##BOTNAME## zuflüstern!
+
+Viel Spass =)
+]]>
+  </entry>
+</doku>

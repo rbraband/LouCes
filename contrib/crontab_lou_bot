@@ -1,0 +1,2 @@
+0 1 * * * find /srv/*/charts/Cache -ctime 1 -delete >/dev/null
+0 1 * * * find /srv/*/htdocs/tmp -type f -delete >/dev/null

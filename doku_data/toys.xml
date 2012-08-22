@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>toys</key>
+  <title>Spielzeugecke :)</title>
+  <author>BloodHeart</author>
+  <date>03.06.2012</date>
+  <version>1.4</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[##BOTNAME## hat einiges Spielzeug an Bord :D
+
+  Die Idee bei Spielzeugs ist das man die Befehle nicht im Ally-Channel eingibt sondern diese ##BOTNAME## zuflüstert.
+  Dann ist der Effekt um so größer wenn niemand weiß woher ##BOTNAME## jetzt die Idee hatte jemanden einen Keks zu schenken ;;)
+  
+  [u]einfaches Spielzeugs[/u]
+  [quote]/w ##BOTNAME## [b]!Bier[/b] Max ~ gibt Max ein Bier
+/w ##BOTNAME## [b]!Gold[/b] Max ~ gibt Max Gold
+/w ##BOTNAME## [b]!Kaffee[/b] Max ~ gibt Max einen Kaffe
+/w ##BOTNAME## [b]!Keks[/b] Max ~ gibt Max einen Keks
+/w ##BOTNAME## [b]!Gib|Geb[/b] Max TEXT ~ gibt Max TEXT
+/w ##BOTNAME## [b]!Slap[/b] Max ~ ##BOTNAME## slappt Max
+/w ##BOTNAME## [b]!Birthday[/b] Max ~ ##BOTNAME##'s Glückwünsche[/quote]
+
+  [u]besonderes Spielzeugs[/u]
+  [quote][b]!Zitat[/b] ~ ##BOTNAME## gibt ein Zitat wieder
+  [b]!Slogan[/b] ~ ##BOTNAME## gibt ein Slogan wieder
+  [b]!Slogan[/b] Max ~ ##BOTNAME## gibt ein Zitat mit Max wieder :)[/quote]
+  
+  [u]automatische Gags[/u]
+  Hier reagiert ##BOTNAME## einfach auf das Chatgeschehen und ab und zu kommentiert er was ;;)
+  [quote][b]Re[/b] ~ ##BOTNAME## begrüßt Dich
+  [b]Afkippe[/b] ~ was hält ##BOTNAME## vom Rauchen?
+  [b]Afkaffee[/b] ~ was hält ##BOTNAME## vom Kaffee?
+  [b]Ressis|Eisen|Gold|Holz[/b] ~ ##BOTNAME## feuert euch an!
+  [b]liebe[/b] ~ was hält ##BOTNAME## von der Liebe?
+  [b]lol[/b] ~ ##BOTNAME## trollt
+  [b]Gallis[/b] ~ Gallies am morgen...
+  [b]Danke[/b] ##BOTNAME## ~ ##BOTNAME## danke sagen!!
+  [b]Krieg|Rache[/b] ~ Wer das 100'te mal was sagt bekommt neÜberraschung :)
+  [b]Schugar[/b] ~ ##BOTNAME## Swingt ...
+  [b]Sex[/b] ~ mag ##BOTNAME## gar nicht X_X[/quote]
+  
+  ... vieleicht sind ja noch ein paar Eastereggs versteckt :-?
+]]>
+  </entry>
+  <entry id="2"><![CDATA[[u]richtige Spiele[/u]
+  [i]Bei diesen Spielen können Offiziere mit einem Befehl das Spiel 10 Minuten pausieren![/i]
+  
+  [b]Games Slot:[/b]
+  [quote]!slot[/quote]Ein Spiel starten: [i]!Slot[/i]
+  Die Slot machine spielt Punkte aus die gesammelt werden können.
+  [i]Offiziers-Veto:[/i] !slot pause
+
+  [b]Games Hangman:[/b]
+  [quote]!hangman[/quote]Ein Spiel starten: [i]!Hangman[/i], stoppen: [i]!Hangman stop[/i]
+  Hangman Tipp abgeben: [i]Hangman [b]A[/b][/i], lösen: [i]Hangman [b]WORT[/b][/i]
+  [i]Offiziers-Veto:[/i] !hangman pause
+  
+  [b]Games Quiz:[/b]
+  [quote]!quiz[/quote]Ein Spiel starten: [i]!Quiz[/i], stoppen: [i]!Quiz stop[/i]
+  Quiz Tipp abgeben: [i]Quiz [b]TIPP[/b][/i], lösen: [i]Quiz [b]ANTWORT[/b][/i]
+  [i]Offiziers-Veto:[/i] !quiz pause
+  
+  [b]Games Punkte:[/b]
+  [quote]!points[/quote]Punktestand abholen: [i]!Points[/i], SPIEL-Punkte abholen: [i]!Points hangman[/i]
+  Points werden über alle Spiele gesammelt, sie können auch für einzelne Spiele abgerufen werden.
+]]>
+  </entry>
+</doku>

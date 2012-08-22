@@ -1,0 +1,7 @@
+/srv/*/logs/log.txt {
+  daily
+  missingok
+  rotate 7
+  compress
+  delaycompress
+}

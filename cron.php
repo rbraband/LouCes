@@ -17,6 +17,7 @@ class Cron implements SplSubject {
 
 	protected $observers= array ();
 	
+  const TICK0    = 'cron.tick_0';
 	const TICK1 	= 'cron.tick_1';
 	const TICK5 	= 'cron.tick_5';
 	const TICK10 	= 'cron.tick_10';
@@ -30,14 +31,15 @@ class Cron implements SplSubject {
 	const YEARLY 	= 'cron.yearly';
 	
 	private $crons = array(
-		array('cron.hourly', 	'is', 	5),
-		array('cron.daily', 	'Gis', 	4),
-		array('cron.weekly', 	'wGis', 3),
-		array('cron.monthly', 'jGis', 10002),
+    array('cron.hourly',  'is',   1),
+    array('cron.daily',   'Gis',  1),
+    array('cron.weekly',  'wGis', 1),
+    array('cron.monthly', 'jGis', 100001),
 		array('cron.yearly', 	'zGis', 1)
 	);
 	
 	private $ticks = array(
+    array('cron.tick_0',  's',   10),
 		array('cron.tick_1', 	'is',			100),
 		array('cron.tick_5', 	'is',			500),
 		array('cron.tick_10', 'is',			1000),
@@ -56,30 +58,30 @@ class Cron implements SplSubject {
 	}
 
 	public function check() {
-		$return = false;
+    $return = false;//sollte alle events zurückgeben!
 		$this->lastExec = time();
 		foreach($this->crons as $cron) {
-			if (abs(date($cron[1], $this->lastExec)) == $cron[2]) {
-				$this->note = array('type' => CRON,
-														'name' => $cron[0],
-														'time' => $this->lastExec
-														);
-				$this->notify();
+      if (abs(date($cron[1], $this->lastExec) +1) == $cron[2]) {
+        $this->kick(CRON, $cron[0]);
 				$return = true;
 			}
 		}
 		foreach($this->ticks as $tick) {
 			if (!(abs(date($tick[1], $this->lastExec)) % $tick[2])) {
-				$this->note = array('type' => TICK,
-														'name' => $tick[0],
-														'time' => $this->lastExec
-														);
-				$this->notify();
+        $this->kick(TICK, $tick[0]);
 				$return = true;
 			}
 		}
 		return $return;
 	}
+
+  private function kick($type, $event) {
+    $this->note = array('type' => $type,
+                        'name' => $event,
+                        'time' => $this->lastExec
+                        );
+    $this->notify();
+  }
 
 	public function attach(SplObserver $observer) {
 		$this->observers[spl_object_hash($observer)] = $observer;

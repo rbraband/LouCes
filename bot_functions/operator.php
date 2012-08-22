@@ -14,10 +14,46 @@ function ($bot, $data) {
 $bot->add_privmsg_hook("Say",                	// command key
                        "LouBot_say",         	// callback function
                        true,                  // is a command PRE needet?
-                       '',	  								// optional regex für key
+                       '/^say$/i',	  			  // optional regex für key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->add_allymsg(implode(' ', $data['params']));
+    
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("Offizier",         // command key
+                       "LouBot_happy_offi",// callback function
+                       true,               // is a command PRE needet?
+                       '/^(offizier|offi|nadel)$/i',      // optional regex für key
+function ($bot, $data) {
+  if($bot->is_op_user($data['user'])) {
+    $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
+    $nick = ucfirst(strtolower($bot->get_random_nick($nick)));
+    $bot->add_allymsg("0===[}::::::::::::::> {$nick} <::::::::::::::0{]===0");
+} else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("Ping",                	// command key
+                       "LouBot_ping_pong",      // callback function
+                       false,                   // is a command PRE needet?
+                       '/^[!]?(Ping|Pong)$/',	  	  // optional regex für key
+function ($bot, $data) {
+  if($bot->is_himself($data['user'])) {
+    if ($data['message'] == 'Ping') $bot->add_privmsg("Pong", $bot->bot_user_name);
+    else $bot->add_privmsg("Pong", $data['user']);
+  } else if ($bot->is_op_user($data['user']) && $data['command'][0] == PRE) {
+    $bot->add_privmsg("Ping", $bot->bot_user_name);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("OC",                	// command key
+                       "LouBot_ochat",        // callback function
+                       true,                  // is a command PRE needet?
+                       '',	  								// optional regex für key
+function ($bot, $data) {
+  if($bot->is_op_user($data['user'])) {
+    $bot->add_globlmsg(implode(' ', $data['params']));
     
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
@@ -46,6 +82,24 @@ function ($bot, $data) {
 		$b = $redis->incr('operator:test');
     $bot->add_privmsg("Redis test return: $b>$a", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_tick_event(Cron::TICK15,							 					// Cron key
+										"DoRedisTest",                        // command key
+										"LouBot_redis_test_cron",    		      // callback function
+function ($bot, $data) {
+  global $redis;
+  $error = false;
+  if (!$redis->status()) $error = true;
+  else {
+    $a = $redis->Set('operator:test', 1);
+    $b = $redis->get('operator:test');
+    $c = $redis->incr('operator:test');
+    $d = $redis->get('operator:test');
+    if (!$a || $b != 1 || $c != 2 || $c != $d) $error = true;
+  } 
+  if (!$error) $bot->log("Redis test: ok!");
+  else $bot->log("Redis test: Error!");
 }, 'operator');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),

@@ -1,0 +1,81 @@
+# @see, http://kbeezie.com/view/nginx-configuration-examples
+server {
+  server_name localhost;
+ 
+  root /var/web/lou-bot/;
+ 
+  access_log /var/log/nginx/lou-bot_access.log;
+  error_log /var/log/nginx/lou-bot_error.log;
+  index index.html index.htm index.php;
+ 
+  location / {
+        # Rewrite rules and other criterias can go here
+        # Remember to avoid using if() where possible (http://wiki.nginx.org/IfIsEvil)
+	try_files $uri $uri/ /index.php;
+  }
+
+  # serve static files directly
+  location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
+	# Some basic cache-control for static files to be sent to the browser
+	expires max;
+	add_header Pragma public;
+	add_header Cache-Control "public, must-revalidate, proxy-revalidate";
+  }
+
+  # include PHP5
+  location ~ \.php$ {
+        include php5_fcgi.conf;
+	# PHP Admin values
+        fastcgi_param PHP_ADMIN_VALUE "upload_tmp_dir=/var/web/lou-bot/tmp
+        include_path=.:/usr/share/php/:/usr/share/lou-bot/:/var/www/
+        safe_mode_include_dir=.:/usr/share/php/:/usr/share/lou-bot/:/var/www/
+        open_basedir=:/usr/share/php/:/var/web/lou-bot/:/usr/share/lou-bot/:/var/www/:/tmp/
+        session.save_path=/var/web/lou-bot/.session
+        cgi.fix_pathinfo=0";
+  }
+
+  include drop.conf;
+}
+
+server {
+  server_name stats.localhost;
+
+  root /var/web/lou-bot/stats/;
+
+  access_log /var/log/nginx/stats.lou-bot_access.log;
+  error_log /var/log/nginx/stats.lou-bot_error.log;
+  index index.html index.htm index.php;
+
+  auth_basic      "Malkavian";
+  auth_basic_user_file  /usr/share/lou-bot/htdocs/.htpasswd;
+
+  location / {
+        # Rewrite rules and other criterias can go here
+        # Remember to avoid using if() where possible (http://wiki.nginx.org/IfIsEvil)
+        try_files $uri $uri/ /index.php;
+  }
+
+  # serve static files directly
+  location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
+        # Some basic cache-control for static files to be sent to the browser
+        expires max;
+        add_header Pragma public;
+        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
+  }
+
+  # include PHP5
+  location ~ \.php$ {
+        include php5_fcgi.conf;
+        # PHP Admin values
+        fastcgi_param PHP_ADMIN_VALUE "upload_tmp_dir=/var/web/lou-bot/tmp
+        include_path=.:/usr/share/php/:/usr/share/lou-bot/:/var/www/
+        safe_mode_include_dir=.:/usr/share/php/:/usr/share/lou-bot/:/var/www/
+        open_basedir=:/usr/share/php/:/var/web/lou-bot/:/usr/share/lou-bot/:/var/www/:/tmp/
+        session.save_path=/var/web/lou-bot/.session
+        #eaccelerator.cache_dir=/var/web/lou-bot/.cache
+        cgi.fix_pathinfo=0";
+        fastcgi_param ENV[LIB] "/usr/share/lou-bot/";
+  }
+
+  include drop.conf;
+}

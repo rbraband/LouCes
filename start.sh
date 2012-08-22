@@ -1,2 +1,4 @@
 #!/bin/bash
-nohup php -q bot.php > /dev/null &
+rundir=$(dirname "$(readlink -e "$0")")
+pidfile=$rundir/bot.pid
+(nohup php -q -f bot.php > /dev/null) & echo $! > $pidfile &

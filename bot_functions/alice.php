@@ -1,23 +1,45 @@
 <?php
 global $bot;
-$bot->add_category('alice', array(), PUBLICY);
+$bot->add_category('alice', array('humanice' => true), PUBLICY);
 $bot->add_allymsg_hook("Alice",                	// command key
                        "LouBot_alice",          // callback function
                        false,                 	// is a command PRE needet?
-                       "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[.!?]?)$/i",  // optional regex für key
+                       "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[ ]?[.!?]?)$/i",  // optional regex für key
 function ($bot, $data) {
+  global $redis;
   if(!$bot->is_himself($data['user'])) {
-		$request = array('botid' => ALICE_ID,
-                     'input' => urlencode($data['message']),
+    if (!$redis->status()) return $bot->add_allymsg(magic_8ball()); // fallback
+    $key = "alice:spamcheck:LouBot_alice:{$data['user']}";
+    $bot->log(REDIS_NAMESPACE."{$key} TTL: {$redis->ttl($key)}");
+    if ($redis->ttl($key) === -1) {
+      $bot->log("NoSPAM");
+      $redis->set($key, 0, ALICETTL);
+      $request = array('botid' => ALICEID,
+                       'input' => urlencode(str_replace($bot->bot_user_name , '' , $data['message'])),
                      'custid' => urlencode($data['user'])
     );
+      $anrede[] = ucfirst(strtolower($bot->get_random_nick($data['user']))) . ', ';
+      $anrede[] = '@' . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' - ';
+      shuffle($anrede);
+      $rand_key_anrede = array_rand($anrede, 1);
     $response = alice_call($request);
     if ($response) {
       $bot->log("LoU -> get response from ALICE\n\r");
       $xml = simplexml_load_string($response);
       $result = $xml->xpath('//that');
-      $bot->add_allymsg($xml->that);
-    } else $bot->add_allymsg(magic_8ball()); // fallback
+        $reply = $xml->that;
+        $reply = str_replace('<botmaster></botmaster>', BOT_OWNER, $reply);
+        $reply = str_replace('<setname></setname>', $bot->get_random_nick($data['user']), $reply);
+        $reply = str_replace('Blox', 'mir', $reply);
+        $reply = str_replace('<getname></getname>', 'weiss aber nicht was das ist', $reply);
+        //<set_thema>... <set_thema>
+        $bot->add_allymsg($anrede[$rand_key_anrede] . lcfirst($reply));
+      } else return $bot->add_allymsg($anrede[$rand_key_anrede] . lcfirst(magic_8ball())); // fallback
+    } else {
+      $incr = $redis->incr($key) * ALICETTL;
+      $redis->EXPIRE($key, $incr);
+      return false;
+    }
   }
 }, 'alice');
 
@@ -33,8 +55,8 @@ if(!function_exists('alice_call')) {
       $ch = curl_init();   
       curl_setopt($ch, CURLOPT_URL, $url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20); // Timeout if it takes too long
-      curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+      curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 100); // Timeout if it takes too long
+      curl_setopt($ch, CURLOPT_TIMEOUT, 100);
       curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
       
       $data = curl_exec($ch);       

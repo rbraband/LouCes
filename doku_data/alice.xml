@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>alice</key>
+  <title>##BOTNAME## redet mit Dir!?</title>
+  <author>BloodHeart</author>
+  <date>26.05.2012</date>
+  <version>1.0</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[Konversation mit ##BOTNAME## - ja das geht auch ;)
+
+##BOTNAME## hat auch ein [b]ALICE[/b]-Modul, welches ihm erlaubt leidlich intelligent mit euch zu reden.
+Genutzt wird eine Bot-Datenbank im AIML-Format die bei [url]http://www.pandorabots.com[/url] liegt.
+
+Es ist geplant die Logs in zeitlichen Abständen aufzuarbeiten und neue Fragen-Antworten zu integrieren, je mehr Ihr ihn fordert desto mehr wird er lernen =)
+
+Wichtig ist nur zu Wissen das ##BOTNAME## zur Zeit nur darauf reagiert wenn sein Name im Satz vorkommt!
+[quote][b]##BOTNAME##[/b] wie geht es dir?[/quote]
+[quote]Wie geht es dir [b]##BOTNAME##[/b]?[/quote]
+
+Wer mehr dazu lesen will -> [url]http://alicebot.blogspot.com/[/url]
+
+]]>
+  </entry>
+</doku>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>info</key>
+  <title>Wer oder was ist ##BOTNAME##?</title>
+  <author>BloodHeart</author>
+  <date>26.05.2012</date>
+  <version>1.1</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[Wer ist denn der ##BOTNAME##...? diese Frage kam ja schon öfters auf :)
+
+[b]##BOTNAME## ist ein Chatbot oder kurz Bot.[/b]
+Bots sind textbasierte Dialogsysteme. Sie bestehen aus einer Texteingabe- und Ausgabemaske, über die sich in natürlicher Sprache mit dem dahinterstehenden System kommunizieren lässt. Technisch sind Bots näher mit einer Volltextsuchmaschine verwandt als mit künstlicher oder gar natürlicher Intelligenz.
+
+Wer mehr dazu lesen will -> [url]http://de.wikipedia.org/wiki/Chatbot[/url]
+
+Die Idee ist schon alt und auf W1 hatte BloodHeart einen HanseBot laufen, dort hat er im IRC Channel und im LoU Chat nur die Text von A nach B geschoben. Man konnte also vom IRC aus in LoU herein tippen und umgekehrt. Das war spannend wenn es um schnelle Reaktion oder Koordination ging.
+
+Auf W4, in der Allianz [allianz]Alisus[/allianz], hat sich der Bot schnell weiterentwickelt und er wurde gut etabliert in der Allianz – er war immer für einen Spaß gut ;)
+
+Natürlich kamen auch immer mehr technische Spielereien dazu, nützlich und auch praktische. Technisch ist ##BOTNAME## in [b]PHP[/b] geschrieben und läuft auf einem externen Server als Daemon (Programm/Dienst) und nutzt eine [b]Redis[/b]-Datenbank.
+Er ist modular erweiterbar, kann Module im laufenden Betrieb neu laden und tut eigentlich nix was nicht auch ein User tun würde. Emails lesen, den Chat lesen, und ab und zu was schreiben. Dazu nutzt der ##BOTNAME## [b]cURL()[/b].
+Mit EA gibt es ein Agreement das Bots nicht bauen dürfen, das wäre für das Spiel fatal und solange ist es erlaubt ihn zu betreiben. Auch darf ein Bot nicht mehr als ein normaler USER an Traffic auf den Gameserver erzeugen. EA behält sich da ja wie bei anderen Tweaks auch vor irgendwann man STOP zu sagen aber so lange kein Kläger da ist
+
+Prinzipiell gibt es allerding kaum Hürden automatische Aktivitäten zu programmieren oder eben auf Aktionen zu reagieren. Es muss eigentlich immer nur eine nette Idee da sein oder ein Zweck und man kann das umsetzen.
+Eine grundsätzliche Aussage der Leitung ist das ##BOTNAME## bleiben darf solange er keinen Platz wegnimmt der benötigt wird und das er nicht alles zu SPAMt
+
+Wer sich also an ##BOTNAME## stört, sollte das sagen und ##BOTNAME## wird angepasst oder entfernt!
+Ich werde hier in ##BOTNAME## Welt die Dokumentation vervollständigen damit auch alle Funktionen klar sind, was nützt ein Bot der nix nütz.. *gg*
+
+Have fun [spieler]BloodHeart[/spieler]]]>
+  </entry>
+</doku>
