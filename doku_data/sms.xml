@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>sms</key>
+  <title>Piep piep... ##BOTNAME## kann SMS!?</title>
+  <author>BloodHeart</author>
+  <date>15.07.2012</date>
+  <version>1.0</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[[b]SMS[/b] ist die Funktion.
+
+Der ##BOTNAME## kann SMS verwchicken an Mitglieder die ihre Handy-Nr hinterlegt haben :)
+Eine Handy-Nr soll ... jetzt muss ich mal weiter schauen ;)
+
+
+]]>
+  </entry>
+</doku>
