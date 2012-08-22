@@ -1367,14 +1367,18 @@ class LoU implements SplSubject {
       return $note;
     }
     
-    static function analyse_server($data) {
+    private function analyse_server($data) {
 
-      $note = array('type'          => SERVER,
+      $note = array('type'          => SYSTEM,
+                    'id'            => SERVER,
                     'width'         => $data['cw'],
                     'height'        => $data['ch'],
                     'chars'         => $data['al'],
                     'name'          => $data['n'],
-                    'version'       => $data['sv']);
+                    'version'       => $data['sv'],
+                    'url'           => $this->url,
+                    'time'          => $this->time,
+                    'data'          => $data);
       return $note;
     }
     

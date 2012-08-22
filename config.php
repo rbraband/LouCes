@@ -49,6 +49,7 @@ define('LOCK_FILE', BOT_PATH.str_replace('.php', '.lock', $_SERVER['PHP_SELF']))
 define('SERVER', 'SERVER');
 define('PUBLICY', 'PUBLICY');
 define('OPERATOR', 'OPERATOR');
+define('PRIVACY', 'PRIVACY');
 define('OWNER', 'OWNER');
 define('SENDER','s');
 define('CHANNEL','c');

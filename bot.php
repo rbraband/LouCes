@@ -477,7 +477,7 @@ class LoU_Bot implements SplObserver {
     }
     
     public function add_system_hook($command, $name, $function, $category = 'system') {
-      $this->hooks[SYSTEMIN][md5($name)] = Hook::factory(trim($command),
+      $this->hooks[SYSTEM][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
@@ -538,6 +538,7 @@ class LoU_Bot implements SplObserver {
         case ALLYATT:
         case REPORTHEADER:
         case STATISTICS:
+        case SYSTEM:
           $this->debug("Fire".ucfirst(strtolower($input['type']))."Hooks ({$input['id']})");
           $hooks = @$this->hooks[$input['type']];
           if (is_array($hooks)) foreach ($hooks as $hook) {
@@ -846,10 +847,11 @@ LoU_Bot::log("Start...\r\n");
 LoU_Bot::log('Redis ('.REDIS_DB.') '.($redis && $redis->status() ? 'works well' : 'don\'t work')."\r\n");
 if ($redis) {
   if (!($redis_db_server = $redis->get("server:url"))) {
+    // first time startup, set the proper server url
     $redis_db_server = BOT_SERVER;
     $redis->set("server:url", $redis_db_server);
   } 
-  if ($redis_db_server != BOT_SERVER) die('LoU world mishmash: please change or clear REDIS db:' . REDIS_DB); 
+  if ($redis_db_server != BOT_SERVER && !$_ARG->force) die('LoU world mishmash: please change db or force it:' . REDIS_DB); 
 }
 $bot = new LoU_Bot;
 $bot->run();
