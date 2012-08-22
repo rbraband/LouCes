@@ -1,7 +1,6 @@
 <?php
 global $bot;
 $bot->add_category('digest', array(), PUBLICY);
-
 // crons
 /*
 $bot->add_cron_event(Cron::DAILY,                           // Cron key
@@ -23,12 +22,13 @@ function ($bot, $data) {
   }
 }, 'digest');
 */
-// hooks
+
+// callbacks
 $bot->add_msg_hook(array(PRIVATEIN),
                    "digest",               // command key
                    "LouBot_digest",        // callback function
                    true,                   // is a command PRE needet?
-                   '/^digest$/i',          // optional regex für key
+                   '/^digest$/i',          // optional regex for key
 function ($bot, $data) {
   global $redis, $sms;
   if (!$redis->status()) return;

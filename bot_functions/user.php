@@ -1,12 +1,14 @@
 <?php
 global $bot;
 $bot->add_category('user', array(), PUBLICY);
+// crons
 
+// callbacks
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "UV",               // command key
-                   "LouBot_uv",           // callback function
-                   false,                 // is a command PRE needet?
-                   '/^[!]?UV$/i',           // optional regex für key
+                   "LouBot_uv",        // callback function
+                   false,              // is a command PRE needet?
+                   '/^[!]?UV$/i',      // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -89,7 +91,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Alias",               // command key
                    "LouBot_alias",        // callback function
                    false,                 // is a command PRE needet?
-                   '/^[!]?Alias$/',       // optional regex für key
+                   '/^[!]?Alias$/',       // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -157,7 +159,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "DeAlias",             // command key
                    "LouBot_dealias",      // callback function
                    true,                  // is a command PRE needet?
-                   '',                     // optional regex für key
+                   '',                     // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -205,7 +207,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Seen",                 // command key
                    "LouBot_seen",          // callback function
                    true,                  // is a command PRE needet?
-                   '/^(lastseen|seen)$/i',// optional regex für key
+                   '/^(lastseen|seen)$/i',// optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -229,7 +231,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Chat",                 // command key
                    "LouBot_chat",          // callback function
                    true,                  // is a command PRE needet?
-                   '/^chat$/',             // optional regex für key
+                   '/^chat$/',             // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -250,9 +252,9 @@ function ($bot, $data) {
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "LastChat",                 // command key
-                   "LouBot_last_chat",        // callback function
+                   "LouBot_last_chat",         // callback function
                    false,                      // is a command PRE needet?
-                   '/.*/i',                   // optional regex für key
+                   '/.*/i',                    // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;

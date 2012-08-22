@@ -1,7 +1,6 @@
 <?php
 global $bot;
 $bot->add_category('statistic', array(), PUBLICY);
-
 // crons
 $bot->add_cron_event(Cron::HOURLY,                            // Cron key
                     "GetMilitaryUpdate",                      // command key
@@ -388,10 +387,10 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
 
 // callbacks
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "Stats",                  // command key
+                       "Stats",                 // command key
                        "LouBot_statistik",      // callback function
                        true,                    // is a command PRE needet?
-                       '/^(stat|stats|statistik)$/i',// optional regex für key
+                       '/^(stat|stats|statistik)$/i',// optional regex for key
 function ($bot, $data) {
   if ($bot->is_ally_user($data['user'])) {
     if (!empty($data['params'][0])) {

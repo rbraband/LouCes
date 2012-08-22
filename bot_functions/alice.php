@@ -1,10 +1,13 @@
 <?php
 global $bot;
 $bot->add_category('alice', array('humanice' => true), PUBLICY);
+// crons
+
+// callbacks
 $bot->add_allymsg_hook("Alice",                 // command key
                        "LouBot_alice",          // callback function
                        false,                   // is a command PRE needet?
-                       "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[ ]?[.!?]?)$/i",  // optional regex für key
+                       "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[ ]?[.!?]?)$/i",  // optional regex for key
 function ($bot, $data) {
   global $redis;
   if(!$bot->is_himself($data['user'])) {

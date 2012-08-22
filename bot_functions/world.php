@@ -525,10 +525,10 @@ function ($bot, $stat) {
 }, 'statistic');
 
 $bot->add_msg_hook(array(PRIVATEIN, GLOBALIN),
-                       "Stats",                  // command key
+                       "Stats",                 // command key
                        "LouBot_statistik",      // callback function
                        true,                    // is a command PRE needet?
-                       '/^(stat|stats|statistik)$/i',// optional regex für key
+                       '/^(stat|stats|statistik)$/i',// optional regex for key
 function ($bot, $data) {
     if(!$bot->is_himself($data['user'])) {
       if ($data["channel"] == GLOBALIN) {

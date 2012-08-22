@@ -2,12 +2,24 @@
 global $bot;
 $bot->add_category('games', array('humanice' => false, 'spamsafe' => true), PUBLICY);
 $bot->add_category('fast_games', array('humanice' => false, 'spamsafe' => false), PUBLICY);
-// hooks
+// crons
+$bot->add_tick_event(Cron::TICK0,                 // Cron key
+                    "ForceQuizzerCheck",          // command key
+                    "LouBot_force_quizzer_check", // callback function
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  $games_key = "games:alliance:{$bot->ally_id}";
+  $time_to_solve = time() - $redis->GET("{$games_key}:quizzer:start");
+  if ($redis->GET("{$games_key}:running") == QUIZZER && $time_to_solve >= 60) return quizzer_main4(null, null, true);
+}, 'fast_games');
+
+// callbacks
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Points",                  // command key
                        "LouBot_points",           // callback function
                        true,                      // is a command PRE needet?
-                       '/^(points|punkte)$/i',    // optional regex für key
+                       '/^(points|punkte)$/i',    // optional regex for key
 function ($bot, $data) {
   global $redis, $hwords;
   $games_key = "games:alliance:{$bot->ally_id}";
@@ -47,7 +59,7 @@ function ($bot, $data) {
 $bot->add_allymsg_hook("Slot",                      // command key
                        "LouBot_slot_maschine",      // callback function
                        true,                        // is a command PRE needet?
-                       '/^slot$/i',                  // optional regex für key
+                       '/^slot$/i',                 // optional regex for key
 function ($bot, $data) {
   global $redis;
   if(!$bot->is_himself($data['user'])) {
@@ -113,9 +125,9 @@ function ($bot, $data) {
 
 define('HANGMAN', 'HANGMAN');
 $bot->add_allymsg_hook("Hangman",                   // command key
-                       "LouBot_hangman",           // callback function
+                       "LouBot_hangman",            // callback function
                        false,                       // is a command PRE needet?
-                       '/^[!]?hangman$/i',          // optional regex für key
+                       '/^[!]?hangman$/i',          // optional regex for key
 function ($bot, $data) {
   global $redis, $hwords;
   if(!$bot->is_himself($data['user'])) {
@@ -238,7 +250,7 @@ define('QUIZZER', 'QUIZZER');
 $bot->add_allymsg_hook("Quiz",                   // command key
                        "LouBot_quiz",            // callback function
                        false,                    // is a command PRE needet?
-                       '/^[!]?(quiz|quizzer)$/i',           // optional regex für key
+                       '/^[!]?(quiz|quizzer)$/i',           // optional regex for key
 function ($bot, $data) {
   global $redis, $questions;
   if(!$bot->is_himself($data['user'])) {
@@ -384,6 +396,7 @@ if(!function_exists('quizzer_main4')) {
     return true;
   }
 }
+
 if(!function_exists('generate_regexp')) {
   function generate_regexp($text) {
     $text = (strpos($text, '#') === false) ? strtolower($text) : '(' . preg_replace('/#(.*)#/i', '$1', strtolower($text)) . '|' . preg_replace('/.*#(.*)#.*/i', '$1', strtolower($text)) . ')';
@@ -394,16 +407,5 @@ if(!function_exists('generate_regexp')) {
     return $text;
   }
 }
-
-$bot->add_tick_event(Cron::TICK0,                 // Cron key
-                    "ForceQuizzerCheck",          // command key
-                    "LouBot_force_quizzer_check", // callback function
-function ($bot, $data) {
-  global $redis;
-  if (!$redis->status()) return;
-  $games_key = "games:alliance:{$bot->ally_id}";
-  $time_to_solve = time() - $redis->GET("{$games_key}:quizzer:start");
-  if ($redis->GET("{$games_key}:running") == QUIZZER && $time_to_solve >= 60) return quizzer_main4(null, null, true);
-}, 'fast_games');
 
 ?>

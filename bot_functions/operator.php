@@ -1,10 +1,13 @@
 <?php
 global $bot;
 $bot->add_category('operator', array(), OPERATOR);
+// crons
+
+// callbacks
 $bot->add_privmsg_hook("ReloadHooks",           // command key
                        "LouBot_reload_hooks",   // callback function
                        true,                    // is a command PRE needet?
-                       '',                      // optional regex für key
+                       '',                      // optional regex for key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     if ($bot->reload()) $bot->add_privmsg("Funktionen neu geladen!", $data['user']);
@@ -13,8 +16,8 @@ function ($bot, $data) {
 
 $bot->add_privmsg_hook("Say",                  // command key
                        "LouBot_say",           // callback function
-                       true,                  // is a command PRE needet?
-                       '/^say$/i',            // optional regex für key
+                       true,                   // is a command PRE needet?
+                       '/^say$/i',             // optional regex for key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->add_allymsg(implode(' ', $data['params']));
@@ -25,7 +28,7 @@ function ($bot, $data) {
 $bot->add_privmsg_hook("Offizier",         // command key
                        "LouBot_happy_offi",// callback function
                        true,               // is a command PRE needet?
-                       '/^(offizier|offi|nadel)$/i',      // optional regex für key
+                       '/^(offizier|offi|nadel)$/i',      // optional regex for key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
@@ -37,7 +40,7 @@ function ($bot, $data) {
 $bot->add_privmsg_hook("Ping",                  // command key
                        "LouBot_ping_pong",      // callback function
                        false,                   // is a command PRE needet?
-                       '/^[!]?(Ping|Pong)$/',        // optional regex für key
+                       '/^[!]?(Ping|Pong)$/',        // optional regex for key
 function ($bot, $data) {
   if($bot->is_himself($data['user'])) {
     if ($data['message'] == 'Ping') $bot->add_privmsg("Pong", $bot->bot_user_name);
@@ -50,7 +53,7 @@ function ($bot, $data) {
 $bot->add_privmsg_hook("OC",                  // command key
                        "LouBot_ochat",        // callback function
                        true,                  // is a command PRE needet?
-                       '',                    // optional regex für key
+                       '',                    // optional regex for key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->add_globlmsg(implode(' ', $data['params']));
@@ -60,8 +63,8 @@ function ($bot, $data) {
 
 $bot->add_privmsg_hook("ReloadPhrases",         // command key
                        "LouBot_reload_phrases", // callback function
-                       true,                     // is a command PRE needet?
-                       '',                       // optional regex für key
+                       true,                    // is a command PRE needet?
+                       '',                      // optional regex for key
 function ($bot, $data) {
   global $phrases;
   if($bot->is_op_user($data['user'])) {
@@ -72,8 +75,8 @@ function ($bot, $data) {
 
 $bot->add_privmsg_hook("RedisTest",             // command key
                        "LouBot_redis_test",     // callback function
-                       true,                     // is a command PRE needet?
-                       '',                       // optional regex für key
+                       true,                    // is a command PRE needet?
+                       '',                      // optional regex for key
 function ($bot, $data) {
   global $redis;
   if($bot->is_op_user($data['user'])) {
@@ -85,7 +88,7 @@ function ($bot, $data) {
 }, 'operator');
 
 $bot->add_tick_event(Cron::TICK15,                         // Cron key
-                    "DoRedisTest",                        // command key
+                    "DoRedisTest",                         // command key
                     "LouBot_redis_test_cron",              // callback function
 function ($bot, $data) {
   global $redis;
@@ -106,7 +109,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "SetUserAlias",          // command key
                    "LouBot_set_user_alias", // callback function
                    true,                    // is a command PRE needet?
-                   '',                       // optional regex für key
+                   '',                      // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -163,7 +166,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "DelUserAlias",            // command key
                    "LouBot_del_user_alias",   // callback function
                    true,                      // is a command PRE needet?
-                   '',                         // optional regex für key
+                   '',                        // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;

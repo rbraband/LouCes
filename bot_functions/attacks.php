@@ -1,7 +1,15 @@
 <?php
 global $bot;
 $bot->add_category('attacks', array(), PUBLICY);
+// crons
+$bot->add_tick_event(Cron::TICK1,                         // Cron key
+                    "GetAllyAtts",                        // command key
+                    "LouBot_alliance_atts_cron",          // callback function
+function ($bot, $data) {
+  $bot->lou->get_alliance_atts();
+}, 'attacks');
 
+// callbacks
 $bot->add_attack_hook("UpdateAttacks",                       // command key
                       "LouBot_alliance_attacks_update",      // callback function
 function ($bot, $attacks) {
@@ -41,10 +49,4 @@ function ($bot, $attacks) {
   }
 }, 'attacks');
 
-$bot->add_tick_event(Cron::TICK1,                           // Cron key
-                    "GetAllyAtts",                        // command key
-                    "LouBot_alliance_atts_cron",          // callback function
-function ($bot, $data) {
-  $bot->lou->get_alliance_atts();
-}, 'attacks');
 ?>

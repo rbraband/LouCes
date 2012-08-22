@@ -1,7 +1,6 @@
 <?php
 global $bot;
 $bot->add_category('black', array(), PUBLICY);
-
 // crons
 
 $bot->add_cron_event(Cron::HOURLY,                     // Cron key
@@ -320,4 +319,6 @@ $post_inactive_footer = '
     $redis->DEL("{$black_key}:{$alliance_key}:forum:id");
   }
 }, 'black');
+
+// callbacks
 ?>

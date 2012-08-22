@@ -1,9 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('settlers', array(), PUBLICY);
-
 // crons
-/* der LL läuft bei LouCes 
 $bot->add_cron_event(Cron::DAILY,                           // Cron key
                     "DeleteSettlerLawless",                 // command key
                     "LouBot_delete_settler_lawless_cron",   // callback function
@@ -17,7 +15,7 @@ function ($bot, $data) {
     $redis->DEL("{$settler_key}:{$continent_key}:lawless");
   }
 }, 'settlers');
-*/
+
 $bot->add_cron_event(Cron::TICK5,                                    // Cron key
                     "GetSettlersUpdate",                             // command key
                     "LouBot_settlers_continent_player_update_cron",  // callback function
@@ -278,12 +276,12 @@ $post_settlers_footer = '
   }
 }, 'settlers');
 
-// hooks
+// callbacks
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Siedeln",               // command key
                    "LouBot_settler",        // callback function
                    false,                   // is a command PRE needet?
-                   '/^[!]?(si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex für key
+                   '/^[!]?(si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
 function ($bot, $data) {
   global $redis, $sms;
   if (!$redis->status()) return;
@@ -432,7 +430,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "AddLawless",          // command key
                        "LouBot_add_lawless",  // callback function
                        true,                  // is a command PRE needet?
-                       '',                    // optional regex für key
+                       '',                    // optional regex for key
 function ($bot, $data) {
   global $redis;
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {

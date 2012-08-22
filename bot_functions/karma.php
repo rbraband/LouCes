@@ -1,12 +1,14 @@
 <?php
 global $bot;
 $bot->add_category('karma', array(), PUBLICY);
+// crons
 
+// callbacks
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Karma",               // command key
                    "LouBot_karma",        // callback function
                    true,                  // is a command PRE needet?
-                   '/^karma$/i',           // optional regex für key
+                   '/^karma$/i',          // optional regex for key
 function ($bot, $data) {
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $nick = (!empty($data['params'][0]) && $bot->is_ally_user($data['params'][0])) ? $data['params'][0] : $data['user'];

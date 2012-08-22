@@ -1,9 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('doku', array(), PUBLICY);
-
 // crons
-
 $bot->add_cron_event(Cron::HOURLY,                    // Cron key
                     "GetDokuUpdate",                  // command key
                     "LouBot_doku_update_cron",        // callback function
@@ -77,10 +75,12 @@ function ($bot, $data) {
   } else $bot->log("Doku error: no forum '{$doku_name}'");
 }, 'doku');
 
+
+//callbacks
 $bot->add_privmsg_hook("ReloadDoku",           // command key
                        "LouBot_reload_doku",   // callback function
                        true,                   // is a command PRE needet?
-                       '',                     // optional regex für key
+                       '',                     // optional regex for key
 function ($bot, $data) {
   global $redis;
   if($bot->is_op_user($data['user'])) {

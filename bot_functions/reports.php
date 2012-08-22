@@ -1,7 +1,9 @@
 <?php
 global $bot;
 $bot->add_category('reports', array(), PUBLICY);
+// crons
 
+// callbacks
 $bot->add_reportheader_hook("UpdateReportHeader",                        // command key
                             "LouBot_alliance_report_header_update",      // callback function
 function ($bot, $reports) {
@@ -349,9 +351,9 @@ $post_update = "[u]Legende[/u]:
 
 // test get report
 $bot->add_privmsg_hook("ReportTest",          // command key
-                       "LouBot_report_test",   // callback function
+                       "LouBot_report_test",  // callback function
                        true,                  // is a command PRE needet?
-                       '',                    // optional regex für key
+                       '',                    // optional regex for key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->lou->get_report($data['params'][0]);

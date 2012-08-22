@@ -1,7 +1,9 @@
 <?php
 global $bot;
 $bot->add_category('alliance', array(), PUBLICY);
+// crons
 
+// callbacks
 $bot->add_alliance_hook("Update",                        // command key
                         "LouBot_alliance_update",        // callback function
 function ($bot, $data) {
@@ -93,7 +95,7 @@ function ($bot, $data) {
   $bot->log("Set AllianceShort: " . $bot->ally_shortname);
 }, 'alliance');
 
-$bot->add_tick_event(Cron::TICK5,                           // Cron key
+$bot->add_tick_event(Cron::TICK5,                         // Cron key
                     "GetAllyUpdate",                      // command key
                     "LouBot_alliance_update_cron",        // callback function
 function ($bot, $data) {
