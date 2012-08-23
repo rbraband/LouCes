@@ -523,21 +523,4 @@ function ($bot, $stat) {
     }
   }
 }, 'statistic');
-
-$bot->add_msg_hook(array(PRIVATEIN, GLOBALIN),
-                       "Stats",                 // command key
-                       "LouBot_statistik",      // callback function
-                       true,                    // is a command PRE needet?
-                       '/^(stat|stats|statistik)$/i',// optional regex for key
-function ($bot, $data) {
-    if(!$bot->is_himself($data['user'])) {
-      if ($data["channel"] == GLOBALIN) {
-        $bot->add_privmsg("Für die Statistik bitte anflüstern!", $data['user']);
-      } else {
-        $hash = $bot->set_user_hash($data['user']);   
-        $message = "[url]".STATS_URL."/stats.php?uid={$hash}[/url]";
-        $bot->add_privmsg($message, $data['user']);
-      }
-    }
-}, 'statistic');
 ?>

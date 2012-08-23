@@ -19,7 +19,7 @@
                   'Welt 14' => array('name' => 'W14', 'start' => 1342771200)
   );
 
-  if (!($server_world])) die('no world selected!');
+  if (!$server_world) die('no world selected!');
   $world = $worlds[$server_world]['name'];
   $wstart = $worlds[$server_world]['start'];
   

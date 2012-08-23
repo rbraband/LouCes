@@ -395,10 +395,10 @@ function ($bot, $data) {
   if ($bot->is_ally_user($data['user'])) {
     if (!empty($data['params'][0])) {
       $nick = $bot->get_nick($data['params'][0]);
-      if ($nick) $message = "[url]".STATS_URL."/spieler.php?name={$nick}[/url]";
+      if ($nick) $message = "[url]".STATS_URL."/player.php?name={$nick}[/url]";
       else $message = "[i]{$data['params'][0]}[/i] kenn ich nicht!";
     }
-    else $message = "[url]".STATS_URL."/spieler.php?name={$data['user']}[/url]";
+    else $message = "[url]".STATS_URL."/player.php?name={$data['user']}[/url]";
     if ($data["channel"] == ALLYIN) {
       $bot->add_allymsg($message);
     } else {
