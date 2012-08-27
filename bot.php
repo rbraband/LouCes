@@ -25,7 +25,7 @@ include_once('sms.php');
 include_once('fork.php');
 
 /**
- * Klasse, welche ¸berpr¸ft, ob noch eine andere Instanz des Bot l‰uft
+ * Klasse, welche √ºberpr√ºft, ob noch eine andere Instanz des Bot l√§uft
  */
 class LockManager {
   private $fh;
@@ -34,7 +34,7 @@ class LockManager {
    * Konstruktor
    * 
    * @param string $filename Dateiname, der als Pseudo-Lock-File benutzt werden soll
-   * @throws LockManagerRunningException, wenn bereits eine Instanz l‰uft
+   * @throws LockManagerRunningException, wenn bereits eine Instanz l√§uft
    */
   public function __construct($filename) {
     $this->fn = $filename;
@@ -59,7 +59,7 @@ class LockManager {
 }
  
 /**
- * Exception, die geworfen wird, wenn bereits eine Instanz l‰uft
+ * Exception, die geworfen wird, wenn bereits eine Instanz l√§uft
  */
 class LockManagerRunningException extends Exception {
   function __construct($strMessage, $code = 0){
@@ -327,7 +327,7 @@ class LoU_Bot implements SplObserver {
       try {
         $this->lock = new LockManager(LOCK_FILE);
       } catch (LockManagerRunningException $e) {
-        die("Bot l‰uft bereits...\n");
+        die("Bot l√§uft bereits...\n");
       }
     }
     
