@@ -142,10 +142,13 @@ $bot->add_allymsg_hook("Hello",                  // command key
                        false,                    // is a command PRE needet?
                        "/^(hi|hallo|hello|moin|tach|tachen|nabend|abend|huhu)[,]? ({$bot->ally_name}|{$bot->ally_shortname})$/i", // optional regex for key
 function ($bot, $data) {
-  $text[] = 'Hi ';
-  $text[] = 'Hallo ';
-  $text[] = 'Moin Moin ';
+  $text_i18n['de'][] = 'Hi ';
+  $text_i18n['de'][] = 'Hallo ';
+  $text_i18n['de'][] = 'Moin Moin ';
+  
   $nick = $data['params'][0];
+  $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
   shuffle($text);
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user']))
@@ -157,11 +160,14 @@ $bot->add_allymsg_hook("ByeBye",                 // command key
                        false,                    // is a command PRE needet?
                        "/^(bb|bye|byebye|goodbye|tschüss|tschau|n8|n8ti|gn8|n8t)[,]? ({$bot->ally_name}|{$bot->ally_shortname})+$/i", // optional regex for key
 function ($bot, $data) {
-  $text[] = 'bb ';
-  $text[] = 'tschau ';
-  $text[] = 'n8ti ';
-  $text[] = 'n8 ';
+  $text_i18n['de'][] = 'bb ';
+  $text_i18n['de'][] = 'tschau ';
+  $text_i18n['de'][] = 'n8ti ';
+  $text_i18n['de'][] = 'n8 ';
+  
   $nick = $data['params'][0];
+  $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
   shuffle($text);
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user']))
@@ -203,8 +209,10 @@ $bot->add_allymsg_hook("Puschel",                // command key
                        '/(puschel|tütü)/i',      // optional regex for key
 function ($bot, $data) {
   if(!$bot->is_himself($data['user'])) {
-    $text[] = 'Gerade Schoberl geschenkt *gg*';
-    $text[] = 'Ein Tütü für Schoberl? Bitte sehr *Tütügeb*';
+    $text_i18n['de'][] = 'Gerade Schoberl geschenkt *gg*';
+    $text_i18n['de'][] = 'Ein Tütü für Schoberl? Bitte sehr *Tütügeb*';
+    $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
     shuffle($text);
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
@@ -217,19 +225,21 @@ $bot->add_allymsg_hook("Schugar",                // command key
                        '/(sugar|schugar|honey|hony)/i',    // optional regex for key
 function ($bot, $data) {
   if(!$bot->is_himself($data['user'])) {
-    $text[] = 'Sugar, ahhh';
-    $text[] = 'honey honey';
-    $text[] = 'you are my candy girl *gg*';
-    $text[] = '... and you got me wanting you';
-    $text[] = 'I just can\'t believe the loveliness of loving you';
-    $text[] = 'i just cant believe its true';
-    $text[] = 'I just can believe the wonder of this feeling too';
-    $text[] = 'When i kissed you girl i knew how sweet a kiss could be';
-    $text[] = 'Like the summer sunshine pour your sweetness over me';
-    $text[] = 'ohh,pour your sugar on me honey';
-    $text[] = 'pour your sugar on me baby';
-    $text[] = 'Im gonna make your life so sweet';
+    $text_i18n['de'][] = 'Sugar, ahhh';
+    $text_i18n['de'][] = 'honey honey';
+    $text_i18n['de'][] = 'you are my candy girl *gg*';
+    $text_i18n['de'][] = '... and you got me wanting you';
+    $text_i18n['de'][] = 'I just can\'t believe the loveliness of loving you';
+    $text_i18n['de'][] = 'i just cant believe its true';
+    $text_i18n['de'][] = 'I just can believe the wonder of this feeling too';
+    $text_i18n['de'][] = 'When i kissed you girl i knew how sweet a kiss could be';
+    $text_i18n['de'][] = 'Like the summer sunshine pour your sweetness over me';
+    $text_i18n['de'][] = 'ohh,pour your sugar on me honey';
+    $text_i18n['de'][] = 'pour your sugar on me baby';
+    $text_i18n['de'][] = 'Im gonna make your life so sweet';
 
+    $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
     shuffle($text);
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
@@ -245,13 +255,15 @@ function ($bot, $data) {
   if (!$redis->status()) return;
   $redis->setnx('toys:utr', 0);
   if (!$bot->is_himself($data['user'])) {
-    $text[] = 'Steinigt sie!';
-    $text[] = 'Unter jedem Stein und jedem Gebüsch steckt ein Feind, [i]husch husch[/i]!';
-    $text[] = 'Nieder mit dem Pöbel..';
-    $text[] = 'Sollen wir sie wieder zu Poden Chleudern?';
-    $text[] = 'Jeder nur ein Schwert... und dann feste druff *gg*';
-    $text[] = 'Schmeisst diese pösen Purschen zu Poden!';
-    $text[] = $bot->get_random_nick($data['user']) . " hat {$data['command']} gesagt";
+    $text_i18n['de'][] = 'Steinigt sie!';
+    $text_i18n['de'][] = 'Unter jedem Stein und jedem Gebüsch steckt ein Feind, [i]husch husch[/i]!';
+    $text_i18n['de'][] = 'Nieder mit dem Pöbel..';
+    $text_i18n['de'][] = 'Sollen wir sie wieder zu Poden Chleudern?';
+    $text_i18n['de'][] = 'Jeder nur ein Schwert... und dann feste druff *gg*';
+    $text_i18n['de'][] = 'Schmeisst diese pösen Purschen zu Poden!';
+    $text_i18n['de'][] = $bot->get_random_nick($data['user']) . " hat {$data['command']} gesagt";
+    $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
     shuffle($text);
     $rand_key = array_rand($text, 1);
     if($data['params'][0] && preg_match('/^(preis|preise|gewinn|gewinne|gewinner)$/i', $data['params'][0])) {
@@ -310,12 +322,14 @@ function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
   $redis->setnx('toys:krieg', 0);
-  $text[] = 'Nieder mit dem Pöbel!!!';
-  $text[] = 'Wir sind Vandalen... kein Zurück!';
-  $text[] = 'Jeder nur ein Kreuz!';
-  $text[] = 'Ist hier Weibsvolk anwesend?';
-  $text[] = 'Also gut, ich bin der Messias... und jetzt... ANGRIFF!';
-  $text[] = 'Nein, nein, ich hab euch verulkt. In Wirklichkeit ist es eine Kreuzigung.';
+  $text_i18n['de'][] = 'Nieder mit dem Pöbel!!!';
+  $text_i18n['de'][] = 'Wir sind Vandalen... kein Zurück!';
+  $text_i18n['de'][] = 'Jeder nur ein Kreuz!';
+  $text_i18n['de'][] = 'Ist hier Weibsvolk anwesend?';
+  $text_i18n['de'][] = 'Also gut, ich bin der Messias... und jetzt... ANGRIFF!';
+  $text_i18n['de'][] = 'Nein, nein, ich hab euch verulkt. In Wirklichkeit ist es eine Kreuzigung.';
+  $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
   shuffle($text);
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user'])) {
@@ -373,20 +387,22 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        true,                    // is a command PRE needet?
                        '/^slap[s]?$/i',         // optional regex for key
 function ($bot, $data) {
-  $text[] = 'mit Erfahrung!';
-  $text[] = 'mit seinem Witz!';
-  $text[] = 'mit seiner Sammlung Abziehbilder!';
-  $text[] = 'beim schummeln ;)';
-  $text[] = 'mit einer Bratpfanne *zonk*';
-  $text[] = 'mit ner dreischwänzigen Katze *huh*';
-  $text[] = 'auf jede Art.';
-  $text[] = 'beim weit pi*****';
-  $text[] = 'im nächsten Leben :/';
-  $text[] = 'an Unerfahrung ;)';
-  $text[] = 'an Überheblichkeit.';
-  $text[] = 'mit Weitsicht.';
-  $text[] = 'mit ner Forelle *Yihaa*';
-  $text[] = 'im Leben... nicht :/';
+  $text_i18n['de'][] = 'mit Erfahrung!';
+  $text_i18n['de'][] = 'mit seinem Witz!';
+  $text_i18n['de'][] = 'mit seiner Sammlung Abziehbilder!';
+  $text_i18n['de'][] = 'beim schummeln ;)';
+  $text_i18n['de'][] = 'mit einer Bratpfanne *zonk*';
+  $text_i18n['de'][] = 'mit ner dreischwänzigen Katze *huh*';
+  $text_i18n['de'][] = 'auf jede Art.';
+  $text_i18n['de'][] = 'beim weit pi*****';
+  $text_i18n['de'][] = 'im nächsten Leben :/';
+  $text_i18n['de'][] = 'an Unerfahrung ;)';
+  $text_i18n['de'][] = 'an Überheblichkeit.';
+  $text_i18n['de'][] = 'mit Weitsicht.';
+  $text_i18n['de'][] = 'mit ner Forelle *Yihaa*';
+  $text_i18n['de'][] = 'im Leben... nicht :/';
+  $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
   shuffle($text);
   $rand_key = array_rand($text, 1);
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
@@ -401,11 +417,13 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        false,                    // is a command PRE needet?
                        "/^(thx|danke|ty)[,]? {$bot->bot_user_name}$/i", // optional regex for key
 function ($bot, $data) {
-  $text[] = 'NoP ';
-  $text[] = '^^ immer wieder gerne ';
-  $text[] = 'Gerne ';
-  $text[] = 'Wie du mir so ich dir ';
-  $text[] = '[i]Return of invenst[/i] ';
+  $text_i18n['de'][] = 'NoP ';
+  $text_i18n['de'][] = '^^ immer wieder gerne ';
+  $text_i18n['de'][] = 'Gerne ';
+  $text_i18n['de'][] = 'Wie du mir so ich dir ';
+  $text_i18n['de'][] = '[i]Return of invenst[/i] ';
+  $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
   shuffle($text);
   $rand_key = array_rand($text, 1);
   $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
@@ -447,10 +465,12 @@ $bot->add_allymsg_hook("AfKippe",                  // command key
                        '/^af[k]{1,2}i[p]{1,2}e[,]?$/i',             // optional regex for key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user'])) {
-    $text[] = 'Schäuble freut sich :)';
-    $text[] = 'Ich komm mit...';
-    $text[] = '*hüstel... kiffen?';
-    $text[] = 'guten Zug ' . ucfirst(strtolower($bot->get_random_nick($data['user'])));
+    $text_i18n['de'][] = 'Schäuble freut sich :)';
+    $text_i18n['de'][] = 'Ich komm mit...';
+    $text_i18n['de'][] = '*hüstel... kiffen?';
+    $text_i18n['de'][] = 'guten Zug ' . ucfirst(strtolower($bot->get_random_nick($data['user'])));
+    $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
     shuffle($text);
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
@@ -463,10 +483,12 @@ $bot->add_allymsg_hook("AfKaffee",                  // command key
                        '/^af[k]{1,2}a[f]{1,2}[e]{1,2}[,]?$/i',             // optional regex for key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user'])) {
-    $text[] = 'Jakobs freut sich :)';
-    $text[] = 'Ich komm mit...';
-    $text[] = 'Kaffee ist nur schädlich, wenn dir ein ganzer Sack aus dem fünften Stock auf den Kopf fällt. Albert Darboven (*1936)';
-    $text[] = 'Coffeinkick für ' . ucfirst(strtolower($bot->get_random_nick($data['user'])));
+    $text_i18n['de'][] = 'Jakobs freut sich :)';
+    $text_i18n['de'][] = 'Ich komm mit...';
+    $text_i18n['de'][] = 'Kaffee ist nur schädlich, wenn dir ein ganzer Sack aus dem fünften Stock auf den Kopf fällt. Albert Darboven (*1936)';
+    $text_i18n['de'][] = 'Coffeinkick für ' . ucfirst(strtolower($bot->get_random_nick($data['user'])));
+    $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
     shuffle($text);
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
@@ -565,18 +587,18 @@ if(!function_exists('slogan_call')) {
 if(!function_exists('magic_slogan')) {
   function magic_slogan() {
     // de
-    $text_de[] = 'Lord of Ultima bleibt Lord of Ultima: Doch Alsius hilft!';
-    $text_de[] = 'Der Lord of Ultimae Bürger will Alsius. Warum wohl?';
-    $text_de[] = 'Besser nix sagen *hmpf*';
-    $text_de[] = 'Alse mit Alsius - LoU werden mit Stil.';
-    $text_de[] = 'Alsius - Für den anspruchsvollen Herren: Alse damit es knackt!';
-    $text_de[] = 'Spaß mit Alsius, gelassen und LoU!';
-    $text_de[] = 'Komfort kennt keine Grenzen - Alse mit Alsius!';
-    $text_de[] = '2011! Das Jahr des Aufstiegs von Alsius.';
-    $text_de[] = 'Dir antworte ich nicht!';
-    $text_de[] = 'Sorry, jetzt muss ich gerade was anderes tun...';
+    $text_i18n['de'][] = 'Lord of Ultima bleibt Lord of Ultima: Doch Alsius hilft!';
+    $text_i18n['de'][] = 'Der Lord of Ultimae Bürger will Alsius. Warum wohl?';
+    $text_i18n['de'][] = 'Besser nix sagen *hmpf*';
+    $text_i18n['de'][] = 'Alse mit Alsius - LoU werden mit Stil.';
+    $text_i18n['de'][] = 'Alsius - Für den anspruchsvollen Herren: Alse damit es knackt!';
+    $text_i18n['de'][] = 'Spaß mit Alsius, gelassen und LoU!';
+    $text_i18n['de'][] = 'Komfort kennt keine Grenzen - Alse mit Alsius!';
+    $text_i18n['de'][] = '2011! Das Jahr des Aufstiegs von Alsius.';
+    $text_i18n['de'][] = 'Dir antworte ich nicht!';
+    $text_i18n['de'][] = 'Sorry, jetzt muss ich gerade was anderes tun...';
+    $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
     
-    $text = (!empty($text_{BOT_LANG})) ? $text_{BOT_LANG} : $text_en;
     shuffle($text);
     $rand_key = array_rand($text, 1);
     return $text[$rand_key];
@@ -590,10 +612,12 @@ $bot->add_allymsg_hook("lol", // command key
   function ($bot, $data) {
     if(!$bot->is_himself($data['user'])) {
       $nick = $data['user'];
-      $text[] = 'hihihi';
-      $text[] = 'rofl!';
-      $text[] = "omg {$nick} hat lol gesagt";
-      $test[] = 'LOL!';
+      $text_i18n['de'][] = 'hihihi';
+      $text_i18n['de'][] = 'rofl!';
+      $text_i18n['de'][] = "omg {$nick} hat lol gesagt";
+      $text_i18n['de'][] = 'LOL!';
+      $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+      
       shuffle($text);
       $rand_key = array_rand($text, 1);
       $bot->add_allymsg($text[$rand_key]);
@@ -607,10 +631,12 @@ $bot->add_allymsg_hook("liebe", // command key
   function ($bot, $data) {
     if(!$bot->is_himself($data['user'])) {
       $nick = $data['user'];
-      $text[] = 'liebe liegt in der Luft!';
-      $text[] = "ich mag dich {$nick}";
-      $text[] = 'isch liebe den Duft von anstürmenden Berserkern um 10:01!';
-      $text[] = 'ich bin immer lieb!';
+      $text_i18n['de'][] = 'liebe liegt in der Luft!';
+      $text_i18n['de'][] = "ich mag dich {$nick}";
+      $text_i18n['de'][] = 'isch liebe den Duft von anstürmenden Berserkern um 10:01!';
+      $text_i18n['de'][] = 'ich bin immer lieb!';
+      $text = (!empty($text_i18n[BOT_LANG])) ? $text_i18n[BOT_LANG] : $text_i18n['de'];
+    
       shuffle($text);
       $rand_key = array_rand($text, 1);
       $bot->add_allymsg($text[$rand_key]);
