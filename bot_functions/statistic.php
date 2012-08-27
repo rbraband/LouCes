@@ -65,29 +65,26 @@ function ($bot, $data) {
             $post_chunks = array();
             if ($thread_id) {
             #if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
-            
-              // ** residents
-              $residents = $redis->SMEMBERS("{$settler_key}:{$alliance_key}:{$continent_key}:residents");
               // ** military top ten offence
               $offence = $redis->HGETALL("{$continent_key}:offence");
               $cities = $redis->SMEMBERS("{$continent_key}:cities");
               if (is_array($cities)) foreach($cities as $city) {
                 $_city = $redis->HGETALL('city:'.$redis->HGET('cities', $city).':data');
-                if ($_city['state'] == 0) {
+                if ($_city['state'] == CITY_STATE) {
                   $pcities[$_city['alliance_id']]++;
                   $ally_cities_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                 }
-                elseif ($_city['state'] == 1) {
-                  if ($_city['water'] == 1) $wcastles[$_city['alliance_id']]++;
+                elseif ($_city['state'] == CASTLE_STATE) {
+                  if ($_city['water'] == WATER_STATE) $wcastles[$_city['alliance_id']]++;
                   else $castles[$_city['alliance_id']]++;
-                  if ($_city['water'] == 1 && empty($ally_wcastle_user[$_city['alliance_id']][$_city['user_id']])) {
+                  if ($_city['water'] == WATER_STATE && empty($ally_wcastle_user[$_city['alliance_id']][$_city['user_id']])) {
                     $ally_wcastle_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                   }
-                  else if ($_city['water'] == 0 && empty($ally_castle_user[$_city['alliance_id']][$_city['user_id']])) {
+                  else if ($_city['water'] != WATER_STATE && empty($ally_castle_user[$_city['alliance_id']][$_city['user_id']])) {
                     $ally_castle_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                   }
                 }
-                elseif ($_city['state'] == 2) {
+                elseif ($_city['state'] == PALACE_STATE) {
                   $palasts[$_city['alliance_id']]++;
                   if (empty($ally_palast_user[$_city['alliance_id']][$_city['user_id']])) {
                     $ally_palast_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
@@ -104,22 +101,6 @@ function ($bot, $data) {
                 $alliance[$k] = array($k,$val[0],$val[1]);
               }
               $sum_ts_string = preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/", ".", $sum_ts);
-              /*
-              $one_point = $sum_ts / 100;
-              $st = array_flip($ts);
-              krsort($st);
-              $output = array_slice($st, 0, 10);
-              if (is_array($output)) foreach($output as $i) {
-                $item = $alliance[$i];
-                $tsstring = preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/", ".", $item[1]);
-                $percent = round($item[1]/$one_point, 2);
-                $ally_name = $redis->HGET("alliance:{$item[0]}:data", 'name');
-                $ally_castles = ($castles[$item[0]]) ? $castles[$item[0]] : 0;
-                $ally_palasts = ($palasts[$item[0]]) ? $palasts[$item[0]] : 0;
-                $ally_name = (!$ally_name) ? 'Anonym' : "[allianz]{$ally_name}[/allianz]";
-                $off_entrys[] = str_pad("*",ceil($percent),"|") . "
- ⇒ {$percent}% [i]{$ally_name}[/i] ({$item[2]} Off-Spieler, [b]{$tsstring}[/b] TS, {$ally_castles} Burgen, {$ally_palasts} Palaste)";
-              }*/
                            
               // ** Ally Castles
               // ** create and/or edit
@@ -166,21 +147,6 @@ $post_topten = "[b][u]Top Off-TS auf dem Kontinent:[/u] {$thread_name} ({$sum_ts
                 $sum_ts += $val[0];
               }
               $sum_ts_string = preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/", ".", $sum_ts);
-              /*
-              $st = array_flip($ts);
-              krsort($st);
-              $output = array_slice($st, 0, 10);
-              $one_point = $sum_ts / 100;
-              if (is_array($output)) foreach($output as $i) {
-                $item = $alliance[$i];
-                $tsstring = preg_replace("/(?<=\d)(?=(\d{3})+(?!\d))/", ".", $item[1]);
-                $percent = round($item[1]/$one_point, 2);
-                $ally_name = $redis->HGET("alliance:{$item[0]}:data", 'name');
-                $ally_name = (!$ally_name) ? 'Anonym' : "[allianz]{$ally_name}[/allianz]";
-                $ally_cities = ($pcities[$item[0]]) ? $pcities[$item[0]] : 0;
-                $deff_entrys[] = str_pad("*",ceil($percent),"|") . "
- ⇒ {$percent}% [i]{$ally_name}[/i] ({$item[2]} Deff-Spieler, [b]{$tsstring}[/b] TS, {$ally_cities} Städte)";
-              }*/
               
               // ** create and/or edit
               // new seond post = defence
@@ -212,28 +178,6 @@ $post_topten_deff = "[b][u]Top Deff-TS auf dem Kontinent:[/u] {$thread_name} ({$
                   $post_residents[$i + 1] = $post_residents[$i] . $post_residents[$i + 1];
                 }
               }
-              /*
-              if (strlen($post_residents[0]) > $military_chars || strlen($post_residents[0] . $post_residents[1]) > $military_chars) {
-                $post[$_post_id] = $post_residents[0];
-                $_post_id++;
-              } else {
-                $post_residents[1] = $post_residents[0] . $post_residents[1];
-              } 
-              if (strlen($post_residents[1]) > $military_chars || strlen($post_residents[1] . $post_residents[2]) > $military_chars) {
-                $post[$_post_id] = $post_residents[1];
-                $_post_id++;
-              } else {
-                $post_residents[2] = $post_residents[1] . $post_residents[2];
-              }
-              if (strlen($post_residents[2]) > $military_chars || strlen($post_residents[2] . $post_residents[3]) > $military_chars) {
-                $post[$_post_id] = $post_residents[2];
-                $_post_id++;
-              } else {
-                $post_residents[3] = $post_residents[2] . $post_residents[3];
-              }
-              $post[$_post_id] = $post_residents[3];
-              $_post_id++;
-              */
               
               $post[$_post_id] = $post_topten;
               $_post_id++;
@@ -264,7 +208,7 @@ $post_ally[3] = "
 Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
 ".((!empty($ally_cities_user[$_ally]) && $ally_name != 'ohne Allianz') ? "[spieler]".implode('[/spieler]; [spieler]', array_values($ally_cities_user[$_ally]))."[/spieler]" : (($ally_name != 'ohne Allianz') ? "[i]keine Spieler[/i]" : "[i]ohne Auswertung[/i]"))."
 ";
-                $_post_id++;
+                  $_post_id++;
                 for($i = 0, $size = count($post_ally); $i < $size; ++$i) {
                   if (strlen($post_ally[$i]) > $military_chars || empty($post_ally[$i + 1]) || strlen($post_ally[$i] . $post_ally[$i + 1]) > $military_chars) {
                     if (strlen($post_ally[$i]) > $military_chars) {
@@ -281,29 +225,6 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
                     $post_ally[$i + 1] = $post_ally[$i] . $post_ally[$i + 1];
                   }
                 }
-                
-                /*
-                if (strlen($post_ally[0]) > $military_chars || strlen($post_ally[0] . $post_ally[1]) > $military_chars) {
-                  $_post_id++;
-                  $post[$_post_id] = $post_ally[0];
-                } else {
-                  $post_ally[1] = $post_ally[0] . $post_ally[1];
-                } 
-                if (strlen($post_ally[1]) > $military_chars || strlen($post_ally[1] . $post_ally[2]) > $military_chars) {
-                  $_post_id++;
-                  $post[$_post_id] = $post_ally[1];
-                } else {
-                  $post_ally[2] = $post_ally[1] . $post_ally[2];
-                }
-                if (strlen($post_ally[2]) > $military_chars || strlen($post_ally[2] . $post_ally[3]) > $military_chars) {
-                  $_post_id++;
-                  $post[$_post_id] = $post_ally[2];
-                } else {
-                  $post_ally[3] = $post_ally[2] . $post_ally[3];
-                }
-                $_post_id++;
-                $post[$_post_id] = $post_ally[3];
-                */
               }
 
               // new last post = update
@@ -329,7 +250,7 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
         
               $_post_id++;
               if ($update && count($bot->forum->posts[$forum_id][$thread_id]['data']) >= count($post)) {
-                $bot->log("Military forum {$thread_name}: update(".count($residents).'|'.count($residents2).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
+                $bot->log("Military forum {$thread_name}: update(".count($cities).'|'.count($castles).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
                 for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
                   $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
                 }
@@ -340,7 +261,7 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
                 }
               } else {
                 $post[$_post_id] = $post_update;
-                $bot->log("Military forum {$thread_name}: info(".count($residents).'|'.count($residents2).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
+                $bot->log("Military forum {$thread_name}: info(".count($cities).'|'.count($castles).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
                 for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
                   $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
                 }

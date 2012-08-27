@@ -106,6 +106,10 @@ define('SIEGE', 5);
 define('RAID', 8);
 define('SETTLE', 9);
 define('BOSS_RAID', 10);
+define('CITY_STATE', '0');
+define('CASTLE_STATE', '1');
+define('PALACE_STATE', '2');
+define('WATER_STATE', '1');
 // redis database
 define('REDIS_CONNECTION', ((CLI) ? '/var/run/redis/redis.sock' : '127.0.0.1')); // localhost or socket
 #define('REDIS_CONNECTION', '127.0.0.1'); // localhost only
