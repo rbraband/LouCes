@@ -69,7 +69,7 @@ function ($bot, $data) {
           break;
         case (stripos($data['params'][0], 'k') !== false && in_array(substr($data['params'][0], 1), $continents)):
           if ($bot->is_op_user($data['user'])) {
-            $continent = substr($data['params'][0], 1);
+            $continent = intval(substr($data['params'][0], 1));
             $hours = array(1,2,6,12,24,36,72);
             $range = (in_array(intval($data['params'][1]), $hours)) ? intval($data['params'][1]) : 2;
             $message = "Du bekommst den aktuellen Digest-{$range}h für K{$continent} zugestellt!";
