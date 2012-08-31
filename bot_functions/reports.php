@@ -7,7 +7,7 @@ $bot->add_category('reports', array(), PUBLICY);
 $bot->add_reportheader_hook("UpdateReportHeader",                        // command key
                             "LouBot_alliance_report_header_update",      // callback function
 function ($bot, $reports) {
-  global $redis,$_GAMEDATA;
+  global $redis, $_GAMEDATA;
   if (is_array($reports) && $reports['type'] == REPORTHEADER) {
     $city_key = "city:{$reports['id']}";
     $continent = $redis->HGET("{$city_key}:data", 'continent');
@@ -48,7 +48,7 @@ function ($bot, $reports) {
 $bot->add_report_hook("UpdateReport",                       // command key
                       "LouBot_alliance_report_update",      // callback function
 function ($bot, $report) {
-  global $redis,$_GAMEDATA;
+  global $redis, $_GAMEDATA;
   if (is_array($report) && $report['type'] == REPORT) {
     $alliance_key = "alliance:{$bot->ally_id}";
     $report_key = "reports:{$report['id']}";
@@ -82,7 +82,7 @@ $bot->add_tick_event(Cron::TICK5,                // Cron key
                     "GetReportUpdate",           // command key
                     "LouBot_report_update_cron", // callback function
 function ($bot, $data) {
-  global $redis,$_GAMEDATA;
+  global $redis, $_GAMEDATA;
   if (!$redis->status()) return;
   $redis->SADD("stats:{$alliance_key}:ReportUpdate", (string)time());
   $continents = $redis->SMEMBERS("continents");
@@ -104,6 +104,7 @@ function ($bot, $data) {
       $bot->lou->check();
       $thread = new executeThread("{$reports_key}Thread-" . $c_id);
       $thread->worker = function($_this, $bot, $continents, $forum_id) {
+        global $_GAMEDATA;
         // working child
         $error = 0;
         $redis = RedisWrapper::getInstance($_this->getPid());
