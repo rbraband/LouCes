@@ -13,6 +13,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 include_once('config.php');
 include_once('redis.php');
+#include_once('mysql.php');
 
 /* del cache */
 $cache_keys = $redis->getKeys('cache:*');
@@ -32,23 +33,41 @@ if (is_array($users)) foreach($users as $user) {
   $points = $redis->hget("user:{$user}:data", 'points');
   $count++;
   if ($points == 0) {
-    echo $redis->hget("user:{$user}:data", 'id').' | ' . $redis->hget("user:{$user}:data", 'name')."\n";
+    $name = $redis->hget("user:{$user}:data", 'name');
+    echo "DELETE: {$user} | {$name}\n";
     $ll++;
-    $redis->HDEL("users", $redis->hget("user:{$user}:data", 'name'));
-    $redis->DEL("user:{$user}:cities");
-    $konti_keys = $redis->getKeys("user:{$user}:continent:*");
-    if (is_array($konti_keys)) foreach($konti_keys as $_konti_key) {
-      $redis->DEL($_konti_key);
+    // delete from users
+    $redis->HDEL("users", $name);
+
+    // fetch and delete aliase
+    $aliase = $redis->sMembers("user:{$user}:alias");
+    if (is_array($aliase)) foreach($aliase as $_alias) {
+
+      $redis->HDEL("aliase", $_alias);
     }
+    // delete from continents
+    $continent_keys = $redis->getKeys("user:{$user}:continent:*:data");
+    if (is_array($continent_keys)) foreach($continent_keys as $_continent_key) {
+      if (preg_match("/user:{$user}:continent:([0-9]*):data/sim", $_continent_key, $_matches)) {
+        $redis->HDEL("continent:{$_matches[1]}:residents", $name);
+      }
+    }
+    // delete user from db
+    $user_keys = $redis->getKeys("user:{$user}:*");
+    if (is_array($user_keys)) foreach($user_keys as $_user_key) {
+      $redis->DEL($_user_key);
+    } 
+     
     continue;
   }
   elseif ($points <=3) $low++;
   $user_cities = $redis->SMEMBERS("user:{$user}:cities");
-  if(is_array($user_cities)) foreach($user_cities as $city) {
+  if (is_array($user_cities)) foreach($user_cities as $city) {
     $city_id = $redis->HGET("cities", $city);
     $city_data = $redis->HGETALL("city:{$city_id}:data");
     if ($city_data['user_id'] != $user) {
-      echo "!Error!\n";
+
+      echo "DELETE User {$user} | city {$city}\n";
       $redis->SREM("user:{$user}:cities", $city);
       $redis->SREM("user:{$user}:continent:{$city_data['continent']}:cities", $city);
       $redis->SADD("user:{$city_data['user_id']}:cities", $city);
@@ -62,31 +81,25 @@ $settler_key = "settler";
 if (is_array($continents)) foreach ($continents as $continent) {
   $continent_key = "continent:{$continent}";
   $redis->DEL("{$settler_key}:{$continent_key}:lawless");
-  echo "\nDelete lawless on K{$continent}";
+  echo "\nDELETE lawless on K{$continent}";
 }
 echo "\n";
 
-/* clear stats
-$date = mktime(date("H"), 0, 0, date("n")-1, date("j"), date("Y"));
-$stats = $redis->getKeys('*:stats');
-echo "\nDelete Stat Keys: < ".date('d.m.Y',$date)." on " . count($stats) . " keys";
-
-foreach($stats as $k => $v) {
-  $_stats = $redis->ZRANGEBYSCORE("{$v}", "-inf", "({$date}");
-  $redis->ZREMRANGEBYSCORE("{$v}", "-inf", "({$date}");
-  if (count($_stats) > 0) echo "\n Key {$v} have ". count($_stats) . " keys to be deletet!";
+/* found deprecated aliases */
+$aliases = $redis->hGetAll("aliase");
+if (is_array($aliases)) foreach ($aliases as $alias => $user) {
+  if (!$name = $redis->hget("user:{$user}:data", 'name')) {
+    echo "Error: deprecated {$user}|{$alias}\n";
+  } #else echo "Found: {$user}|{$name}\n";
 }
-*/
 
-/* del reports
-echo "\n";
-echo "Delete Reports\n";
-$report_keys = $redis->getKeys("*reports*");
-if (is_array($report_keys)) foreach($report_keys as $_report_key) {
-  $redis->DEL($_report_key);
+/* found cities with empty points */
+$cities = $redis->HGETALL('cities');
+if (is_array($cities)) foreach($cities as $city) {
+  $points = $redis->hget("city:{$city}:data", 'points');
+  if ($points == 0) echo "ERROR: city {$city} with empty points\n";
 }
-echo count($report_keys) . " Keys gelöscht!\n";
-*/
+
 /*
 echo "Copy Stats\n";
 $keys = $redis->getKeys('*:stats');
@@ -103,18 +116,22 @@ if (is_array($keys)) {
 }
 */
 
-/* clear stats > 4 weeks */
-echo "Remove > 4 week entrys\n";
+/* clear stats older than */
+echo "Remove > 4 weeks entrys\n";
 $zsets = array('stats', 'reports', 'inactive', 'new', 'left', 'lawless', 'overtake', 'castles', 'palace', 'rename', 'military');
 foreach($zsets as $zset) {
+  $count = 0;
   $keys = $redis->getKeys("*:{$zset}");
-  echo "delete from ".count($keys)." {$zset}\n";
-  // delete stats < 72h
-  // $latest = mktime(date("H") - 72, 0, 0, date("n"), date("j"), date("Y"));
-  // delete stats < 1 month
-  $latest = mktime(date("H"), 0, 0, date("n")-1, date("j"), date("Y"));
+
+  // delete stats > 72h
+  // $latest = mktime(date("H") -72, 0, 0, date("n"), date("j"), date("Y"));
+  // delete stats > 1 month
+  $latest = mktime(date("H"), 0, 0, date("n") -1, date("j"), date("Y"));
+  // delete stats > 1 week
+  // $latest = mktime(date("H"), 0, 0, date("n"), date("j") -7, date("Y"));
   if (is_array($keys)) foreach($keys as $key) {
-    $redis->ZREMRANGEBYSCORE("{$key}", "-inf", "({$latest}");
+    $count = $count + $redis->ZREMRANGEBYSCORE("{$key}", "-inf", "({$latest}");
   }
+  echo "DELETE {$count} entrys from ".count($keys)." {$zset} keys\n";
 }
 ?>
