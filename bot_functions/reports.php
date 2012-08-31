@@ -114,6 +114,7 @@ function ($bot, $data) {
         $alliance_key = "alliance:{$bot->ally_id}";
         $reports_key = "reports";
         $reports_chunks = 10;
+        $max_reports = 10;
         $skip_friedly_fire = true;
         $str_time = (string)time();
         $bot->log("Fork: " . $_this->getName() .": start");
@@ -180,9 +181,11 @@ $post_daily_footer = "
               if (!empty($daily)) {
                 foreach($daily as $city) {
                   $dailys[] = $city['head'];
-                  foreach($city['entrys'] as $entry) {
+                  $entrys = array_reverse($city['entrys']);
+                  foreach(array_slice($entrys, 0, $max_reports) as $entry) {
                     $dailys[] = $entry;
                   }
+                  if (count($entrys) >= $max_reports) $dailys[] = PHP_EOL . "(max. {$max_reports} pro Stadt)";
                 }
 
                 $chunks = array_chunk($dailys, $reports_chunks);
@@ -245,9 +248,11 @@ $post_weekly_footer = '
               if (!empty($weekly)) {
                 foreach($weekly as $city) {
                   $weeklys[] = $city['head'];
-                  foreach($city['entrys'] as $entry) {
+                  $entrys = array_reverse($city['entrys']);
+                  foreach(array_slice($entrys, 0, $max_reports) as $entry) {
                     $weeklys[] = $entry;
                   }
+                  if (count($entrys) >= $max_reports) $weeklys[] = PHP_EOL . "(max. {$max_reports} pro Stadt)";
                 }
 
                 $chunks = array_chunk($weeklys, $reports_chunks);
