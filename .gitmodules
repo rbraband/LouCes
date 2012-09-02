@@ -1,0 +1,3 @@
+[submodule "pChart"]
+	path = pChart
+	url = https://github.com/rbraband/pChart
