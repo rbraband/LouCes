@@ -130,7 +130,7 @@ function ($bot, $stat) {
   $str_time = (string)time();
   if (empty($stat['id'])||$stat['id'] != CONTINENT||!$redis->status()) return;
   if (is_array($stat['data']['continents'])) foreach ($stat['data']['continents'] as $continent) {
-    if ($continent >= 1) {
+    if ($continent >= 0) {
       $update = $redis->SADD("continents", $continent);
       if ($update) {
         $bot->log('Redis add new continent K'.$continent);
