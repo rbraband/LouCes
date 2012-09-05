@@ -64,9 +64,9 @@ function ($bot, $data) {
   if (is_array($continents)) foreach ($continents as $continent) {
     if ($continent >= 0) {
       $bot->log('Redis get continent update K'.$continent);
-      $bot->lou->get_player_by_continent_stat($continent, 0); // stat points 
-      $bot->lou->get_player_by_continent_stat($continent, 3); // stat offence 
-      $bot->lou->get_player_by_continent_stat($continent, 4); // stat defence
+      $bot->lou->get_player_by_continent_stat($continent, STAT_POINTS); // stat points 
+      $bot->lou->get_player_by_continent_stat($continent, STAT_OFFENCE); // stat offence 
+      $bot->lou->get_player_by_continent_stat($continent, STAT_DEFENCE); // stat defence
       $bot->lou->get_alliance_by_continent_stat($continent);
       $bot->lou->check();
     }
