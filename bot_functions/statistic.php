@@ -19,6 +19,7 @@ function ($bot, $data) {
   
   sort($continents);
   if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
+#  if (is_array($continents) && $forum_id) {
     $executeThread = array();
     $childs = array_chunk($continents, MAXCHILDS, true);
     $bot->log("Fork: starting fork " . count($childs) . " childs!");
@@ -63,31 +64,32 @@ function ($bot, $data) {
             $post_residents = array();
             $post_ally = array();
             $post_chunks = array();
-            if ($thread_id) {
-            #if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
+#            if ($thread_id) {
+            if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
               // ** military top ten offence
               $offence = $redis->HGETALL("{$continent_key}:offence");
               $cities = $redis->SMEMBERS("{$continent_key}:cities");
               if (is_array($cities)) foreach($cities as $city) {
                 $_city = $redis->HGETALL('city:'.$redis->HGET('cities', $city).':data');
+                $_alliance_id = (string) (intval($_city['alliance_id']) >= 1) ? $_city['alliance_id'] : '0';
                 if ($_city['state'] == CITY_STATE) {
-                  $pcities[$_city['alliance_id']]++;
-                  $ally_cities_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
+                  $pcities[$_alliance_id] ++;
+                  $ally_cities_user[$_alliance_id][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                 }
                 elseif ($_city['state'] == CASTLE_STATE) {
-                  if ($_city['water'] == WATER_STATE) $wcastles[$_city['alliance_id']]++;
-                  else $castles[$_city['alliance_id']]++;
-                  if ($_city['water'] == WATER_STATE && empty($ally_wcastle_user[$_city['alliance_id']][$_city['user_id']])) {
-                    $ally_wcastle_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
+                  if ($_city['water'] == WATER_STATE) $wcastles[$_alliance_id] ++;
+                  else $castles[$_alliance_id] ++;
+                  if ($_city['water'] == WATER_STATE && empty($ally_wcastle_user[$_alliance_id][$_city['user_id']])) {
+                    $ally_wcastle_user[$_alliance_id][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                   }
-                  else if ($_city['water'] != WATER_STATE && empty($ally_castle_user[$_city['alliance_id']][$_city['user_id']])) {
-                    $ally_castle_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
+                  else if ($_city['water'] != WATER_STATE && empty($ally_castle_user[$_alliance_id][$_city['user_id']])) {
+                    $ally_castle_user[$_alliance_id][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                   }
                 }
                 elseif ($_city['state'] == PALACE_STATE) {
-                  $palasts[$_city['alliance_id']]++;
-                  if (empty($ally_palast_user[$_city['alliance_id']][$_city['user_id']])) {
-                    $ally_palast_user[$_city['alliance_id']][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
+                  $palasts[$_alliance_id] ++;
+                  if (empty($ally_palast_user[$_alliance_id][$_city['user_id']])) {
+                    $ally_palast_user[$_alliance_id][$_city['user_id']] = $redis->HGET("user:{$_city['user_id']}:data", 'name');
                   }
                 }
               }
@@ -159,29 +161,25 @@ $post_topten_deff = "[b][u]Top Deff-TS auf dem Kontinent:[/u] {$thread_name} ({$
 ';*/
               // ** forum
               $post = array();
-              $bot->forum->get_alliance_forum_posts($forum_id, $thread_id);
               $_post_id = 0;
               
               for($i = 0, $size = count($post_residents); $i < $size; ++$i) {
-                if (strlen($post_residents[$i]) > $military_chars || empty($post_residents[$i + 1]) || strlen($post_residents[$i] . $post_residents[$i + 1]) > $military_chars) {
+                if ((strlen($post_residents[$i]) > $military_chars) || empty($post_residents[$i + 1]) || (strlen($post_residents[$i] . $post_residents[$i + 1]) > $military_chars)) {
                   if (strlen($post_residents[$i]) > $military_chars) {
                     $post_chunks = explode('***chunk***', wordwrap ($post_residents[$i], $military_chars, '***chunk***'));
                     for($_i = 0, $_size = count($post_chunks); $_i < $_size; ++$_i) {
-                      $post[$_post_id] = $post_chunks[$_i];
-                      $_post_id++;
+                      $post[$_post_id ++] = $post_chunks[$_i];
                     }
                   } else {
-                    $post[$_post_id] = $post_residents[$i];
-                    $_post_id++;
+                    $post[$_post_id ++] = $post_residents[$i];
                   }
                 } else {
                   $post_residents[$i + 1] = $post_residents[$i] . $post_residents[$i + 1];
                 }
               }
               
-              $post[$_post_id] = $post_topten;
-              $_post_id++;
-              $post[$_post_id] = $post_topten_deff;
+              $post[$_post_id ++] = $post_topten;
+              $post[$_post_id ++] = $post_topten_deff;
               
               if (!empty($ally_castle_user)) foreach($ally_castle_user as $_ally => $_ally_castle_user) {
                 // ** Castles
@@ -208,18 +206,15 @@ $post_ally[3] = "
 Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
 ".((!empty($ally_cities_user[$_ally]) && $ally_name != 'ohne Allianz') ? "[spieler]".implode('[/spieler]; [spieler]', array_values($ally_cities_user[$_ally]))."[/spieler]" : (($ally_name != 'ohne Allianz') ? "[i]keine Spieler[/i]" : "[i]ohne Auswertung[/i]"))."
 ";
-                  $_post_id++;
                 for($i = 0, $size = count($post_ally); $i < $size; ++$i) {
-                  if (strlen($post_ally[$i]) > $military_chars || empty($post_ally[$i + 1]) || strlen($post_ally[$i] . $post_ally[$i + 1]) > $military_chars) {
+                  if ((strlen($post_ally[$i]) > $military_chars) || empty($post_ally[$i + 1]) || (strlen($post_ally[$i] . $post_ally[$i + 1]) > $military_chars)) {
                     if (strlen($post_ally[$i]) > $military_chars) {
                       $post_chunks = explode('***chunk***', wordwrap ($post_ally[$i], $military_chars, '***chunk***'));
                       for($_i = 0, $_size = count($post_chunks); $_i < $_size; ++$_i) {
-                        $post[$_post_id] = $post_chunks[$_i];
-                        $_post_id++;
+                        $post[$_post_id ++] = $post_chunks[$_i];
                       }
                     } else {
-                      $post[$_post_id] = $post_ally[$i];
-                      $_post_id++;
+                      $post[$_post_id ++] = $post_ally[$i];
                     }
                   } else {
                     $post_ally[$i + 1] = $post_ally[$i] . $post_ally[$i + 1];
@@ -233,8 +228,8 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
         
               // ** forum            
               foreach ($post as $_post_id_post => $_post) {
-                if (is_array($bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id_post])) {
-                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id_post]['post_id'], $_post)) {
+                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $_post)) {
                     $bot->log("Military forum {$thread_name}/{$thread_id}/{$_post_id_post}: edit post error!");
                     $bot->debug($_post);
                     $error = 3;
@@ -247,12 +242,11 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
                   }
                 }
               }
-        
-              $_post_id++;
-              if ($update && count($bot->forum->posts[$forum_id][$thread_id]['data']) >= count($post)) {
-                $bot->log("Military forum {$thread_name}: update(".count($cities).'|'.count($castles).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
-                for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
+              $_posts_count = $bot->forum->get_thread_post_count($forum_id, $thread_id);
+              if ($update && $_posts_count >= count($post)) {
+                $bot->log("Military forum {$thread_name}: update(".count($cities).'|'.count($castles).') posts:' . $_posts_count . '|' . count($post));
+                for($idx = count($post); $idx <= $_posts_count; $idx ++) {
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
                 }
                 if (!$bot->forum->create_alliance_forum_post($forum_id, $thread_id, $post_update)) {
                   $bot->log("Military forum {$thread_name}/{$thread_id}: create post error!");
@@ -261,12 +255,12 @@ Städte: (".((!empty($pcities[$_ally])) ? $pcities[$_ally] : 0).")
                 }
               } else {
                 $post[$_post_id] = $post_update;
-                $bot->log("Military forum {$thread_name}: info(".count($cities).'|'.count($castles).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
-                for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
+                $bot->log("Military forum {$thread_name}: info(".count($cities).'|'.count($castles).') posts:' . $_posts_count . '|' . count($post));
+                for($idx = count($post); $idx <= $_posts_count; $idx ++) {
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
                 }
-                if (is_array($bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id])) {
-                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id]['post_id'], $post[$_post_id])) {
+                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $post[$_post_id])) {
                     $bot->log("Military forum {$thread_name}/{$thread_id}/{$_post_id}: edit post error!");
                     $bot->debug($post[$_post_id]);
                     $error = 3;
@@ -327,4 +321,64 @@ function ($bot, $data) {
     }
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'statistic');
+
+$bot->add_privmsg_hook("RebaseStatsForum",            // command key
+                       "LouBot_rebase_stats_forum",   // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $continents = $redis->SMEMBERS("continents");
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $military_key = "military";
+    
+    if (!($forum_id = $redis->GET("{$military_key}:{$alliance_key}:forum:id"))) {
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_STATISTICS_FORUM, true);
+    } else $redis->DEL("{$military_key}:{$alliance_key}:forum:id");
+    sort($continents);
+    if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
+      foreach ($continents as $continent) {
+        // ** continents
+        if ($continent >= 0) {
+          $thread_name = 'K'.$continent;
+          $bot->debug("Military forum {$thread_name}: delete");
+          $continent_key = "continent:{$continent}";
+          if (!($thread_id = $redis->GET("{$military_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
+            $redis->SET("{$military_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+          } else $redis->DEL("{$military_key}:{$alliance_key}:forum:{$continent_key}:id");
+          $thread_ids[] = $thread_id;
+        }
+      }
+      if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
+        $bot->add_privmsg("Step1# ".BOT_STATISTICS_FORUM." deleted!", $data['user']);
+        $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_military_continent_update_cron');
+        $bot->add_privmsg("Step2# ".BOT_STATISTICS_FORUM." rebase done!", $data['user']);
+      }
+      else $bot->add_privmsg("Fehler beim löschen von: ".BOT_STATISTICS_FORUM."", $data['user']);
+    }
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("ReloadStatsForum",            // command key
+                       "LouBot_reload_stats_forum",   // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $military_key = "military";
+    $military_key_keys = $redis->getKeys("{$military_key}:{$alliance_key}:forum:*");
+    if (!empty($military_key_keys)) foreach($military_key_keys as $military_key_key) {
+      $redis->DEL("{$military_key_key}");
+    }
+    $bot->add_privmsg("Step1# ".BOT_STATISTICS_FORUM." REDIS ids deleted!", $data['user']);
+    $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_military_continent_update_cron');
+    $bot->add_privmsg("Step2# ".BOT_STATISTICS_FORUM." reload done!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
 ?>
