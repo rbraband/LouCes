@@ -2,60 +2,6 @@
 global $bot;
 $bot->add_category('reports', array(), PUBLICY);
 // crons
-
-// callbacks
-$bot->add_reportheader_hook("UpdateReportHeader",                        // command key
-                            "LouBot_alliance_report_header_update",      // callback function
-function ($bot, $reports) {
-  global $redis, $_GAMEDATA;
-  if (is_array($reports) && $reports['type'] == REPORTHEADER) {
-    $city_key = "city:{$reports['id']}";
-    $continent = $redis->HGET("{$city_key}:data", 'continent');
-    $continent_key = "continent:{$continent}";
-    $pos = $redis->HGET("{$city_key}:data", 'pos');
-    $category = $redis->HGET("{$city_key}:data", 'category');
-    $state = $redis->HGET("{$city_key}:data", 'state');
-    $alliance_key = "alliance:{$bot->ally_id}";
-    foreach($reports['data'] as $report) {
-      $report_link = $bot->lou->get_report_link($report['id']);
-      $report_key = "reports:{$report['id']}";
-      $opponent_id = $bot->get_user_id($report['opponent']);
-      $opp_alliance_id = $redis->HGET("user:{$opponent_id}:data", 'alliance');
-      $redis->ZADD("{$city_key}:{$alliance_key}:reports", $report['time'], $report['id']);
-      $redis->ZADD("{$alliance_key}:{$continent_key}:reports", $report['time'], $report['id']);
-      $redis->HMSET("{$alliance_key}:{$report_key}:header", array(
-              'time'              => $report['time'],
-              'report_id'         => $report['id'],
-              'id'                => $reports['id'],
-              'name'              => $report['name'],
-              'pos'               => $pos,
-              'category'          => $category,
-              'state'             => $state,
-              'continent'         => $continent,
-              'owner'             => $report['owner'],
-              'owner_name'        => $report['owner_name'],
-              'opponent'          => $opponent_id,
-              'opponent_name'     => $report['opponent'],
-              'opponent_alliance' => $opp_alliance_id,
-              'report_type'       => $report['report_type'],
-              'report_text'       => $report['report_text'],
-              'report_link'       => $report_link
-            ));
-    }
-  }
-}, 'reports');
-/*
-$bot->add_report_hook("UpdateReport",                       // command key
-                      "LouBot_alliance_report_update",      // callback function
-function ($bot, $report) {
-  global $redis, $_GAMEDATA;
-  if (is_array($report) && $report['type'] == REPORT) {
-    $alliance_key = "alliance:{$bot->ally_id}";
-    $report_key = "reports:{$report['id']}";
-    //$redis->SET("{$alliance_key}:{$report_key}:data", serialize($report['data']));
-  }
-}, 'reports');
-*/
 $bot->add_tick_event(Cron::TICK10,                       // Cron key
                     "GetAllianceReportUpdate",           // command key
                     "LouBot_report_city_update_cron",    // callback function
@@ -88,14 +34,14 @@ function ($bot, $data) {
   $continents = $redis->SMEMBERS("continents");
   $alliance_key = "alliance:{$bot->ally_id}";
   $reports_key = "reports";
-  
   if (!($forum_id = $redis->GET("{$reports_key}:{$alliance_key}:forum:id"))) {
     $forum_id = $bot->forum->get_forum_id_by_name(BOT_REPORTS_FORUM, true);
     $redis->SET("{$reports_key}:{$alliance_key}:forum:id", $forum_id);
   }
   
   sort($continents);
-  if (is_array($continents) && $forum_id) {
+  if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
+#  if (is_array($continents) && $forum_id) {
     $executeThread = array();
     $childs = array_chunk($continents, MAXCHILDS, true);
     $bot->log("Fork: starting fork " . count($childs) . " childs!");
@@ -131,12 +77,8 @@ function ($bot, $data) {
             }
             $update = false;
             $reports_pattern = "{$alliance_key}:{$continent_key}:reports";
-            if ($thread_id) {
-            #if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
-              // ** forum
-              $bot->forum->get_alliance_forum_posts($forum_id, $thread_id);
-              $_post_id = 0;
-              $post = array();
+#            if ($thread_id) {
+            if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
               
               // ** daily
               $daily = array();
@@ -200,9 +142,12 @@ $post_daily_footer = "
               } else $post_daily[] = $post_daily_head . "[i]keine Berichte[/i]" . $post_daily_footer;
 
               // ** forum
+              // ** forum
+              $post = array();
+              $_post_id = 0;
+              
               foreach($post_daily as $_post_daily) {
-                $post[$_post_id] = $_post_daily;
-                $_post_id ++;
+                $post[$_post_id ++] = $_post_daily;
               }
               // ** weekly
               $weekly = array();
@@ -268,8 +213,7 @@ $post_weekly_footer = '
 
               // ** forum
               foreach($post_weekly as $_post_weekly) {
-                $post[$_post_id] = $_post_weekly;
-                $_post_id ++;
+                $post[$_post_id ++] = $_post_weekly;
               }
               // new last post = update
 // post txt
@@ -283,8 +227,8 @@ $post_update = "[u]Legende[/u]:
           
               // ** forum            
               foreach ($post as $_post_id_post => $_post) {
-                if (is_array($bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id_post])) {
-                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id_post]['post_id'], $_post)) {
+                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $_post)) {
                     $bot->log("Reports forum {$thread_name}/{$thread_id}/{$_post_id_post}: edit post error!");
                     $bot->debug($_post);
                     $error = 3;
@@ -297,11 +241,11 @@ $post_update = "[u]Legende[/u]:
                   }
                 }
               }
-          
-              if ($update && count($bot->forum->posts[$forum_id][$thread_id]['data']) >= count($post)) {
-                $bot->log("Reports forum {$thread_name}: update(".count($new_reports).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
-                for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
+              $_posts_count = $bot->forum->get_thread_post_count($forum_id, $thread_id);
+              if ($update && $_posts_count >= count($post)) {
+                $bot->log("Reports forum {$thread_name}: update(".count($new_reports).') posts:' . $_posts_count . '|' . count($post));
+                for($idx = count($post); $idx <= $_posts_count; $idx++) {
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
                 }
                 if (!$bot->forum->create_alliance_forum_post($forum_id, $thread_id, $post_update)) {
                   $bot->log("Reports forum {$thread_name}/{$thread_id}: create post error!");
@@ -310,12 +254,12 @@ $post_update = "[u]Legende[/u]:
                 }
               } else {
                 $post[$_post_id] = $post_update;
-                $bot->log("Reports forum {$thread_name}: info(".count($new_reports).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
-                for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
+                $bot->log("Reports forum {$thread_name}: info(".count($new_reports).') posts:' . $_posts_count . '|' . count($post));
+                for($idx = count($post); $idx <= $_posts_count; $idx++) {
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
                 }
-                if (is_array($bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id])) {
-                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id]['post_id'], $post[$_post_id])) {
+                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $post[$_post_id])) {
                     $bot->log("Reports forum {$thread_name}/{$thread_id}/{$_post_id}: edit post error!");
                     $bot->debug($post[$_post_id]);
                     $error = 3;
@@ -355,6 +299,67 @@ $post_update = "[u]Legende[/u]:
   }
 }, 'reports');
 
+// hooks
+$bot->add_privmsg_hook("RebaseReportsForum",          // command key
+                       "LouBot_rebase_reports_forum", // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $continents = $redis->SMEMBERS("continents");
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $reports_key = "reports";
+    
+    if (!($forum_id = $redis->GET("{$reports_key}:{$alliance_key}:forum:id"))) {
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_REPORTS_FORUM, true);
+    } else $redis->DEL("{$reports_key}:{$alliance_key}:forum:id");
+    sort($continents);
+    if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
+      foreach ($continents as $continent) {
+        // ** continents
+        if ($continent >= 0) {
+          $thread_name = 'K'.$continent;
+          $bot->debug("Reports forum {$thread_name}: delete");
+          $continent_key = "continent:{$continent}";
+          if (!($thread_id = $redis->GET("{$reports_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
+            $redis->SET("{$reports_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+          } else $redis->DEL("{$reports_key}:{$alliance_key}:forum:{$continent_key}:id");
+          $thread_ids[] = $thread_id;
+        }
+      }
+      if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
+        $bot->add_privmsg("Step1# ".BOT_REPORTS_FORUM." deleted!", $data['user']);
+        $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'LouBot_report_update_cron');
+        $bot->add_privmsg("Step2# ".BOT_REPORTS_FORUM." rebase done!", $data['user']);
+      }
+      else $bot->add_privmsg("Fehler beim löschen von: ".BOT_REPORTS_FORUM."", $data['user']);
+    }
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("ReloadReportsForum",          // command key
+                       "LouBot_reload_reports_forum", // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $reports_key = "reports";
+    $reports_key_keys = $redis->getKeys("{$reports_key}:{$alliance_key}:forum:*");
+    if (!empty($reports_key_keys)) foreach($reports_key_keys as $reports_key_key) {
+      $redis->DEL("{$reports_key_key}");
+    }
+    $bot->add_privmsg("Step1# ".BOT_REPORTS_FORUM." REDIS ids deleted!", $data['user']);
+    $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'LouBot_report_update_cron');
+    $bot->add_privmsg("Step2# ".BOT_REPORTS_FORUM." reload done!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
 // test get report
 $bot->add_privmsg_hook("ReportTest",          // command key
                        "LouBot_report_test",  // callback function
@@ -365,4 +370,58 @@ function ($bot, $data) {
     $bot->lou->get_report($data['params'][0]);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'reports');
+
+$bot->add_reportheader_hook("UpdateReportHeader",                        // command key
+                            "LouBot_alliance_report_header_update",      // callback function
+function ($bot, $reports) {
+  global $redis, $_GAMEDATA;
+  if (is_array($reports) && $reports['type'] == REPORTHEADER) {
+    $bot->lou->check();
+    $city_key = "city:{$reports['id']}";
+    $continent = $redis->HGET("{$city_key}:data", 'continent');
+    $continent_key = "continent:{$continent}";
+    $pos = $redis->HGET("{$city_key}:data", 'pos');
+    $category = $redis->HGET("{$city_key}:data", 'category');
+    $state = $redis->HGET("{$city_key}:data", 'state');
+    $alliance_key = "alliance:{$bot->ally_id}";
+    foreach($reports['data'] as $report) {
+      $report_link = $bot->lou->get_report_link($report['id']);
+      $report_key = "reports:{$report['id']}";
+      $opponent_id = $bot->get_user_id($report['opponent']);
+      $opp_alliance_id = $redis->HGET("user:{$opponent_id}:data", 'alliance');
+      $redis->ZADD("{$city_key}:{$alliance_key}:reports", $report['time'], $report['id']);
+      $redis->ZADD("{$alliance_key}:{$continent_key}:reports", $report['time'], $report['id']);
+      $redis->HMSET("{$alliance_key}:{$report_key}:header", array(
+              'time'              => $report['time'],
+              'report_id'         => $report['id'],
+              'id'                => $reports['id'],
+              'name'              => $report['name'],
+              'pos'               => $pos,
+              'category'          => $category,
+              'state'             => $state,
+              'continent'         => $continent,
+              'owner'             => $report['owner'],
+              'owner_name'        => $report['owner_name'],
+              'opponent'          => $opponent_id,
+              'opponent_name'     => $report['opponent'],
+              'opponent_alliance' => $opp_alliance_id,
+              'report_type'       => $report['report_type'],
+              'report_text'       => $report['report_text'],
+              'report_link'       => $report_link
+            ));
+    }
+  }
+}, 'reports');
+/*
+$bot->add_report_hook("UpdateReport",                       // command key
+                      "LouBot_alliance_report_update",      // callback function
+function ($bot, $report) {
+  global $redis, $_GAMEDATA;
+  if (is_array($report) && $report['type'] == REPORT) {
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $report_key = "reports:{$report['id']}";
+    //$redis->SET("{$alliance_key}:{$report_key}:data", serialize($report['data']));
+  }
+}, 'reports');
+*/
 ?>

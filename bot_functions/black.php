@@ -2,7 +2,6 @@
 global $bot;
 $bot->add_category('black', array(), PUBLICY);
 // crons
-
 $bot->add_cron_event(Cron::HOURLY,                     // Cron key
                     "GetBlackUpdate",                  // command key
                     "LouBot_black_continent_player_update_cron",  // callback function
@@ -13,7 +12,6 @@ function ($bot, $data) {
   $alliance_key = "alliance:{$bot->ally_id}";
   $black_key = "black";
   $settler_key = "settler";
-  
   if (!($forum_id = $redis->GET("{$black_key}:{$alliance_key}:forum:id"))) {
     $forum_id = $bot->forum->get_forum_id_by_name(BOT_BLACK_FORUM, true);
     $redis->SET("{$black_key}:{$alliance_key}:forum:id", $forum_id);
@@ -21,6 +19,7 @@ function ($bot, $data) {
   
   sort($continents);
   if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
+#  if (is_array($continents) && $forum_id) {
     $executeThread = array();
     $childs = array_chunk($continents, MAXCHILDS, true);
     $bot->log("Fork: starting fork " . count($childs) . " childs!");
@@ -45,7 +44,6 @@ function ($bot, $data) {
         foreach ($continents as $continent) {
           // ** continents
           if ($continent >= 0) {
-            $bot->lou->check();
             $thread_name = 'K'.$continent;
             $bot->debug("Black forum {$thread_name}: start");
             $continent_key = "continent:{$continent}";
@@ -54,8 +52,8 @@ function ($bot, $data) {
               $redis->SET("{$black_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
             }
             $update = false;
-            if ($thread_id) {
-            #if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
+#            if ($thread_id) {
+              if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
               // ** members 3days
               $residents = array();
               $aresidents = $redis->SMEMBERS("{$settler_key}:{$alliance_key}:{$continent_key}:residents");
@@ -203,11 +201,9 @@ $post_residents = "[b][u][[i][allianz]{$bot->ally_shortname}[/allianz][/i]] inak
 
 ';
               // ** forum
-              $bot->forum->get_alliance_forum_posts($forum_id, $thread_id);
-              $_post_id = 0;
               $post = array();
-              $post[$_post_id] = $post_residents;
-              
+              $_post_id = 0;
+              $post[$_post_id ++] = $post_residents;
               // new first post = residents2
 // post txt
 $post_inactive_head = "[b][u]%%ALLY%% inaktive Spieler (3 Tage) auf dem Kontinent:[/u] {$thread_name}[/b]
@@ -231,13 +227,11 @@ $post_inactive_footer = '
                   }
                   // ** forum
                   foreach($post_inactive as $_post_inactive) {
-                    $_post_id ++;
-                    $post[$_post_id] = $_post_inactive;
+                    $post[$_post_id ++] = $_post_inactive;
                   }
                 }
               } else {
-                $_post_id ++;
-                $post[$_post_id] = str_replace('%%ALLY%%', 'Andere', $post_inactive_head) . "[i]keine Spieler[/i]" . $post_settlers_footer;
+                $post[$_post_id ++] = str_replace('%%ALLY%%', 'Andere', $post_inactive_head) . "[i]keine Spieler[/i]" . $post_settlers_footer;
               }
    
         
@@ -247,26 +241,25 @@ $post_inactive_footer = '
         
               // ** forum            
               foreach ($post as $_post_id_post => $_post) {
-                if (is_array($bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id_post])) {
-                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id_post]['post_id'], $_post)) {
+                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $_post)) {
                     $bot->log("Black forum {$thread_name}/{$thread_id}/{$_post_id_post}: edit post error!");
                     $bot->debug($_post);
                     $error = 3;
                   }
                 } else {
                   if (!$bot->forum->create_alliance_forum_post($forum_id, $thread_id, $_post)) {
-                    $bot->log("Black forum {$thread_name}/{$thread_id}: create post error!");$bot->debug($_post);
+                    $bot->log("Black forum {$thread_name}/{$thread_id}: create post error!");
                     $bot->debug($_post);
                     $error = 3;
                   } 
                 }
               }
-        
-              $_post_id ++;
-              if ($update && count($bot->forum->posts[$forum_id][$thread_id]['data']) >= count($post)) {
-                $bot->log("Black forum {$thread_name}: update(".count($residents).'|'.count($residents2).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
-                for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
+              $_posts_count = $bot->forum->get_thread_post_count($forum_id, $thread_id);
+              if ($update && $_posts_count >= count($post)) {
+                $bot->log("Black forum {$thread_name}: update(".count($residents).'|'.count($residents2).') posts:' . $_posts_count . '|' . count($post));
+                for($idx = count($post); $idx <= $_posts_count; $idx ++) {
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
                 }
                 if (!$bot->forum->create_alliance_forum_post($forum_id, $thread_id, $post_update)) {
                   $bot->log("Black forum {$thread_name}/{$thread_id}: create post error!");
@@ -275,12 +268,12 @@ $post_inactive_footer = '
                 }
               } else {
                 $post[$_post_id] = $post_update;
-                $bot->log("Black forum {$thread_name}: info(".count($residents).'|'.count($residents2).') posts:' . count($bot->forum->posts[$forum_id][$thread_id]['data']) . '|' . count($post));
-                for($idx = count($post); $idx <= count($bot->forum->posts[$forum_id][$thread_id]['data']); $idx++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$idx]['post_id']);
+                $bot->log("Black forum {$thread_name}: info(".count($residents).'|'.count($residents2).') posts:' . $_posts_count . '|' . count($post));
+                for($idx = count($post); $idx <= $_posts_count; $idx ++) {
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
                 }
-                if (is_array($bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id])) {
-                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $bot->forum->posts[$forum_id][$thread_id]['data'][$_post_id]['post_id'], $post[$_post_id])) {
+                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                  if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $post[$_post_id])) {
                     $bot->log("Black forum {$thread_name}/{$thread_id}/{$_post_id}: edit post error!");
                     $bot->debug($post[$_post_id]);
                     $error = 3;
@@ -321,4 +314,63 @@ $post_inactive_footer = '
 }, 'black');
 
 // callbacks
+$bot->add_privmsg_hook("RebaseBlackForum",            // command key
+                       "LouBot_rebase_black_forum",   // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $continents = $redis->SMEMBERS("continents");
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $black_key = "black";
+    
+    if (!($forum_id = $redis->GET("{$black_key}:{$alliance_key}:forum:id"))) {
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_BLACK_FORUM, true);
+    } else $redis->DEL("{$black_key}:{$alliance_key}:forum:id");
+    sort($continents);
+    if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
+      foreach ($continents as $continent) {
+        // ** continents
+        if ($continent >= 0) {
+          $thread_name = 'K'.$continent;
+          $bot->debug("Black forum {$thread_name}: delete");
+          $continent_key = "continent:{$continent}";
+          if (!($thread_id = $redis->GET("{$black_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
+            $redis->SET("{$black_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+          } else $redis->DEL("{$black_key}:{$alliance_key}:forum:{$continent_key}:id");
+          $thread_ids[] = $thread_id;
+        }
+      }
+      if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
+        $bot->add_privmsg("Step1# ".BOT_BLACK_FORUM." deleted!", $data['user']);
+        $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_black_continent_player_update_cron');
+        $bot->add_privmsg("Step2# ".BOT_BLACK_FORUM." rebase done!", $data['user']);
+      }
+      else $bot->add_privmsg("Fehler beim löschen von: ".BOT_BLACK_FORUM."", $data['user']);
+    }
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("ReloadBlackForum",            // command key
+                       "LouBot_reload_black_forum",   // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $alliance_key = "alliance:{$bot->ally_id}";
+    $black_key = "black";
+    $black_key_keys = $redis->getKeys("{$black_key}:{$alliance_key}:forum:*");
+    if (!empty($black_key_keys)) foreach($black_key_keys as $black_key_key) {
+      $redis->DEL("{$black_key_key}");
+    }
+    $bot->add_privmsg("Step1# ".BOT_BLACK_FORUM." REDIS ids deleted!", $data['user']);
+    $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_black_continent_player_update_cron');
+    $bot->add_privmsg("Step2# ".BOT_BLACK_FORUM." reload done!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
 ?>
