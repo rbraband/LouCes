@@ -586,25 +586,29 @@ class LoU_Bot implements SplObserver {
     }
     
     public function call_event($input, $name = null) {
-      $this->debug("Call".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
-          $events = @$this->events[$input['name']];
+      $this->debug("Call".ucfirst(strtolower($input['type']))."Events ({$input['name']})".((!is_null($name)) ? " -> {$name}" : ''));
+      $events = @$this->events[$input['name']];
       if (is_array($events)) { sort($events); foreach ($events as $event) {
-        if (is_null($name) || strtolower($name) == strtolower($event)) $event->callFunction($this, $input);
-            if ($event->breakThis()) break;
+        if (is_null($name) || $name == $event->name) {
+          $event->callFunction($this, $input);
+          if ($event->breakThis()) break;
+        }
       } }
     }
     
     public function call_hook($input, $name = null) {
       if (isset($input['type'])) {
         $hooks = @$this->hooks[$input['type']];
-        $this->debug("Call".ucfirst(strtolower($input['type']))."Hooks ({$input['name']}:{$input['id']})");
+        $this->debug("Call".ucfirst(strtolower($input['type']))."Hooks ({$input['name']}:{$input['id']})".((!is_null($name)) ? " -> {$name}" : ''));
       } else if (isset($input['channel'])) {
         $hooks = @$this->hooks[$input['channel']];
-        $this->debug("Fire".ucfirst(strtolower($input['type']))."Hooks ({$input['channel']})");
+        $this->debug("Fire".ucfirst(strtolower($input['type']))."Hooks ({$input['channel']})".((!is_null($name)) ? " -> {$name}" : ''));
       }
       if (is_array($hooks)) foreach ($hooks as $hook) {
-        if (is_null($name) || strtolower($name) == strtolower($hook)) $hook->callFunction($this, $input);
-        if ($hook->breakThis()) break;
+        if (is_null($name) || $name == $hook->name) {
+          $hook->callFunction($this, $input);
+          if ($hook->breakThis()) break;
+        }
       }
     }
     
