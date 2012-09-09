@@ -1,7 +1,7 @@
 <?php
 /*
 PHPLoU_bot - an LoU bot writen in PHP
-Copyright (C) 2012 Roland Braband / rbraband
+Copyright (C) 2011 Roland Braband
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
@@ -31,21 +31,17 @@ class Forum {
       $this->lou =& $lou;
   }
   
-  public function exist_forum_id($id, $force = false) {
+  public function exist_forum_id($forum_id, $force = false) {
     if (empty($this->forums) || $force) $this->get_alliance_forums();
-    if (is_array($this->forums['data'])) foreach($this->forums['data'] as $forum) {
-      if ($forum['id'] == intval($id)) return true;
-    }  
-    return false;
+    if ($this->forums['data'][$forum_id]['id'] == intval($forum_id)) return true;
+    else return false;
   }
   
-  public function exist_forum_thread_id($forum_id, $id, $force = false) {
+  public function exist_forum_thread_id($forum_id, $thread_id, $force = false) {
     if (!$this->exist_forum_id($forum_id)) return false;
     if (empty($this->threads[$forum_id]) || $force) $this->get_alliance_forum_threads($forum_id);
-    if (is_array($this->threads[$forum_id])) foreach($this->threads[$forum_id]['data'] as $thread) {
-      if ($thread['id'] == intval($id)) return true;
-    }
-    return false;
+    if ($this->threads[$forum_id]['data'][$thread_id]['id'] == intval($thread_id)) return true;
+    else return false;
   }
   
   public function get_forum_id_by_name($name, $create = false) {
@@ -78,7 +74,7 @@ class Forum {
     } else return false;
   }
   
-  public function get_forum_thread_id_by_exp($expression) {
+  public function get_forum_thread_id_by_exp($forum_id, $expression) {
     if ($this->get_alliance_forum_threads($forum_id)) {
       if (is_array($this->threads[$forum_id])) foreach($this->threads[$forum_id]['data'] as $thread) {
         if (preg_match($expression, $thread['title'])) return $thread['id'];
@@ -86,19 +82,25 @@ class Forum {
     }
   }
   
-  public function get_first_thread_post($forum_id, $thread_id, $create = false) {
-    return $this->get_thread_post_by_num($forum_id, $thread_id, $create);
+  public function get_first_thread_post($forum_id, $thread_id) {
+    return $this->get_thread_post_by_num($forum_id, $thread_id, 0);
   }
   
-  public function get_thread_post_by_num($forum_id, $thread_id, $num = 0, $create = false) {
+  public function get_thread_post_by_num($forum_id, $thread_id, $offset = 0) {
     if ($this->get_alliance_forum_posts($forum_id, $thread_id)) {
-      if (is_array($this->posts[$forum_id][$thread_id]['data']) && is_array($this->posts[$forum_id][$thread_id]['data'][$num])) return $this->posts[$forum_id][$thread_id]['data'][$num]['post_id'];
-    }
-    if ($create) {
-      if ($this->create_alliance_forum_post($forum_id, $thread_id, 'Init: ' . date('d.m.Y H:i:s'))) {
-        if (is_array($this->posts[$forum_id][$thread_id]['data'][$num])) return $this->posts[$forum_id][$thread_id]['data'][$num]['post_id'];
+      if ($this->get_thread_post_count($forum_id, $thread_id) >= $offset) {
+        $posts = array_keys($this->posts[$forum_id][$thread_id]['data']); 
+        return $this->posts[$forum_id][$thread_id]['data'][$posts[$offset]]['post_id'];
       }
     } else return false;
+  }
+  
+  public function get_thread_post_count($forum_id, $thread_id) {
+    return count($this->posts[$forum_id][$thread_id]['data']);
+  }
+  
+  public function get_thread_count($forum_id) {
+    return count($this->threads[$forum_id]['data']);
   }
   
   public function get_alliance_forums() {
@@ -109,8 +111,9 @@ class Forum {
       $this->note = $this->forums;
       $this->debug("LoU get info for forums");
       $this->notify();
-    }
     return true;
+  }
+    return false;
   }
   
   public function get_alliance_forum_threads($forum_id) {
@@ -121,13 +124,14 @@ class Forum {
       $this->note = $this->threads[$forum_id];
       $this->debug("LoU get info for forum ({$forum_id}) threads");
       $this->notify();
-    }
     return true;
+  }
+    return false;
   }
   
   public function mark_alliance_forum_threads_as_read($forum_id) {
     $this->doMarkForumThreadsAsRead($forum_id);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->get_alliance_forums();
       return true;
@@ -137,14 +141,11 @@ class Forum {
   
   public function create_alliance_forum_thread($forum_id, $title, $message) {
     $this->doCreateForumThread($forum_id, $title, $message);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->debug("LoU create forum threat ({$forum_id}) {$title}");
       $this->get_alliance_forum_threads($forum_id);
-      if (is_array($this->threads[$forum_id])) foreach($this->threads[$forum_id]['data'] as $thread) {
-        if ($thread['title'] == trim($title)) return $thread['id'];
-      }
-      else return false;
+      return $this->get_forum_thread_id_by_title($forum_id, $title);
     }
     return false;
   }
@@ -157,8 +158,9 @@ class Forum {
       $this->note = $this->posts[$forum_id][$thread_id];
       $this->debug("LoU get info for forum/thread ({$forum_id}/{$thread_id}) posts");
       $this->notify();
-    }
     return true;
+  }
+    return false;
   }
   
   public function delete_alliance_forums($forum_ids) {
@@ -167,6 +169,7 @@ class Forum {
     $ok = ($this->stack) ? @$this->stack : null;
     if($ok == count($forum_ids)) {
       $this->debug("LoU delete forums: " . implode(', ', $forum_ids));
+      foreach($forum_ids as $forum_id) unset($this->forums[$forum_id]);
       return true;
     }
     return false;
@@ -178,6 +181,7 @@ class Forum {
     $ok = ($this->stack) ? @$this->stack : null;
     if($ok == count($thread_ids)) {
       $this->debug("LoU delete forums threads: " . implode(', ', $thread_ids));
+      foreach($thread_ids as $thread_id) unset($this->threads[$forum_id][$thread_id]);
       return true;
     }
     return false;
@@ -189,6 +193,7 @@ class Forum {
     $ok = ($this->stack) ? @$this->stack : null;
     if($ok == count($post_ids)) {
       $this->debug("LoU delete forums thread posts: " . implode(', ', $post_ids));
+      foreach($post_ids as $post_id) unset($this->posts[$forum_id][$thread_id][$post_id]);
       return true;
     }
     return false;
@@ -196,23 +201,21 @@ class Forum {
   
   public function create_alliance_forum($name) {
     $this->doCreateForum($name);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->debug("LoU create forum: {$name}");
       $this->get_alliance_forums();
-      if (is_array($this->forums['data'])) foreach($this->forums['data'] as $forum) {
-        if ($forum['name'] == trim($name)) return $forum['id'];
-      }
-      else return false;
+      return $this->get_forum_id_by_name($name);
     }
     return false;
   }
   
   public function edit_alliance_forum_thread($forum_id, $thread_id, $title) {
     $this->doEditForumThread($forum_id, $thread_id, $title);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->debug("LoU edit forum thread ({$forum_id}) {$title}");
+      $this->threads[$forum_id][$thread_id]['data']['title'] = $title;
       return true;
     }
     return false;
@@ -220,9 +223,10 @@ class Forum {
   
   public function edit_alliance_forum_post($forum_id, $thread_id, $post_id, $message) {
     $this->doEditForumPost($forum_id, $thread_id, $post_id, $message);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->debug("LoU edit forum thread post ({$thread_id}) {$post_id}");
+      $this->posts[$forum_id][$thread_id][$post_id]['data']['message'] = $message;
       return true;
     }
     return false;
@@ -230,7 +234,7 @@ class Forum {
   
   public function create_alliance_forum_post($forum_id, $thread_id, $message) {
     $this->doCreateForumPost($forum_id, $thread_id, $message);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->debug("LoU create forum thread post ({$thread_id})");
       return true;
@@ -240,9 +244,10 @@ class Forum {
   
   public function edit_alliance_forum($forum_id, $name, $roles) {
     $this->doEditForum($forum_id, $name, $roles);
-    $ok = ($this->stack) ? @$this->stack : null;
+    $ok = ($this->stack) ? (bool) @$this->stack : false;
     if($ok === true) {
       $this->debug("LoU edit forum: {$forum_id}");
+      $this->forums[$forum_id]['data']['name'] = $name;
       return true;
     }
     return false;
@@ -268,7 +273,7 @@ class Forum {
       "session"   => $this->session,
       "forumID"   => $forum_id
     );
-    $this->get("MarkAllThreadsAsRead", $d);
+    $this->post("MarkAllThreadsAsRead", $d);
   }
   
   private function doCreateForumThread($forum_id, $title, $message) {
@@ -278,7 +283,7 @@ class Forum {
       "threadTitle"      => $title,
       "firstPostMessage" => $message
     );
-    $this->get("CreateAllianceForumThread", $d);
+    $this->post("CreateAllianceForumThread", $d);
   }
   
   private function doInfoForumPosts($forum_id, $thread_id) {
@@ -295,7 +300,7 @@ class Forum {
       "session"   => $this->session,
       "forumIDs"  => $forum_ids
     );
-    $this->get("DeleteAllianceForums", $d);
+    $this->post("DeleteAllianceForums", $d);
   }
   
   private function doDeleteForumThreads($forum_id, $thread_ids) {
@@ -304,7 +309,7 @@ class Forum {
       "forumID"   => $forum_id,
       "threadIDs" => $thread_ids
     );
-    $this->get("DeleteAllianceForumsThreads", $d);
+    $this->post("DeleteAllianceForumThreads", $d);
   }
   
   private function doDeleteForumThreadPosts($forum_id, $thread_id, $post_ids) {
@@ -314,7 +319,7 @@ class Forum {
       "threadID"  => $thread_id,
       "postIDs"   => $post_ids
     );
-    $this->get("DeleteAllianceForumPosts", $d);
+    $this->post("DeleteAllianceForumPosts", $d);
   }
   
   private function doCreateForum($name) {
@@ -322,7 +327,7 @@ class Forum {
       "session"   => $this->session,
       "Title"     => $name
     );
-    $this->get("CreateAllianceForum", $d);
+    $this->post("CreateAllianceForum", $d);
   }
   
   private function doEditForum($forum_id, $name, $roles) {
@@ -338,7 +343,7 @@ class Forum {
       "readPermissions"   => $read,
       "writePermissions"  => $write
     );
-    $this->get("CreateAllianceForum", $d);
+    $this->post("EditAllianceForum", $d);
   }
   
   public function doEditForumThread($forum_id, $thread_id, $title) {
@@ -348,7 +353,7 @@ class Forum {
       "threadID"         => $thread_id,
       "newTitle"         => $title
     );
-    $this->get("EditAllianceForumThread", $d);
+    $this->post("EditAllianceForumThread", $d);
   }
   
   public function doCreateForumPost($forum_id, $thread_id, $message) {
@@ -358,7 +363,7 @@ class Forum {
       "threadID"         => $thread_id,
       "postMessage"      => $message
     );
-    $this->get("CreateAllianceForumPost", $d);
+    $this->post("CreateAllianceForumPost", $d);
   }
   
   public function doEditForumPost($forum_id, $thread_id, $post_id, $message) {
@@ -369,16 +374,18 @@ class Forum {
       "postID"           => $post_id,
       "newMessage"       => $message
     );
-    $this->get("EditAllianceForumPost", $d);
+    $this->post("EditAllianceForumPost", $d);
   }
   
   private function analyse_forums($forums) {
     
     foreach($forums as $data)
-      $items[] = array('id'            => $data['fi'],
+      $items[$data['fi']] = array(
+        'id'            => $data['fi'],
                        'name'          => $data['ft'],
                        'updated'       => $data['hup'],
-                       'rights'        => Forum::prepare_rights($data['rw']));
+        'rights'        => Forum::prepare_rights($data['rw'])
+      );
                       
     return array('type' => FORUM, 'data' => $items);
   }
@@ -386,7 +393,8 @@ class Forum {
   private function analyse_threads($threads) {
     
     foreach($threads as $data)
-      $items[] = array('author_id'        => $data['ai'],
+      $items[$data['ti']] = array(
+        'author_id'        => $data['ai'],
                        'author_name'      => $data['an'],
                        'updated'          => $data['hup'],
                        'forum_post'       => Forum::analyse_posts(array($data['fp'])),
@@ -402,7 +410,8 @@ class Forum {
   
   private function analyse_posts($posts) {
     foreach($posts as $data)
-      $items[] = array('post_id'     => $data['pi'],
+      $items[$data['pi']] = array(
+        'post_id'     => $data['pi'],
                        'author_id'   => $data['pli'],
                        'author_name' => $data['pn'],
                        'last_change' => floor($data['t']/1000),
