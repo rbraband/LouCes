@@ -241,7 +241,7 @@ $post_inactive_footer = '
         
               // ** forum            
               foreach ($post as $_post_id_post => $_post) {
-                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                if ($_id = $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $_post_id_post)) {
                   if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $_post)) {
                     $bot->log("Black forum {$thread_name}/{$thread_id}/{$_post_id_post}: edit post error!");
                     $bot->debug($_post);
@@ -259,7 +259,7 @@ $post_inactive_footer = '
               if ($update && $_posts_count >= count($post)) {
                 $bot->log("Black forum {$thread_name}: update(".count($residents).'|'.count($residents2).') posts:' . $_posts_count . '|' . count($post));
                 for($idx = count($post); $idx <= $_posts_count; $idx ++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $idx));
                 }
                 if (!$bot->forum->create_alliance_forum_post($forum_id, $thread_id, $post_update)) {
                   $bot->log("Black forum {$thread_name}/{$thread_id}: create post error!");
@@ -270,9 +270,9 @@ $post_inactive_footer = '
                 $post[$_post_id] = $post_update;
                 $bot->log("Black forum {$thread_name}: info(".count($residents).'|'.count($residents2).') posts:' . $_posts_count . '|' . count($post));
                 for($idx = count($post); $idx <= $_posts_count; $idx ++) {
-                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $idx));
+                  $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $idx));
                 }
-                if ($_id = $bot->forum->get_thread_post_by_num($forum_id, $thread_id, $_post_id_post)) {
+                if ($_id = $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $_post_id)) {
                   if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $post[$_post_id])) {
                     $bot->log("Black forum {$thread_name}/{$thread_id}/{$_post_id}: edit post error!");
                     $bot->debug($post[$_post_id]);
