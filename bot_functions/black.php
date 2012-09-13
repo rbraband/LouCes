@@ -31,7 +31,7 @@ function ($bot, $data) {
         global $_black_user_points, $_black_user_state, $_black_user_last;
         // working child
         $error = 0;
-        $redis = RedisWrapper::getInstance($_this->getPid());
+        $redis = RedisWrapper::getInstance();
         $last_update = $redis->SMEMBERS('stats:ContinentPlayerUpdate');
         sort($last_update);
         $last_update = end($last_update);

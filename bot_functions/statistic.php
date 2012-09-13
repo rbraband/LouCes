@@ -30,7 +30,7 @@ function ($bot, $data) {
       $thread->worker = function($_this, $bot, $continents, $forum_id) {
         // working child
         $error = 0;
-        $redis = RedisWrapper::getInstance($_this->getPid());
+        $redis = RedisWrapper::getInstance();
         $last_update = $redis->SMEMBERS('stats:ContinentPlayerUpdate');
         sort($last_update);
         $last_update = end($last_update);
