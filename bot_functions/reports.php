@@ -2,27 +2,29 @@
 global $bot;
 $bot->add_category('reports', array(), PUBLICY);
 // crons
-$bot->add_tick_event(Cron::TICK10,                       // Cron key
+$bot->add_thread_event(Cron::TICK10,                     // Cron key
                     "GetAllianceReportUpdate",           // command key
-                    "LouBot_report_city_update_cron",    // callback function
-function ($bot, $data) {
-  global $redis;
+                    "LouBot_report_city_update_thread",  // callback function
+function ($_this, $bot, $data) {
+  $redis = RedisWrapper::getInstance();
   if (!$redis->status()) return;
   $alliance_key = "alliance:{$bot->ally_id}";
   $redis->SADD("stats:{$alliance_key}:AllianceReportUpdate", (string)time());
   $members = $redis->SMEMBERS("{$alliance_key}:member");
   if (is_array($members)) foreach ($members as $member) {
-    $bot->lou->check();
+    $_this->setAlive();
     $user_id = $redis->hget("users", $member);
     $cities = $redis->SMEMBERS("user:{$user_id}:cities");
     if (is_array($cities)) foreach ($cities as $city) {
       $city_id = $redis->hget("cities", $city);
-      #if ($redis->hget("city:{$city_id}:data", 'state') >= 1) 
-      $count = $redis->ZCARD("city:{$city_id}:{$alliance_key}:reports");
+      //only castles
+      //if ($redis->hget("city:{$city_id}:data", 'state') >= 1) 
+        $count = $redis->ZCARD("city:{$city_id}:{$alliance_key}:reports");
       $bot->lou->get_city_reports($city_id, $count);
     }    
   }
-}, 'reports');
+  $bot->debug("Stopped " . posix_getpid() . '@'. $_this->getName());
+});
 
 $bot->add_tick_event(Cron::TICK5,                // Cron key
                     "GetReportUpdate",           // command key

@@ -315,6 +315,7 @@ class LoU_Bot implements SplObserver {
     public $igm;
     public $categories = array();
     
+    private $threads = array();
     private $hooks = array();
     private $events = array();
     private $logging = true;
@@ -345,7 +346,7 @@ class LoU_Bot implements SplObserver {
                                 $this->debug);
       if ($this->debug) $this->log("Entered debugmode!");
       $this->lou->attach($this);
-      $this->lou->get_self();        
+      $this->lou->get_self();
       $this->forum = Forum::factory($this->lou);
       $this->igm = Igm::factory($this->lou);
       $this->load_hooks();
@@ -517,6 +518,14 @@ class LoU_Bot implements SplObserver {
                                               $this->get_category($category));
       }
     }
+    
+    public function add_thread_event($events, $command, $name, $function) {
+      if (!is_array($events)) $events = array($events);
+      foreach($events as $event) {
+        if (!empty($event)) $this->events[$event][md5($name)] = executeThread::factory(trim($command),
+                                              $function);
+      }
+    }
 
     public function update(SplSubject $subject) {
       while($this->stop) {
@@ -578,8 +587,17 @@ class LoU_Bot implements SplObserver {
           $this->debug("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
           $events = @$this->events[$input['name']];
           if (is_array($events)) { sort($events); foreach ($events as $event) {
-            $event->callFunction($this, $input);
-            if ($event->breakThis()) break;
+            if($event instanceof Hook) {
+              $event->callFunction($this, $input);
+              if ($event->breakThis()) break;
+            } else if($event instanceof Thread) {
+              if ($event->isRunning()) {
+                $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
+                break;
+              }
+              $event->start($event, $this, $input);
+              $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
+            }
           } }
           break;
       }
@@ -590,8 +608,17 @@ class LoU_Bot implements SplObserver {
       $events = @$this->events[$input['name']];
       if (is_array($events)) { sort($events); foreach ($events as $event) {
         if (is_null($name) || $name == $event->name) {
-          $event->callFunction($this, $input);
-          if ($event->breakThis()) break;
+          if($event instanceof Hook) {
+              $event->callFunction($this, $input);
+              if ($event->breakThis()) return;
+            } else if($event instanceof Thread) {
+              if ($event->isRunning()) {
+                $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
+                return;
+              }
+              $event->start($event, $this, $input);
+              $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
+          }
         }
       } }
     }
@@ -614,7 +641,7 @@ class LoU_Bot implements SplObserver {
     
     public function kick_event() {
       ;// deprecated
-          }
+    }
     
     public function set_global_bridge($state = false) {
       $this->globalbridge = $state;
