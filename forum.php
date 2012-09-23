@@ -83,7 +83,7 @@ class Forum {
   }
   
   public function get_first_thread_post($forum_id, $thread_id) {
-    return $this->get_thread_post_by_num($forum_id, $thread_id, 0);
+    return $this->get_thread_post_id_by_num($forum_id, $thread_id, 0);
   }
   
   public function get_last_thread_post_id($forum_id, $thread_id) {
@@ -93,7 +93,7 @@ class Forum {
     } else return false;
   }
   
-  public function get_thread_post_by_num($forum_id, $thread_id, $offset = 0) {
+  public function get_thread_post_id_by_num($forum_id, $thread_id, $offset = 0) {
     if ($this->get_alliance_forum_posts($forum_id, $thread_id)) {
       if ($this->get_thread_post_count($forum_id, $thread_id) >= $offset) {
         $posts = array_keys($this->posts[$forum_id][$thread_id]['data']); 
