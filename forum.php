@@ -82,8 +82,8 @@ class Forum {
     }
   }
   
-  public function get_first_thread_post_id($forum_id, $thread_id) {
-    return $this->get_thread_post_id_by_num($forum_id, $thread_id, 0);
+  public function get_first_thread_post($forum_id, $thread_id) {
+    return $this->get_thread_post_by_num($forum_id, $thread_id, 0);
   }
   
   public function get_last_thread_post_id($forum_id, $thread_id) {
@@ -93,7 +93,7 @@ class Forum {
     } else return false;
   }
   
-  public function get_thread_post_id_by_num($forum_id, $thread_id, $offset = 0) {
+  public function get_thread_post_by_num($forum_id, $thread_id, $offset = 0) {
     if ($this->get_alliance_forum_posts($forum_id, $thread_id)) {
       if ($this->get_thread_post_count($forum_id, $thread_id) >= $offset) {
         $posts = array_keys($this->posts[$forum_id][$thread_id]['data']); 
@@ -119,8 +119,8 @@ class Forum {
       $this->note = $this->forums;
       $this->debug("LoU get info for forums");
       $this->notify();
-    return true;
-  }
+      return true;
+    }
     return false;
   }
   
@@ -132,8 +132,8 @@ class Forum {
       $this->note = $this->threads[$forum_id];
       $this->debug("LoU get info for forum ({$forum_id}) threads");
       $this->notify();
-    return true;
-  }
+      return true;
+    }
     return false;
   }
   
@@ -166,8 +166,8 @@ class Forum {
       $this->note = $this->posts[$forum_id][$thread_id];
       $this->debug("LoU get info for forum/thread ({$forum_id}/{$thread_id}) posts");
       $this->notify();
-    return true;
-  }
+      return true;
+    }
     return false;
   }
   
@@ -390,8 +390,8 @@ class Forum {
     foreach($forums as $data)
       $items[$data['fi']] = array(
         'id'            => $data['fi'],
-                       'name'          => $data['ft'],
-                       'updated'       => $data['hup'],
+        'name'          => $data['ft'],
+        'updated'       => $data['hup'],
         'rights'        => Forum::prepare_rights($data['rw'])
       );
                       
@@ -403,15 +403,15 @@ class Forum {
     foreach($threads as $data)
       $items[$data['ti']] = array(
         'author_id'        => $data['ai'],
-                       'author_name'      => $data['an'],
-                       'updated'          => $data['hup'],
-                       'forum_post'       => Forum::analyse_posts(array($data['fp'])),
-                       'posts'            => $data['pc'],
-                       'new_posts'        => $data['hup'],
-                       'last_post'        => Forum::analyse_posts(array($data['lp'])),
-                       'id'               => $data['ti'],
-                       'title'            => $data['tt']
-                       );
+        'author_name'      => $data['an'],
+        'updated'          => $data['hup'],
+        'forum_post'       => Forum::analyse_posts(array($data['fp'])),
+        'posts'            => $data['pc'],
+        'new_posts'        => $data['hup'],
+        'last_post'        => Forum::analyse_posts(array($data['lp'])),
+        'id'               => $data['ti'],
+        'title'            => $data['tt']
+      );
                        
     return array('type' => THREAD, 'data' => $items);
   }
@@ -420,12 +420,12 @@ class Forum {
     foreach($posts as $data)
       $items[$data['pi']] = array(
         'post_id'     => $data['pi'],
-                       'author_id'   => $data['pli'],
-                       'author_name' => $data['pn'],
-                       'last_change' => floor($data['t']/1000),
-                       'updated'     => $data['up'],
-                       'message'     => $data['m']
-                       );
+        'author_id'   => $data['pli'],
+        'author_name' => $data['pn'],
+        'last_change' => floor($data['t']/1000),
+        'updated'     => $data['up'],
+        'message'     => $data['m']
+      );
                        
     return array('type' => POST, 'data' => $items);
   }
