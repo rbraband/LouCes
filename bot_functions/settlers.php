@@ -85,7 +85,7 @@ function ($bot, $data) {
                 if ($settler = $redis->GET("{$settler_pattern}{$key}")) {
                   $settletime = date('d.m.Y H:i:s', time() - (SETTLERTTL - $redis->TTL("{$settler_pattern}{$key}")));
                   $settlers[$key] = array($settler, $settletime);
-                  $settle_strings[$key] = "[b][stadt]{$key}[/stadt][/b]â€ƒâ‡’ [spieler]{$settler}[/spieler], â™” Baron lÃ¤uft seit: [i]{$settletime}[/i]";
+                  $settle_strings[$key] = "[b][stadt]{$key}[/stadt][/b] ⇒ [spieler]{$settler}[/spieler], ♔ Baron läuft seit: [i]{$settletime}[/i]";
                   $redis->SADD("{$settler_key}:{$alliance_key}:{$continent_key}:_settler", "{$key}|{$settler}");
                 }
               }
@@ -110,25 +110,25 @@ function ($bot, $data) {
                   $ally_name = $redis->HGET("alliance:{$city_data['ll_alliance_id']}:data", 'name');
                   $lawless[$k] = "[b]{$city_data['category']}[/b] - [stadt]{$city_data['pos']}[/stadt] ({$city_data['points']}/{$city_data['ll_points']}) - [i]{$city_data['ll_name']}[/i] - [s][spieler]{$user_name}[/spieler][/s]" . (($ally_name) ? "[s][[allianz]{$ally_name}[/allianz]][/s]":"");
                   if (is_array($settlers[$v])) {
-                    $lawless[$k] = 'â˜’ ' . $lawless[$k] . "
-â€ƒâ‡’ [spieler]{$settlers[$v][0]}[/spieler], â™” Baron lÃ¤uft seit: [i]{$settlers[$v][1]}[/i]";
+                    $lawless[$k] = '☒ ' . $lawless[$k] . "
+ ⇒ [spieler]{$settlers[$v][0]}[/spieler], ♔ Baron läuft seit: [i]{$settlers[$v][1]}[/i]";
                     unset($settle_strings[$v]);
-                  } else $lawless[$k] = 'â˜ ' . $lawless[$k];
+                  } else $lawless[$k] = '☐ ' . $lawless[$k];
                 } else {
                   $user_name = $redis->HGET("user:{$city_data['user_id']}:data", 'name');
                   $ally_name = $redis->HGET("alliance:{$city_data['alliance_id']}:data", 'name');
                   $lawless[$k] = "[b]{$city_data['category']}[/b] - [stadt]{$city_data['pos']}[/stadt] ({$city_data['points']}/{$city_data['ll_points']}) - [i]{$city_data['name']}[/i] - [spieler]{$user_name}[/spieler]" . (($ally_name) ? "[[allianz]{$ally_name}[/allianz]]":"");
                   if (is_array($settlers[$v])) {
                     if ($settlers[$v][0] == $user_name) {
-                    $lawless[$k] = 'â˜‘ ' . $lawless[$k] . "
-â€ƒâ‡’ [spieler]{$settlers[$v][0]}[/spieler], â™” Baron lief seit: [i]{$settlers[$v][1]}[/i]";
+                    $lawless[$k] = '☑ ' . $lawless[$k] . "
+ ⇒ [spieler]{$settlers[$v][0]}[/spieler], ♔ Baron lief seit: [i]{$settlers[$v][1]}[/i]";
                     } else {
-                    $lawless[$k] = 'â˜’ ' . $lawless[$k] . "
-â€ƒâ‡’ [s][spieler]{$settlers[$v][0]}[/spieler], â™” Baron lief seit: [i]{$settlers[$v][1]}[/i][/s]";
+                    $lawless[$k] = '☒ ' . $lawless[$k] . "
+ ⇒ [s][spieler]{$settlers[$v][0]}[/spieler], ♔ Baron lief seit: [i]{$settlers[$v][1]}[/i][/s]";
                     }
                     unset($settle_strings[$v]);
                   }
-                  else $lawless[$k] = 'â˜’ ' . $lawless[$k];
+                  else $lawless[$k] = '☒ ' . $lawless[$k];
                 }
               }
               
@@ -151,7 +151,7 @@ $post_lawless_head = "[b][u]Lawless auf dem Kontinent:[/u] {$thread_name}[/b]
 ";
 $post_lawless_footer = '
 
-[u]Legende[/u]: â˜ - [i]frei[/i], â˜’ - [i]nicht frei[/i], â˜‘ - [i]eledigt![/i]';
+[u]Legende[/u]: ☐ - [i]frei[/i], ☒ - [i]nicht frei[/i], ☑ - [i]eledigt![/i]';
               $chunks = array();
               $post_lawless = array();
               if (!empty($lawless)) {
@@ -196,10 +196,11 @@ $post_settlers_footer = '
 
               // new last post = update
               // post txt
-              $post_update = "[u]letztes Update:[/u] [i]" . date('d.m.Y H:i:s', $str_time) . "[/i] | [u]Datenbank:[/u] [i]" . date('d.m.Y H:i:s', $last_update) . "[/i]" . (($update) ? ' | ('.count($new_residents).'|'.count($new_lawless).'|'.count($new_settler).')':'');
+              $post_update = "[u]letztes Update:[/u] [i]" . date('d.m.Y H:i:s', $str_time) . "[/i] | [u]Datenbank:[/u] [i]" . date('d.m.Y H:i:s', $last_update) . "[/i]" . (($update) ? ' | (R:'.count($new_residents).'|LL:'.count($new_lawless).'|S:'.count($new_settler).')':'');
               
               // ** forum            
               foreach ($post as $_post_id_post => $_post) {
+                // @internal: edit available posts
                 if ($_id = $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $_post_id_post)) {
                   if (!$bot->forum->edit_alliance_forum_post($forum_id, $thread_id, $_id, $_post)) {
                     $bot->log("Settlers forum {$thread_name}/{$thread_id}/{$_post_id_post}: edit post error!");
@@ -207,6 +208,7 @@ $post_settlers_footer = '
                     $error = 3;
                   }
                 } else {
+                  // @internal: or create new ones
                   if (!$bot->forum->create_alliance_forum_post($forum_id, $thread_id, $_post)) {
                     $bot->log("Settlers forum {$thread_name}/{$thread_id}: create post error!");
                     $bot->debug($_post);
@@ -216,7 +218,8 @@ $post_settlers_footer = '
               }
               $_posts_count = $bot->forum->get_thread_post_count($forum_id, $thread_id);
               if ($update && $_posts_count >= count($post)) {
-                $bot->log("Settlers forum {$thread_name}: update(".count($new_residents).'|'.count($new_lawless).'|'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
+                $bot->log("Settlers forum {$thread_name}: update(R:".count($new_residents).'|LL:'.count($new_lawless).'|S:'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
+                // @internal: on update we delete the last post and create a new one with $post_update to signal a new post/update ingame
                 for($idx = count($post); $idx <= $_posts_count; $idx ++) {
                   $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $idx));
                 }
@@ -226,7 +229,9 @@ $post_settlers_footer = '
                   $error = 3;
                 }
               } else {
+                $bot->log("Settlers forum {$thread_name}: info(R:".count($new_residents).'|LL:'.count($new_lawless).'|S:'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
                 $post[$_post_id] = $post_update;
+                // @internal: otherwise update the last post with $post_update
                 $bot->log("Settlers forum {$thread_name}: info(".count($new_residents).'|'.count($new_lawless).'|'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
                 for($idx = count($post); $idx <= $_posts_count; $idx ++) {
                   $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $idx));
@@ -277,7 +282,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Siedeln",               // command key
                    "LouBot_settler",        // callback function
                    false,                   // is a command PRE needet?
-                   '/^[!]?(si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
+                   '/^[!]?(settle|si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
 function ($bot, $data) {
   global $redis, $sms;
   if (!$redis->status()) return;
@@ -335,8 +340,8 @@ function ($bot, $data) {
               else $message = "Du siedelst nicht auf {$continent_name} {$lawless}[coords]{$pos}[/coords]";
             } else {
               $redis->DEL("{$settler_key}:{$alliance_key}:{$continent_key}:settlers:{$pos}");
-              if ($data["channel"] == ALLYIN) $message = "{$data['user']}, siedeln auf {$continent_name} {$lawless}[coords]{$pos}[/coords] gelÃ¶scht!";
-              else $message = "Siedeln auf {$continent_name} {$lawless}[coords]{$pos}[/coords] gelÃ¶scht!";
+              if ($data["channel"] == ALLYIN) $message = "{$data['user']}, siedeln auf {$continent_name} {$lawless}[coords]{$pos}[/coords] gelöscht!";
+              else $message = "Siedeln auf {$continent_name} {$lawless}[coords]{$pos}[/coords] gelöscht!";
               $receivers = $redis->SDIFF("{$settler_key}:{$alliance_key}:{$continent_key}:residents", "{$settler_key}:{$alliance_key}:nomail");
               // find 'settler:continent:10:settlers:123:123' name
               $settler_pattern = "{$settler_key}:{$alliance_key}:{$continent_key}:settlers:";
@@ -348,7 +353,7 @@ function ($bot, $data) {
               }
               if (!in_array($data['user'], $receivers) && !$redis->SISMEMBER("{$settler_key}:{$alliance_key}:nomail", $data['user'])) $receivers[] = $data['user'];
               $bot->log('IGM: send '.count($receivers).' messages to K'.$continent);
-              $bot->igm->send(implode(';',$receivers), "â™š K{$continent} {$pos} {$lawless}gelÃ¶scht!", "K{$continent} - {$lawless}[coords]{$pos}[/coords] - von [spieler]{$data['user']}[/spieler] gelÃ¶scht");
+              $bot->igm->send(implode(';',$receivers), "♚ K{$continent} {$pos} {$lawless}gelöscht!", "K{$continent} - {$lawless}[coords]{$pos}[/coords] - von [spieler]{$data['user']}[/spieler] gelöscht");
             }
           } else {
             $message = 'Siedeln Fehler: falsche Parameter!';
@@ -394,7 +399,7 @@ function ($bot, $data) {
               if (!in_array($name, $receivers) && !$redis->SISMEMBER("{$settler_key}:{$alliance_key}:nomail", $name)) $receivers[] = $name;
           }
           $bot->log('IGM: send '.count($receivers).' messages to K'.$continent);
-          $bot->igm->send(implode(';',$receivers), "â™” K{$continent} {$pos} {$lawless}siedeln", "K{$continent} - {$lawless}[coords]{$pos}[/coords] - [spieler]{$data['user']}[/spieler]");
+          $bot->igm->send(implode(';',$receivers), "♔ K{$continent} {$pos} {$lawless}siedeln", "K{$continent} - {$lawless}[coords]{$pos}[/coords] - [spieler]{$data['user']}[/spieler]");
         } else {
           $settler = $redis->GET("{$settler_key}:{$alliance_key}:{$continent_key}:settlers:{$pos}");
           $lawless = ($redis->SISMEMBER("{$continent_key}:lawless", $pos)) ? 'LL ' : '';
@@ -423,10 +428,10 @@ function ($bot, $data) {
 }, 'settlers');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
-                       "AddLawless",          // command key
-                       "LouBot_add_lawless",  // callback function
-                       true,                  // is a command PRE needet?
-                       '/(addlawless|addll)/i', // optional regex for
+                       "AddLawless",            // command key
+                       "LouBot_add_lawless",    // callback function
+                       true,                    // is a command PRE needet?
+                       '/(addlawless|addll)/i', // optional regex for key
 function ($bot, $data) {
   global $redis;
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
@@ -456,7 +461,7 @@ function ($bot, $data) {
     } else $message .= ' falsche Parameter!';
     $bot->add_privmsg($message, $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'settlers');                   
+}, 'settlers');
 
 $bot->add_privmsg_hook("RebaseSettleForum",           // command key
                        "LouBot_rebase_settle_forum",  // callback function
