@@ -476,7 +476,7 @@ function ($bot, $data) {
     $settler_key = "settler";
     
     if (!($forum_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:id"))) {
-      $forum_id = $bot->forum->get_forum_id_by_name(BOT_SETTLERS_FORUM, true);
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_SETTLERS_FORUM);
     } else $redis->DEL("{$settler_key}:{$alliance_key}:forum:id");
     sort($continents);
     if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
@@ -488,7 +488,6 @@ function ($bot, $data) {
           $continent_key = "continent:{$continent}";
           if (!($thread_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
             $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
-            $redis->SET("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
           } else $redis->DEL("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id");
           $thread_ids[] = $thread_id;
         }
