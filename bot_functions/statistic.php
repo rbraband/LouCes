@@ -16,7 +16,7 @@ function ($bot, $data) {
     $forum_id = $bot->forum->get_forum_id_by_name(BOT_STATISTICS_FORUM, true);
     $redis->SET("{$military_key}:{$alliance_key}:forum:id", $forum_id);
   }
-  
+
   sort($continents);
   if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
 #  if (is_array($continents) && $forum_id) {
@@ -335,7 +335,7 @@ function ($bot, $data) {
     $military_key = "military";
     
     if (!($forum_id = $redis->GET("{$military_key}:{$alliance_key}:forum:id"))) {
-      $forum_id = $bot->forum->get_forum_id_by_name(BOT_STATISTICS_FORUM, true);
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_STATISTICS_FORUM);
     } else $redis->DEL("{$military_key}:{$alliance_key}:forum:id");
     sort($continents);
     if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
@@ -346,10 +346,9 @@ function ($bot, $data) {
           $bot->debug("Military forum {$thread_name}: delete");
           $continent_key = "continent:{$continent}";
           if (!($thread_id = $redis->GET("{$military_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
-            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
-            $redis->SET("{$military_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
           } else $redis->DEL("{$military_key}:{$alliance_key}:forum:{$continent_key}:id");
-          $thread_ids[] = $thread_id;
+          if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
