@@ -233,8 +233,6 @@ $post_inactive_footer = '
               } else {
                 $post[$_post_id ++] = str_replace('%%ALLY%%', 'Andere', $post_inactive_head) . "[i]keine Spieler[/i]" . $post_settlers_footer;
               }
-   
-        
               // new last post = update
               // post txt
               $post_update = "[u]letztes Update:[/u] [i]" . date('d.m.Y H:i:s', $str_time) . "[/i] | [u]Datenbank:[/u] [i]" . date('d.m.Y H:i:s', $last_update) . "[/i]";
@@ -327,7 +325,7 @@ function ($bot, $data) {
     $black_key = "black";
     
     if (!($forum_id = $redis->GET("{$black_key}:{$alliance_key}:forum:id"))) {
-      $forum_id = $bot->forum->get_forum_id_by_name(BOT_BLACK_FORUM, true);
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_BLACK_FORUM);
     } else $redis->DEL("{$black_key}:{$alliance_key}:forum:id");
     sort($continents);
     if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
@@ -338,10 +336,9 @@ function ($bot, $data) {
           $bot->debug("Black forum {$thread_name}: delete");
           $continent_key = "continent:{$continent}";
           if (!($thread_id = $redis->GET("{$black_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
-            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
-            $redis->SET("{$black_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
           } else $redis->DEL("{$black_key}:{$alliance_key}:forum:{$continent_key}:id");
-          $thread_ids[] = $thread_id;
+         if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {

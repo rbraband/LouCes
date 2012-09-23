@@ -101,11 +101,11 @@ function ($bot, $data) {
                 Belagerung 
                 Plünderung
                 */
-                if (strstr($_forum_text, 'Überfall')) $_img = '♗';
-                elseif (strstr($_forum_text, 'Ausspioniert')) $_img = '♘';
-                elseif (strstr($_forum_text, 'Unterstützung')) $_img = '♖';
-                elseif (strstr($_forum_text, 'Belagerung')) $_img = '♚';
-                elseif (strstr($_forum_text, 'Plünderung')) $_img = '♙';
+                if (strstr($_forum_text, $_GAMEDATA->translations['tnf:assault'])) $_img = '♗';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:scout'])) $_img = '♘';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:support'])) $_img = '♖';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:siege'])) $_img = '♚';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:plunder'])) $_img = '♙';
                 else $_img = '♯';
                 $daily[$_header['pos']]['head'] = "
 [u]{$_header['category']} [b][stadt]{$_header['pos']}[/stadt][/b][/u] ~ [i]{$_header['name']}[/i] - [spieler]{$_header['owner_name']}[/spieler]";
@@ -171,11 +171,11 @@ $post_daily_footer = "
                 Belagerung 
                 Plünderung
                 */
-                if (strstr($_forum_text, 'Überfall')) $_img = '♗';
-                elseif (strstr($_forum_text, 'Ausspioniert')) $_img = '♘';
-                elseif (strstr($_forum_text, 'Unterstützung')) $_img = '♖';
-                elseif (strstr($_forum_text, 'Belagerung')) $_img = '♚';
-                elseif (strstr($_forum_text, 'Plünderung')) $_img = '♙';
+                if (strstr($_forum_text, $_GAMEDATA->translations['tnf:assault'])) $_img = '♗';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:scout'])) $_img = '♘';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:support'])) $_img = '♖';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:siege'])) $_img = '♚';
+                elseif (strstr($_forum_text, $_GAMEDATA->translations['tnf:plunder'])) $_img = '♙';
                 else $_img = '♯';
                 $weekly[$_header['pos']]['head'] = "
 [u]{$_header['category']} [b][stadt]{$_header['pos']}[/stadt][/b][/u] ~ [i]{$_header['name']}[/i] - [spieler]{$_header['owner_name']}[/spieler]";
@@ -219,12 +219,12 @@ $post_weekly_footer = '
               }
               // new last post = update
 // post txt
-$post_update = "[u]Legende[/u]:
-     ♗ - [i]Überfall[/i]
-     ♘ - [i]Ausspioniert[/i]
-     ♖ - [i]Unterstützung[/i]
-     ♚ - [i]Belagerung[/i]
-     ♙ - [i]Plünderung[/i]
+$post_update = "[u]{$_GAMEDATA->translations['tnf:worldmap legend']}[/u]:
+     ♗ - [i]{$_GAMEDATA->translations['tnf:assault']}[/i]
+     ♘ - [i]{$_GAMEDATA->translations['tnf:scout']}[/i]
+     ♖ - [i]{$_GAMEDATA->translations['tnf:support']}[/i]
+     ♚ - [i]{$_GAMEDATA->translations['tnf:siege']}[/i]
+     ♙ - [i]{$_GAMEDATA->translations['tnf:plunder']}[/i]
 ";
           
               // ** forum            
@@ -315,7 +315,7 @@ function ($bot, $data) {
     $reports_key = "reports";
     
     if (!($forum_id = $redis->GET("{$reports_key}:{$alliance_key}:forum:id"))) {
-      $forum_id = $bot->forum->get_forum_id_by_name(BOT_REPORTS_FORUM, true);
+      $forum_id = $bot->forum->get_forum_id_by_name(BOT_REPORTS_FORUM);
     } else $redis->DEL("{$reports_key}:{$alliance_key}:forum:id");
     sort($continents);
     if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
@@ -326,10 +326,9 @@ function ($bot, $data) {
           $bot->debug("Reports forum {$thread_name}: delete");
           $continent_key = "continent:{$continent}";
           if (!($thread_id = $redis->GET("{$reports_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
-            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
-            $redis->SET("{$reports_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
           } else $redis->DEL("{$reports_key}:{$alliance_key}:forum:{$continent_key}:id");
-          $thread_ids[] = $thread_id;
+          if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {

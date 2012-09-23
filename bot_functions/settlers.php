@@ -487,9 +487,9 @@ function ($bot, $data) {
           $bot->debug("Settlers forum {$thread_name}: delete");
           $continent_key = "continent:{$continent}";
           if (!($thread_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
-            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
+            $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
           } else $redis->DEL("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id");
-          $thread_ids[] = $thread_id;
+          if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
