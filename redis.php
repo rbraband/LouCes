@@ -26,11 +26,11 @@ class RedisWrapper {
   private function __construct($pid = 0) { 
     if (class_exists('Redis')) {
       try {
-      $this->redis = new Redis(); // needs https://github.com/nicolasff/phpredis
-      $this->connect = $this->redis->connect(REDIS_CONNECTION);
+        $this->redis = new Redis(); // needs https://github.com/nicolasff/phpredis
+        $this->connect = $this->redis->connect(REDIS_CONNECTION);
         //$redis->auth('foobared');
         $this->select(REDIS_DB);
-      $this->redis->setOption(Redis::OPT_PREFIX, REDIS_NAMESPACE);
+        $this->redis->setOption(Redis::OPT_PREFIX, REDIS_NAMESPACE);
         $this->pid = $pid;
       } catch (RedisException $e){
         $line = trim(date("[d/m @ H:i:s]") . "Redis connect Error: " . $e->getMessage()) . "\n";  
@@ -54,7 +54,7 @@ class RedisWrapper {
       self::$instance[$prozessor] = new self($prozessor); 
     }
     return self::$instance[$prozessor]; 
-  } 
+  }
 
   // getInstance method 
   public function reInstance($prozessor = null) { 
@@ -69,7 +69,7 @@ class RedisWrapper {
       return false;
     } 
     return (self::$instance[$prozessor]->pid == $prozessor) ? $prozessor : false; 
-  } 
+  }
 
   //... 
   
@@ -77,7 +77,7 @@ class RedisWrapper {
   public function __call($method, $args) { 
     if(method_exists($this->redis, $method)) { 
       try {
-      return call_user_func_array(array($this->redis, $method), $args); 
+        return call_user_func_array(array($this->redis, $method), $args);
       } catch (RedisException $e){
         $line = trim(date("[d/m @ H:i:s]") . "Redis command ('{$method}') Error: " . $e->getMessage()) . "\n";  
         error_log($line, 3, REDIS_LOG_FILE);
