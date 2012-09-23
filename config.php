@@ -31,11 +31,14 @@ define('ALICEID', 'youralice_id'); // need an published alicebot id
 define('GLOABLCHAT', false);
 // fork
 define('MAXCHILDS', 5);
+// server pain barrier
+define('MAX_PARALLEL_REQUESTS', 16);
 // forums
 define('BOT_STATISTICS_FORUM', 'Stats');
 define('BOT_SETTLERS_FORUM', 'Settlers');
 define('BOT_REPORTS_FORUM', 'Reports');
 define('BOT_BLACK_FORUM', 'BlackBook');
+define('BOT_SURVEY_FORUM', 'Abstimmung');
 // log and directory settings
 define('BOT_PATH',((CLI) ? $_SERVER["PWD"] : $_SERVER["DOCUMENT_ROOT"]).'/');
 define('LOG_PATH',BOT_PATH.'logs/');

@@ -10,6 +10,57 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 */
+
+/**
+ * Exception, die geworfen wird, wenn JSON Decode fehlschlägt
+ */
+class JsonDecodeException extends Exception {
+  function __construct($strMessage, $code = 0){
+    parent::__construct($strMessage, $code);
+  }
+}
+
+class JSON { 
+    
+  public static function Encode($obj) {
+    return json_encode($obj);
+  }
+  
+  public static function getErrorMessage($result) {
+    $messages = array(
+      JSON_ERROR_NONE           => 'No error has occurred',
+      JSON_ERROR_DEPTH          => 'The maximum stack depth has been exceeded',
+      JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON',
+      JSON_ERROR_CTRL_CHAR      => 'Control character error, possibly incorrectly encoded',
+      JSON_ERROR_SYNTAX         => 'Syntax error',
+      JSON_ERROR_UTF8           => 'Malformed UTF-8 characters, possibly incorrectly encoded'
+    );
+    return $messages[$result];
+  }
+ 
+  public static function Decode($json, $toAssoc = false) {
+         
+    //Remove UTF-8 BOM if present, json_decode() does not like it.
+    if(substr($json, 0, 3) == pack("CCC", 0xEF, 0xBB, 0xBF)) $json = substr($json, 3);
+    
+    try {
+      $result = json_decode(trim($json), $toAssoc);
+      $state = json_last_error();
+      if ($state !== JSON_ERROR_NONE) {
+        $error = JSON::getErrorMessage($state);
+        throw new JsonDecodeException("JSON Error ({$state}): {$error}");       
+      }
+    } catch (JsonDecodeException $e){
+      $line = trim(date("[d/m @ H:i:s]") . $e->getMessage()) . "\n";
+      $line = trim("Debug:" . $json) . "\n";        
+      error_log($line, 3, LOG_FILE);
+      return false;
+    }
+    
+    return $result;
+  }
+}
+
 class Server {
   public $cWidth;
   public $cHeight;
@@ -21,9 +72,9 @@ class Server {
   public $name;
   public $url;
   public $version;
-    
+
   static function factory($url, $opts) {
-        
+
     // New Server Object
     $server = new Server($url);
 
@@ -40,7 +91,7 @@ class Server {
     // Return the object
     return $server;
   }
-    
+
   public function __construct($url) {
     $this->url = $url;
   }
@@ -59,7 +110,7 @@ class LoU implements SplSubject {
                        'stepTime'      => 0,
                        'diff'          => 0,
                        'serverOffset'  => 0);
-    
+
   private $handle;
   private $mhandle;
   private $data;
@@ -77,11 +128,11 @@ class LoU implements SplSubject {
   const ajaxEndpoint = "Presentation/Service.svc/ajaxEndpoint/";
   const ajaxRetrys  = 3;
   const ajaxTimeout = 10;
-  const ajaxMulti   = 16;
+  const ajaxMulti   = MAX_PARALLEL_REQUESTS;
   const autoCheck   = 20;
   const jsonClue    = "\f";
   const cacheTest   = true;
-    
+
   protected $observers= array ();
   
   static function factory($url,
@@ -89,23 +140,23 @@ class LoU implements SplSubject {
                           $passwd,
                           $debug
                           ) {
-      global $redis;
-      // New LoU Object
-      $lou = new LoU;
-      
-      // Save data
-      $lou->url       = $url;
-      $lou->email     = $email;
-      $lou->passwd    = $passwd;
-      $lou->debug     = $debug;
-      $lou->cached    = (!$redis->status()) ? false : true;
-      // Connect to server
-      $lou->login($debug);
-      
-      // Return the object
-      return $lou;
-  }
+    global $redis;
+    // New LoU Object
+    $lou = new LoU;
     
+    // Save data
+    $lou->url       = $url;
+    $lou->email     = $email;
+    $lou->passwd    = $passwd;
+    $lou->debug     = $debug;
+    $lou->cached    = (!$redis->status()) ? false : true;
+    // Connect to server
+    $lou->login($debug);
+    
+    // Return the object
+    return $lou;
+  }
+
   public function __construct() {
     $this->session   = '';
     $this->msgId     = 0;
@@ -121,7 +172,7 @@ class LoU implements SplSubject {
     $this->cached    = false;
     $this->clone     = true;
   }
-    
+
   public function set_global_chat($c = 0) {
     $this->output("LoU set chat: ". $c);  
     $this->doPoll(array("CHAT:/continent $c"), true);
@@ -163,19 +214,19 @@ class LoU implements SplSubject {
     $data = curl_exec($this->handle);
     $header = curl_getinfo($this->handle);
     if (curl_errno($this->handle)) {
-        $this->output("Curl Error: (".curl_errno($this->handle).") " . curl_error($this->handle));
-        return false;
+      $this->output("Curl Error: (".curl_errno($this->handle).") " . curl_error($this->handle));
+      return false;
     } else if(intval($header['http_code']) >= 400) {
-        $this->output('Http Error: ' . $header['http_code']);
-        return false;
+      $this->output('Http Error: ' . $header['http_code']);
+      return false;
     }
     curl_close($this->handle);
     return $this->doOpenGame($debug);
   }
-    
+
   private function doOpenGame($debug = false) {
     $_url = 'http://www.lordofultima.com/'.BOT_LANG.'/';
-            
+
     $this->output('LoU open Game');
     $this->handle = curl_init();
     $_useragent = 'Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 5.0)';
@@ -212,13 +263,12 @@ class LoU implements SplSubject {
     $json = $this->getData($this->url.self::ajaxEndpoint."$endpoint", $data, $noerror, $debug);
     if ($debug) $this->debug($json);
     if (!$this->error) {
-      $decode = $this->analyse_json($json);
-      if ($this->error) return false;
+      if (false === ($decode = $this->analyse_json($json)) || $this->error) return false;
       $this->stack = $decode;
     }
     return($this->stack);
   }
-    
+
   public function post($endpoint, $data = array(), $noerror = false, $debug = false) {
     $this->stack = null;
     $this->error = false;
@@ -229,14 +279,14 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-    
-    
+
   public function getDebug($endpoint, $data = array(), $noerror = false) {
     return $this->get($endpoint, $data, $noerror, true);
   }
-    
+
   public function getCached($endpoint, $data = array(), $noerror = false, $expire = 180) {
     global $redis;
+
     if (!$redis->status() || !$this->cached) return $this->get($endpoint, $data, $noerror);
     $this->stack = array();
     $this->error = false;
@@ -245,8 +295,7 @@ class LoU implements SplSubject {
     if (self::cacheTest || $redis->TTL($key) === -1) {
       $json = $this->getData($this->url.self::ajaxEndpoint."$endpoint", $data, $noerror);
       if (!$this->error) {
-        $decode = $this->analyse_json($json);
-        if ($this->error) return false;
+        if (false === ($decode = $this->analyse_json($json)) || $this->error) return false;
         // test cache
         $serialized = $redis->GET($key);
         if (self::cacheTest && $serialized) {
@@ -275,7 +324,7 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-    
+
   public function getMulti($endpoint, $multi = array(), $debug = false) {
     $this->stack = array();
     $this->error = false;
@@ -287,8 +336,7 @@ class LoU implements SplSubject {
     $results = $this->getDataMulti($this->url.self::ajaxEndpoint."$endpoint", $_multi, $debug);
     if (!$this->error) {
       if (is_array($results)) foreach ($results as $json) {
-        $decode = $this->analyse_json($json);
-        if ($this->error) continue;
+        if (false === ($decode = $this->analyse_json($json)) || $this->error) continue;
         $this->stack[] = $decode;
       } else {
         $this->output("LoU drop ({$results})!");
@@ -298,9 +346,10 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-    
+
   public function getMultiCached($endpoint, $multi = array(), $debug = false, $expire = 180) {
     global $redis;
+
     if (!is_array($multi) || empty($multi)) return false;
     if (!$redis->status() || !$this->cached) return $this->getMulti($endpoint, $multi, $debug);
     $this->stack = array();
@@ -324,8 +373,7 @@ class LoU implements SplSubject {
       $results = $this->getDataMulti($this->url.self::ajaxEndpoint."$endpoint", $_multi, $debug);
       if (!$this->error) {
         if (is_array($results)) foreach ($results as $hash => $json) {
-          $decode = $this->analyse_json($json);
-          if ($this->error) continue;
+          if (false === ($decode = $this->analyse_json($json)) || $this->error) continue;
           $key = "cache:{$endpoint}:{$hash}";
           // test cache
           $serialized = $redis->GET($key);
@@ -350,12 +398,12 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-    
+
   public function getMsgId() {
     $this->msgId++;
     return $this->msgId;
   }
-    
+
   public function status() {
     if(!$this->connected)
       $this->output("not logged in yet.");
@@ -363,7 +411,7 @@ class LoU implements SplSubject {
       $this->output("already logged in.");
     return true;
   }
-    
+
   public function isConnected($force = false) {
     if(!$this->connected) {
       if ($force) {
@@ -374,7 +422,7 @@ class LoU implements SplSubject {
     }
     return true;
   }
-  
+
   private function doOpenSession($session, $debug = false) {
     $this->output("LoU open session: {$session}");
     $d = array(
@@ -388,7 +436,7 @@ class LoU implements SplSubject {
     }
     return false;
   }
-    
+
   private function getServerInfo() {
     $this->output("LoU get server info");
     $d = array(
@@ -404,7 +452,7 @@ class LoU implements SplSubject {
     }
     return false;
   }
-    
+
   public function login($debug = false) {
     if($this->connected){
       $this->output("already logged in.");
@@ -417,11 +465,15 @@ class LoU implements SplSubject {
     $this->server = $this->getServerInfo();
     $this->world = $this->server->name;
     $this->time = $this->get_time();
-    $this->connected = true;
-    $this->output("Login done.");
+    if (!$this->error) {
+      $this->connected = true;
+      $this->output("Login done.");
+    } else {
+      $this->output("Login failed.");
+    }
     return true;
   }
-    
+
   private function getData($url, $data = null, $accept_empty_data = false, $debug = false) {
     // Init curl + setup variables
     $retry = self::ajaxRetrys;
@@ -471,7 +523,7 @@ class LoU implements SplSubject {
     } while($retry && usleep(100));
     return $this->data;
   }
-    
+
   private function getDataMulti($url, $multi, $debug = false) {
     // Init multiCurl + setup variables
     // look for parralel cURLing http://php.net/manual/en/function.curl-multi-exec.php
@@ -511,7 +563,7 @@ class LoU implements SplSubject {
     }
     return $this->adata;
   }
-  
+
   public function doPoll($requests, $noerror = false) {
     if (empty($requests)) return false;
     $d = array(
@@ -521,14 +573,14 @@ class LoU implements SplSubject {
     );
     $this->get("Poll", $d, $noerror);
   }
-    
+
   public function doInitStats() {
     $d = array(
         "session"   => $this->session
     );
     $this->getCached("PlayerGetStatisticInitData", $d);
   }
-    
+
   public function doRemoteSession($noerror = false) {
     $d = array(
         "session"   => $this->session,
@@ -536,7 +588,7 @@ class LoU implements SplSubject {
     );
     $this->get("Poll", $d, $noerror);
   }
-    
+
   public function doInfoAllianceMulti($ids) {
     foreach($ids as $id) {
       $d[] = array(
@@ -546,7 +598,7 @@ class LoU implements SplSubject {
     }
     $this->getMulti("GetPublicAllianceInfo", $d);
   }
-    
+
   public function doInfoAlliance($id) {
     $d = array(
         "session"   => $this->session,
@@ -554,7 +606,7 @@ class LoU implements SplSubject {
     );
     $this->getCached("GetPublicAllianceInfo", $d);
   }
-    
+
   public function doInfoPlayerMulti($ids) {
     foreach($ids as $id) {
       $d[] = array(
@@ -727,7 +779,7 @@ class LoU implements SplSubject {
     $time = time()*1000;
     $this->output("LoU try time: {$time}");
     $this->doPoll(array("TIME:{$time}"));
-    $t = $this->get_stack('TIME');
+    $t = (!$this->error && is_array($this->stack['TIME'])) ? @$this->stack['TIME'] : null;
     if (is_array($t)) {
       $_time = array(
         'refTime'       => $t['Ref'],
@@ -735,9 +787,10 @@ class LoU implements SplSubject {
         'diff'          => $t['Diff'],
         'serverOffset'  => $t['o'] * 60 * 60 * 1000
       );
+      $this->output("LoU get ref time: {$_time['refTime']}");
+      return $_time;
     }
-    $this->output("LoU get ref time: {$_time['refTime']}");
-    return $_time;
+    return false;
   }
   
   public function get_step_time($step) {
@@ -892,7 +945,7 @@ class LoU implements SplSubject {
     }
     return true;
   }
-    
+
   public function get_player_stat_multi($ids) {
     $this->doInfoPlayerMulti($ids);
     $players = (!$this->error && $this->stack) ? @$this->stack : null;
@@ -951,12 +1004,12 @@ class LoU implements SplSubject {
   public function get_player_by_continent($continent = -1, $type = 0) {
     $this->doPlayerCount($continent, $type);
     $count = (!$this->error && $this->stack) ? @$this->stack : null;
-    if($count) {
+    if($count != -1) {
       $this->doPlayerRange(0, $count, $continent, 0, true, $type);
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->analyse_range_player_continent($range, $type);
-      if ($continent == '-1') $this->output("LoU get stat for {$count} residents on world");
-      else $this->output("LoU get stat for {$count} residents on K{$continent}");
+      if ($continent == '-1') $this->output("LoU get {$count} residents on world (type:{$type})");
+      else $this->output("LoU get {$count} residents on K{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -969,12 +1022,12 @@ class LoU implements SplSubject {
   public function get_player_by_continent_stat($continent = -1, $type = 0) {
     $this->doPlayerCount($continent, $type);
     $count = (!$this->error && $this->stack) ? @$this->stack : null;
-    if($count) {
+    if($count != -1) {
       $this->doPlayerRange(0, $count, $continent, 0, true, $type);
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->stat_range_player_continent($range, $continent, $type);
-      if ($continent == '-1') $this->output("LoU get stat for {$count} residents on world");
-      else $this->output("LoU get stat for {$count} residents on K{$continent}");
+      if ($continent == '-1') $this->output("LoU get stat for {$count} residents on world (type:{$type})");
+      else $this->output("LoU get stat for {$count} residents on K{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -983,12 +1036,12 @@ class LoU implements SplSubject {
   public function get_alliance_by_continent($continent = -1, $type = 0) {
     $this->doAllianceCount($continent, $type);
     $count = (!$this->error && $this->stack) ? @$this->stack : null;
-    if($count) {
+    if($count != -1) {
       $this->doAllianceRange(0, $count, $continent, 0, true, $type);
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->analyse_range_alliance_continent($range, $type);
-      if ($continent == '-1') $this->output("LoU get {$count} alliances for world");
-      else $this->output("LoU get {$count} alliances for continent K{$continent}");
+      if ($continent == '-1') $this->output("LoU get {$count} alliances for world (type:{$type})");
+      else $this->output("LoU get {$count} alliances for continent K{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -1001,12 +1054,12 @@ class LoU implements SplSubject {
   public function get_alliance_by_continent_stat($continent = -1, $type = 0) {
     $this->doAllianceCount($continent, $type);
     $count = (!$this->error && $this->stack) ? @$this->stack : null;
-    if($count) {
+    if($count != -1) {
       $this->doAllianceRange(0, $count, $continent, 0, true, $type);
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->stat_range_alliance_continent($range, $continent, $type);
-      if ($continent == '-1') $this->output("LoU get {$count} alliances for world");
-      else $this->output("LoU get {$count} alliances for continent K{$continent}");
+      if ($continent == '-1') $this->output("LoU get stat for {$count} alliances for world (type:{$type})");
+      else $this->output("LoU get stat for {$count} alliances for continent K{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -1073,7 +1126,8 @@ class LoU implements SplSubject {
     $citys = (!$this->error && $this->stack) ? @$this->stack : null;
     if(is_array($citys)) {
       $this->note = $this->stat_range_city_continent_ids($citys, $continent, $range);
-      $this->output("LoU get stat for ".count($citys)." cities");
+      if ($continent == '-1') $this->output("LoU get stat for ".count($citys)." cities on world");
+      else $this->output("LoU get stat for ".count($citys)." cities on K{$continent}");
       $this->notify();
     }
     return true;
@@ -1224,17 +1278,17 @@ class LoU implements SplSubject {
   }
 
   public function attach(SplObserver $observer) {
-      $this->observers[spl_object_hash($observer)] = $observer;
+    $this->observers[spl_object_hash($observer)] = $observer;
   }
   
   public function detach(SplObserver $observer) {
-      unset($this->observers[spl_object_hash($observer)]);
+    unset($this->observers[spl_object_hash($observer)]);
   }
   
   public function notify() {
-      foreach ($this->observers as $obj) {
-          $obj->update($this);
-      }
+    foreach ($this->observers as $obj) {
+      $obj->update($this);
+    }
   }
   
   static function clear_user_name($name) {
@@ -1259,46 +1313,46 @@ class LoU implements SplSubject {
   }
   
   static function prepare_credentials($roles) {
-	$_credentials = array();
-	if(is_array($roles)) foreach($roles as $role) {
-	$_credentials[$role['i']] = LoU::prepare_power($role);
-	}
-	return $_roles;
+    $_credentials = array();
+    if(is_array($roles)) foreach($roles as $role) {
+      $_credentials[$role['i']] = LoU::prepare_power($role);
+    }
+    return $_roles;
   }
-    
+
   static function prepare_role($role) {
     global $_GAMEDATA;
     return $_GAMEDATA->playerRoles[$role];
   }
   
   static function prepare_power($role) {
-	return array(
-	'Name'                                      => $role['n'],
-	'IsAdmin'                                   => $role['ia'],
-	'IsOfficer'                                 => $role['io'],
-	'CanInvite'                                 => $role['ci'],
-	'CanKick'                                   => $role['ck'],
-	'CanBroadcast'                              => $role['cb'],
-	'CanCreateForum'                            => $role['ccf'],
-	'CanCreatePolls'                            => $role['ccp'],
-	'CanEditRights'                             => $role['cer'],
-	'CanModerate'                               => $role['cm'],
-	'CanRepresent'                              => $role['cr'],
-	'CanPromoteLowerRoles'                      => $role['cp'],
-	'CanDefineAdmin'                            => $role['ia'],
-	'CanDisband'                                => $role['cd'],
-	'CanViewMemberReports'                      => $role['v'],
-	'CanDefinePalacePriorities'                 => $role['cdp'],
-	'CanSeeAllOutgoingAttacks'                  => $role['coa'],
-	'CanSeeOutgoingAttacksOneHourBeforeTheyHit' => $role['co1']
-	);
+    return array(
+      'Name'                                      => $role['n'],
+      'IsAdmin'                                   => $role['ia'],
+      'IsOfficer'                                 => $role['io'],
+      'CanInvite'                                 => $role['ci'],
+      'CanKick'                                   => $role['ck'],
+      'CanBroadcast'                              => $role['cb'],
+      'CanCreateForum'                            => $role['ccf'],
+      'CanCreatePolls'                            => $role['ccp'],
+      'CanEditRights'                             => $role['cer'],
+      'CanModerate'                               => $role['cm'],
+      'CanRepresent'                              => $role['cr'],
+      'CanPromoteLowerRoles'                      => $role['cp'],
+      'CanDefineAdmin'                            => $role['ia'],
+      'CanDisband'                                => $role['cd'],
+      'CanViewMemberReports'                      => $role['v'],
+      'CanDefinePalacePriorities'                 => $role['cdp'],
+      'CanSeeAllOutgoingAttacks'                  => $role['coa'],
+      'CanSeeOutgoingAttacksOneHourBeforeTheyHit' => $role['co1']
+    );
   }
-    
+
   static function prepare_title($title) {
     global $_GAMEDATA;
     return $_GAMEDATA->playerTitles[$title]['dn'];
   }
-    
+
   static function prepare_members($members) {
     $_members = array();
     if(is_array($members)) foreach($members as $member) {
@@ -1387,7 +1441,7 @@ class LoU implements SplSubject {
       default:  
         $channel = GLOBALIN;
     }
-      
+
     $note = array('type'    => CHAT,
                   'command' => null,
                   'params'  => null,
@@ -1567,7 +1621,7 @@ class LoU implements SplSubject {
         return INCOMMING;
     }
   }
-    
+
   private function prepare_range_players($data, $type = 0) {
     /*
     type 0 = points
@@ -1755,37 +1809,37 @@ class LoU implements SplSubject {
   
   static function stat_self($data) {
 
-      $note = array('type'          => STATISTICS,
-                    'id'            => BOT,
-                    'data'          => LoU::analyse_self($data));
-      return $note;
+    $note = array('type'          => STATISTICS,
+                  'id'            => BOT,
+                  'data'          => LoU::analyse_self($data));
+    return $note;
   }
   
   static function analyse_self($data) {
 
-      $note = array('type'          => BOT,
-                    'id'            => $data['Id'],
-                    'name'          => $data['Name'],
-                    'alliance'      => $data['AllianceName'],
-                    'alliance_id'   => $data['AllianceId'],
-                    'cities'        => array(),
-                    'points'        => $data['p']);
-      return $note;
+    $note = array('type'          => BOT,
+                  'id'            => $data['Id'],
+                  'name'          => $data['Name'],
+                  'alliance'      => $data['AllianceName'],
+                  'alliance_id'   => $data['AllianceId'],
+                  'cities'        => array(),
+                  'points'        => $data['p']);
+    return $note;
   }
   
   static function stat_continents($data) {
 
-      $note = array('type'          => STATISTICS,
-                    'id'            => CONTINENT,
-                    'data'          => LoU::analyse_continents($data));
-      return $note;
+    $note = array('type'          => STATISTICS,
+                  'id'            => CONTINENT,
+                  'data'          => LoU::analyse_continents($data));
+    return $note;
   }
   
   static function analyse_continents($data) {
 
-      $note = array('type'          => CONTINENT,
-                    'continents'    => $data);
-      return $note;
+    $note = array('type'          => CONTINENT,
+                  'continents'    => $data);
+    return $note;
   }
   
   static function get_sort_by_type($type, $sort = 0) {
@@ -1833,29 +1887,34 @@ class LoU implements SplSubject {
   }
   
   private function analyse_json($string) {
-    $decode = json_decode($string, true);
-    if (is_array($decode) && $decode != null) {
-      foreach($decode as $k => $v) {
-        if (@array_key_exists('C', $v) && $v['C'] == SYS && $v['D'] == KICKED) {
-          $this->error = KICKED;
-          $this->output("LoU kicked :(");
-          $this->connected = false;
-          return false;
-        } else 
-        if (@array_key_exists('C', $v) && $v['C'] == SYS && $v['D'] == CLOSED) {
-          $this->error = CLOSED;
-          $this->output("LoU close :(");
-          $this->connected = false;
-          return false;
+    try {
+      $decode = JSON::Decode($string, true);
+      if (is_array($decode) && $decode != null) {
+        foreach($decode as $k => $v) {
+          if (@array_key_exists('C', $v) && $v['C'] == SYS && $v['D'] == KICKED) {
+            $this->error = KICKED;
+            $this->output("LoU kicked :(");
+            $this->connected = false;
+            return false;
+          } else 
+          if (@array_key_exists('C', $v) && $v['C'] == SYS && $v['D'] == CLOSED) {
+            $this->error = CLOSED;
+            $this->output("LoU close :(");
+            $this->connected = false;
+            return false;
+          }
+          if (@array_key_exists('C', $v) && $v['C'] == VERSION) {
+            continue;
+          }
         }
-        if (@array_key_exists('C', $v) && $v['C'] == VERSION) {
-          continue;
-        }
+        return $decode;
       }
+    } catch (Exception $e){
+       $this->output($e);
     }
-    return $decode;
+    return false;
   }
-  
+
   public function get_stack($key) {
     if (is_array($this->stack) && !$this->error) {
       foreach($this->stack as $k => $v) {
@@ -1867,4 +1926,5 @@ class LoU implements SplSubject {
     return null;
   }
 }
+
 ?>
