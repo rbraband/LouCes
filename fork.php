@@ -94,7 +94,7 @@ class PHP_Fork {
      * @var string
      * @access private
      */
-    var $_name;
+    protected $_name;
 
     /**
      * PID of the child process.
@@ -102,7 +102,7 @@ class PHP_Fork {
      * @var integer
      * @access private
      */
-    var $_pid;
+    protected $_pid;
 
     /**
      * PUID of the child process owner; if you want to set this you must create and
@@ -111,7 +111,7 @@ class PHP_Fork {
      * @var integer
      * @access private
      */
-    var $_puid;
+    protected $_puid;
 
     /**
      * GUID of the child process owner; if you want to set this you must create and
@@ -120,7 +120,7 @@ class PHP_Fork {
      * @var integer
      * @access private
      */
-    var $_guid;
+    protected $_guid;
 
     /**
      * Are we into the child process?
@@ -128,7 +128,7 @@ class PHP_Fork {
      * @var boolean
      * @access private
      */
-    var $_isChild;
+    protected $_isChild;
 
     /**
      * A data structure to hold data for Inter Process Communications
@@ -139,7 +139,7 @@ class PHP_Fork {
      * @var array
      * @access private
      */
-    var $_internal_ipc_array;
+    protected $_internal_ipc_array;
 
     /**
      * KEY to access to Shared Memory Area.
@@ -147,7 +147,7 @@ class PHP_Fork {
      * @var integer
      * @access private
      */
-    var $_internal_ipc_key;
+    protected $_internal_ipc_key;
 
     /**
      * KEY to access to Sync Semaphore.
@@ -159,7 +159,7 @@ class PHP_Fork {
      * @var integer
      * @access private
      */
-    var $_internal_sem_key;
+    protected $_internal_sem_key;
 
     /**
      * Is Shared Memory Area OK? If not, the start() method will block
@@ -168,7 +168,7 @@ class PHP_Fork {
      * @var boolean
      * @access private
      */
-    var $_ipc_is_ok;
+    protected $_ipc_is_ok;
 
     /**
      * Whether the process is yet forked or not
@@ -176,7 +176,7 @@ class PHP_Fork {
      * @var boolean
      * @access private
      */
-    var $_running;
+    protected $_running;
 
     /**
      * Pointer to file for ftok()
@@ -184,7 +184,7 @@ class PHP_Fork {
      * @var string
      * @access private
      */
-    var $_ipc_file_1;
+    protected $_ipc_file_1;
 
     /**
      * Pointer to file for ftok()
@@ -192,7 +192,7 @@ class PHP_Fork {
      * @var string
      * @access private
      */
-    var $_ipc_file_2;
+    protected $_ipc_file_2;
     
     /**
      * Max reattemps for creating SHM
@@ -227,7 +227,7 @@ class PHP_Fork {
      * @access public
      * @return bool true if the Shared Memory Segments are OK, false otherwise.<br>Notice that only if shared mem is ok the process will be forked.
      */
-    function PHP_Fork($name, $puid = 0, $guid = 0, $umask = -1)
+    public function PHP_Fork($name, $puid = 0, $guid = 0, $umask = -1)
     {
         $this->_running = false;
 
@@ -257,7 +257,7 @@ class PHP_Fork {
      *
      * @return boolean true is the child is already forked.
      */
-    function isRunning()
+    public function isRunning()
     {
         if ($this->_running)
             return true;
@@ -305,7 +305,7 @@ class PHP_Fork {
      *
      * @see PHP_Fork::getLastAlive()
      */
-    function setAlive()
+    public function setAlive()
     {
         $this->setVariable('_pingTime', time());
     }
@@ -323,7 +323,7 @@ class PHP_Fork {
      * @see PHP_Fork::setAlive()
      * @return integer the elapsed seconds since the last child setAlive() call.
      */
-    function getLastAlive()
+    public function getLastAlive()
     {
         $timestamp = intval($this->getVariable('_pingTime'));
         if ($timestamp == 0)
@@ -340,7 +340,7 @@ class PHP_Fork {
      * @return string the name of the pseudo-thread.
      */
 
-    function getName()
+    public function getName()
     {
         return $this->_name;
     }
@@ -352,7 +352,7 @@ class PHP_Fork {
      * @return integer the PID.
      */
 
-    function getPid()
+    public function getPid()
     {
         return $this->_pid;
     }
@@ -463,7 +463,7 @@ class PHP_Fork {
      * The result is that two pseudo-threads are running concurrently: the current thread (which returns from the call to the start() method) and the other thread (which executes its run() method).
      */
 
-    function start()
+    public function start()
     {
         if (!$this->_ipc_is_ok) {
             throw new PHP_ForkException('Fatal error: PHP_Fork class unable to create SHM segments for process communications');
@@ -516,7 +516,7 @@ class PHP_Fork {
      * @return boolean true if the process is succesfully stopped, false otherwise.
      */
 
-    function stop()
+    public function stop()
     {
         $success = false;
 
@@ -556,7 +556,7 @@ class PHP_Fork {
      * @return boolean true if the process is succesfully exited, false otherwise.
      */
 
-    function wait()
+    public function wait()
     {
         $success = false;
 
@@ -587,7 +587,7 @@ class PHP_Fork {
      * @access private
      */
 
-    function _cleanThreadContext()
+    protected function _cleanThreadContext()
     {
         if ($this->_pid > 0) {
           @shmop_delete($this->_internal_ipc_key);
@@ -613,7 +613,7 @@ class PHP_Fork {
      * @param  $signo
      * @access private
      */
-    function _sig_handler($signo)
+    protected function _sig_handler($signo)
     {
         switch ($signo) {
             case SIGTERM:
@@ -667,7 +667,7 @@ class PHP_Fork {
      *
      * @access private
      */
-    function _sendSigUsr1()
+    protected function _sendSigUsr1()
     {
         if ($this->_pid > 0)
             posix_kill ($this->_pid, SIGUSR1);
@@ -678,7 +678,7 @@ class PHP_Fork {
      *
      * @access private
      */
-    function _waitIPCSemaphore()
+    protected function _waitIPCSemaphore()
     {
         while (true) {
             $ok = shmop_read($this->_internal_sem_key, 0, 1);
@@ -695,7 +695,7 @@ class PHP_Fork {
      *
      * @access private
      */
-    function _readFromIPCsegment()
+    protected function _readFromIPCsegment()
     {
         $serialized_IPC_array = shmop_read($this->_internal_ipc_key, 0, shmop_size($this->_internal_ipc_key));
 
@@ -711,7 +711,7 @@ class PHP_Fork {
      *
      * @access private
      */
-    function _writeToIPCsegment()
+    protected function _writeToIPCsegment()
     {
         // read the transaction bit (2° bit of _internal_sem_key segment)
         // if it value is 1 we're into the execution of a PHP_FORK_RETURN_METHOD
@@ -733,9 +733,11 @@ class PHP_Fork {
      * @return boolean true if the operation succeeded, false otherwise.
      * @access private
      */
-    function _createIPCsegment()
+    protected function _createIPCsegment()
     {
-        $this->_ipc_file_1 = "/tmp/" . rand() . md5($this->getName()) . ".shm";
+        $tmpPath = "/tmp/ipc/";
+        @mkdir($tmpPath, 0777, true);
+        $this->_ipc_file_1 = $tmpPath . $this->_makeSeedRand() . md5($this->getName()) . ".shm";
         touch ($this->_ipc_file_1);
         $shm_key = ftok($this->_ipc_file_1, 't');
         if ($shm_key == -1)
@@ -743,7 +745,7 @@ class PHP_Fork {
         $i = 0;
         do {
           $i++;
-          $this->_internal_ipc_key = shmop_open($shm_key, "c", 0644, 10240);
+          $this->_internal_ipc_key = @shmop_open($shm_key, "c", 0644, 10240);
         } while ($this->_internal_ipc_key === false && $i <= self::SHARED_MAX_ATTEMPS);
         
         if (!$this->_internal_ipc_key) {
@@ -758,22 +760,36 @@ class PHP_Fork {
      * @return boolean true if the operation succeeded, false otherwise.
      * @access private
      */
-    function _createIPCsemaphore()
+    protected function _createIPCsemaphore()
     {
-        $this->_ipc_file_2 = "/tmp/" . rand() . md5($this->getName()) . ".sem";
-        touch ($this->_ipc_file_2);
+        $tmpPath = "/tmp/ipc/";
+        $this->_ipc_file_2 = $tmpPath . $this->_makeSeedRand() . md5($this->getName()) . ".sem";
+        @mkdir($tmpPath, 0777, true);
+        touch($this->_ipc_file_2);
         $sem_key = ftok($this->_ipc_file_2, 't');
         if ($sem_key == -1)
             throw new PHP_ForkException("Fatal exception: PHP_Fork class creating semaphore (ftok)");
         $i = 0;
         do {
           $i++;
-          $this->_internal_sem_key = shmop_open($sem_key, "c", 0644, 10);
+          $this->_internal_sem_key = @shmop_open($sem_key, "c", 0644, 10);
         } while ($this->_internal_ipc_key === false && $i <= self::SHARED_MAX_ATTEMPS);
         
         if (!$this->_internal_sem_key) {
             return false;
         }
         return true;
+    }
+    
+    /**
+     * PHP_Fork::_makeSeedRand()
+     *
+     * @return rand() seed with microseconds
+     * @access private
+     */
+    protected function _makeSeedRand()
+    {
+      list($usec, $sec) = explode(' ', microtime());
+      return mt_srand((float) $sec + ((float) $usec * 100000));
     }
 }
