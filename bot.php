@@ -42,7 +42,7 @@ class LockManager {
     if (!flock($this->fh, LOCK_EX + LOCK_NB)) {
       throw new LockManagerRunningException('Bot already running!');
     } else {
-      declare(ticks=10000);
+      declare(ticks = 10000);
       register_tick_function(array(&$this, 'reLock'), true);
     }
   }
@@ -68,33 +68,40 @@ class LockManagerRunningException extends Exception {
 }
 
 class executeThread extends PHP_Fork {
-    public $worker;
-    
-    public function __construct($name) {
-        $this->PHP_Fork($name);
-    }
-    
-    public function run() {
-      return call_user_func_array(array($this, 'worker'), func_get_args());
-    }
-    
-    public function __call($method, $args) {
-      if ($this->{$method} instanceof Closure) {
-        return call_user_func_array($this->{$method}, $args);
-      } else {
-        try {
-          return parent::__call($method, $args);
-        } catch (PHP_ForkException $e){
-          $line = trim(date("[d/m @ H:i:s]") . "PHP_Fork command ('{$method}' on '{$this->getName()}') Error: " . $e->getMessage()) . "\n";  
-          error_log($line, 3, LOG_FILE);
-          return false;
-        }
+  public $worker;
+  
+  public function __construct($name) {
+      $this->PHP_Fork($name);
+  }
+  
+  static function factory($name,
+                          $function) {
+    $thread = new executeThread($name);
+    $thread->worker = $function;
+    return $thread;
+  }
+
+  public function run() {
+    return call_user_func_array(array($this, 'worker'), func_get_args());
+  }
+  
+  public function __call($method, $args) {
+    if ($this->{$method} instanceof Closure) {
+      return call_user_func_array($this->{$method}, $args);
+    } else {
+      try {
+        return parent::__call($method, $args);
+      } catch (PHP_ForkException $e){
+        $line = trim(date("[d/m @ H:i:s]") . "PHP_Fork command ('{$method}' on '{$this->getName()}') Error: " . $e->getMessage()) . "\n";  
+        error_log($line, 3, LOG_FILE);
+        return false;
       }
     }
-    
-    public function __destruct() {
-      $this->_cleanThreadContext();
-    }
+  }
+  
+  public function __destruct() {
+    $this->_cleanThreadContext();
+  }
 }
 
 class Category implements SplObserver {
@@ -307,21 +314,18 @@ class LoU_Bot implements SplObserver {
     public $owner = BOT_OWNER;
     public $globalchat = false;
     public $globalbridge = false;
-    
     public $lock;
     public $cron;
     public $lou;
     public $forum;
     public $igm;
     public $categories = array();
-    
     private $threads = array();
     private $hooks = array();
     private $events = array();
     private $logging = true;
     private $stop = false;
     private $debug = false;
-    
     public function __construct() {
       global $_ARG;
       $this->debug = $_ARG->debug;
@@ -330,9 +334,7 @@ class LoU_Bot implements SplObserver {
       } catch (LockManagerRunningException $e) {
         die("Bot läuft bereits...\n");
       }
-    }
-    
-    public function __destruct() {
+    }    public function __destruct() {
       $this->debug("Terminated: " . posix_getpid());
     }
   
@@ -351,28 +353,23 @@ class LoU_Bot implements SplObserver {
       $this->igm = Igm::factory($this->lou);
       $this->load_hooks();
       $this->globalchat = (defined('GLOBALCHAT')) ? GLOBALCHAT : false;
+      $this->lou->get_self_alliance();
       while ($this->lou->isConnected(true)) {
         $slepp_until = time() + POLLTRIP;
         $event = $this->cron->check();
         $chat = $this->lou->check();
         if (time() < $slepp_until) time_sleep_until($slepp_until);
       }
-    }
-    
-    public function add_category($category, $rules = array(), $access = PUBLICY) {
+    }    public function add_category($category, $rules = array(), $access = PUBLICY) {
       if (!is_object(@$this->categories[md5(strtoupper($category))]))
         $this->categories[md5(strtoupper($category))] = Category::factory($category,
                                                                           $rules,
                                                                           $access);
-    }
-    
-    public function get_category($category) {
+    }    public function get_category($category) {
       if (!is_object(@$this->categories[md5(strtoupper($category))]))
         $this->add_category($category);
       return $this->categories[md5(strtoupper($category))];
-    }
-    
-    public function add_globlmsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
+    }    public function add_globlmsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
       $this->hooks[GLOBALIN][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               $is_command,
@@ -388,114 +385,98 @@ class LoU_Bot implements SplObserver {
                                               $regex,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_provmsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
+    }    public function add_provmsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
       $this->hooks[PRIVATEOUT][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               $is_command,
                                               $regex,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_allymsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
+    }    public function add_allymsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
       $this->hooks[ALLYIN][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               $is_command,
                                               $regex,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_offimsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
+    }    public function add_offimsg_hook($command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
       $this->hooks[OFFICER][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               $is_command,
                                               $regex,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_msg_hook($msg_hook, $command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
+    }    public function add_msg_hook($msg_hook, $command, $name, $is_command = false, $regex = '', $function, $category = 'default') {
       $_channels = array(OFFICER => 'add_offimsg_hook', ALLYIN => 'add_allymsg_hook', PRIVATEIN => 'add_privmsg_hook', PRIVATEOUT => 'add_provmsg_hook', GLOBALIN => 'add_globlmsg_hook');
       if (is_array($msg_hook)) {foreach($msg_hook as $msg) {if (array_key_exists($msg, $_channels)) $this->{$_channels[$msg]}($command, $name, $is_command, $regex, $function, $category);}}
       else $this->{$_channels[$msg_hook]}($command, $name, $is_command, $regex, $function, $category);
-    }
-    
-    public function add_user_hook($command, $name, $function, $category = 'user') {
+    }    public function add_user_hook($command, $name, $function, $category = 'user') {
       $this->hooks[USER][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_bot_hook($command, $name, $function, $category = 'bot') {
+    }    public function add_bot_hook($command, $name, $function, $category = 'bot') {
       $this->hooks[BOT][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_alliance_hook($command, $name, $function, $category = 'alliance') {
+    }    public function add_alliance_hook($command, $name, $function, $category = 'alliance') {
       $this->hooks[ALLIANCE][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_attack_hook($command, $name, $function, $category = 'attacks') {
+    }    public function add_attack_hook($command, $name, $function, $category = 'attacks') {
       $this->hooks[ALLYATT][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_report_hook($command, $name, $function, $category = 'reports') {
+    }    public function add_report_hook($command, $name, $function, $category = 'reports') {
       $this->hooks[REPORT][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_reportheader_hook($command, $name, $function, $category = 'reports') {
+    }    public function add_reportheader_hook($command, $name, $function, $category = 'reports') {
       $this->hooks[REPORTHEADER][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_system_hook($command, $name, $function, $category = 'system') {
+    }    public function add_system_hook($command, $name, $function, $category = 'system') {
       $this->hooks[SYSTEM][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_statistic_hook($command, $name, $function, $category = 'statistic') {
+    }    public function add_statistic_hook($command, $name, $function, $category = 'statistic') {
       $this->hooks[STATISTICS][md5($name)] = Hook::factory(trim($command),
                                               $name,
                                               false,
                                               null,
                                               $function,
                                               $this->get_category($category));
-    }
-    
-    public function add_tick_event($events, $command, $name, $function, $category = 'tick') {
+    }    public function add_tick_event($events, $command, $name, $function, $category = 'tick') {
+      if (!is_array($events)) $events = array($events);
+      foreach($events as $event) {
+        if (!empty($event)) $this->events[$event][md5($name)] = Hook::factory(trim($command),
+                                              $name,
+                                              false,
+                                              null,
+                                              $function,
+                                              $this->get_category($category));
+      }
+    }    public function add_cron_event($events, $command, $name, $function, $category = 'cron') {
       if (!is_array($events)) $events = array($events);
       foreach($events as $event) {
         if (!empty($event)) $this->events[$event][md5($name)] = Hook::factory(trim($command),
@@ -506,19 +487,7 @@ class LoU_Bot implements SplObserver {
                                               $this->get_category($category));
       }
     }
-    
-    public function add_cron_event($events, $command, $name, $function, $category = 'cron') {
-      if (!is_array($events)) $events = array($events);
-      foreach($events as $event) {
-        if (!empty($event)) $this->events[$event][md5($name)] = Hook::factory(trim($command),
-                                              $name,
-                                              false,
-                                              null,
-                                              $function,
-                                              $this->get_category($category));
-      }
-    }
-    
+
     public function add_thread_event($events, $command, $name, $function) {
       if (!is_array($events)) $events = array($events);
       foreach($events as $event) {
@@ -528,6 +497,7 @@ class LoU_Bot implements SplObserver {
     }
 
     public function update(SplSubject $subject) {
+      global $redis;
       while($this->stop) {
         $this->log("Wait for reload!");
         usleep(25 * 1000);
@@ -586,44 +556,43 @@ class LoU_Bot implements SplObserver {
         case TICK:
           $this->debug("Fire".ucfirst(strtolower($input['type']))."Events ({$input['name']})");
           $events = @$this->events[$input['name']];
-          if (is_array($events)) { sort($events); foreach ($events as $event) {
+          if (is_array($events)) { sort($events); foreach ($events as $_key => $event) {
             if($event instanceof Hook) {
               $event->callFunction($this, $input);
               if ($event->breakThis()) break;
-            } else if($event instanceof Thread) {
-              if ($event->isRunning()) {
+            } else if($event instanceof executeThread) {
+              if ($events[$_key]->isRunning()) {
                 $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
                 break;
               }
-              $event->start($event, $this, $input);
+              $events[$_key]->start($event, $this, $input);
               $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
+              $redis->reInstance();
             }
           } }
           break;
       }
-    }
-    
-    public function call_event($input, $name = null) {
+    }    public function call_event($input, $name = null) {
+      global $redis;
       $this->debug("Call".ucfirst(strtolower($input['type']))."Events ({$input['name']})".((!is_null($name)) ? " -> {$name}" : ''));
       $events = @$this->events[$input['name']];
       if (is_array($events)) { sort($events); foreach ($events as $event) {
         if (is_null($name) || $name == $event->name) {
           if($event instanceof Hook) {
-              $event->callFunction($this, $input);
-              if ($event->breakThis()) return;
-            } else if($event instanceof Thread) {
-              if ($event->isRunning()) {
-                $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
-                return;
-              }
-              $event->start($event, $this, $input);
-              $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
+            $event->callFunction($this, $input);
+            if ($event->breakThis()) return;
+          } else if($event instanceof executeThread) {
+            if ($event->isRunning()) {
+              $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
+              return;
+            }
+            $event->start($event, $this, $input);
+            $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
+            $redis->reInstance();
           }
         }
       } }
-    }
-    
-    public function call_hook($input, $name = null) {
+    }    public function call_hook($input, $name = null) {
       if (isset($input['type'])) {
         $hooks = @$this->hooks[$input['type']];
         $this->debug("Call".ucfirst(strtolower($input['type']))."Hooks ({$input['name']}:{$input['id']})".((!is_null($name)) ? " -> {$name}" : ''));
@@ -637,17 +606,11 @@ class LoU_Bot implements SplObserver {
           if ($hook->breakThis()) break;
         }
       }
-    }
-    
-    public function kick_event() {
+    }    public function kick_event() {
       ;// deprecated
-    }
-    
-    public function set_global_bridge($state = false) {
+    }    public function set_global_bridge($state = false) {
       $this->globalbridge = $state;
-    }
-    
-    public function reply_msg($type, $message, $user = null) {
+    }    public function reply_msg($type, $message, $user = null) {
       switch($type) {
         case PRIVATEIN:
           $this->add_privmsg($message, $user);
@@ -662,54 +625,30 @@ class LoU_Bot implements SplObserver {
           $this->lou->offimsg($message);
           break;
       }
-    }
-    
-    public function add_privmsg($message, $user) {
+    }    public function add_privmsg($message, $user) {
       $this->lou->privmsg($message, $user);
-    }
-    
-    public function add_globlmsg($message) {
+    }    public function add_globlmsg($message) {
       $this->lou->globlmsg($message);
-    }
-    
-    public function add_offimsg($message) {
+    }    public function add_offimsg($message) {
       $this->lou->offimsg($message);
-    }
-    
-    public function add_allymsg($message) {
+    }    public function add_allymsg($message) {
       if ($this->globalbridge) $this->lou->globlmsg($message);
       else $this->lou->allymsg($message);
-    }
-    
-    public function set_ally_id($id) {
+    }    public function set_ally_id($id) {
        $this->ally_id = $id;
-    }
-    
-    public function set_ally_name($name) {
+    }    public function set_ally_name($name) {
        $this->ally_name = $name;
-    }
-    
-    public function set_ally_shortname($name) {
+    }    public function set_ally_shortname($name) {
        $this->ally_shortname = $name;
-    }
-    
-    public function set_bot_user_id($id) {
+    }    public function set_bot_user_id($id) {
        $this->bot_user_id = $id;
-    }
-    
-    public function set_bot_user_name($name) {
+    }    public function set_bot_user_name($name) {
        $this->bot_user_name = $name;
-    }
-    
-    public function get_bot_user_name($name) {
+    }    public function get_bot_user_name($name) {
        return $this->bot_user_name;
-    }
-    
-    public function is_himself($name) {
+    }    public function is_himself($name) {
       return (mb_strtoupper($name) == mb_strtoupper($this->bot_user_name))? true : false;
-    }
-    
-    public function is_ally_user($user) {
+    }    public function is_ally_user($user) {
       global $redis;
       if (empty($user)||!$redis->status()) return false;
 
@@ -720,21 +659,15 @@ class LoU_Bot implements SplObserver {
         if ($redis->hGet("user:{$uid}:data", 'alliance') == $this->ally_id) return true;
         else return false;
       }
-    }
-    
-    public function get_user_id($user) {
+    }    public function get_user_id($user) {
       global $redis;
       if (empty($user)||!$redis->status()) return false;
       return $redis->hGet('aliase', mb_strtoupper($user));
-    }
-    
-    public function get_user_by_hash($hash) {
+    }    public function get_user_by_hash($hash) {
       global $redis;
       if (empty($hash)||!$redis->status()) return false;
       return $redis->hGet('hashes', $hash);
-    }
-    
-    public function set_user_hash($user) {
+    }    public function set_user_hash($user) {
       global $redis;
       if (empty($user)||!$redis->status()) return false;
       if($uid = $redis->hGet('aliase', mb_strtoupper($user))) {
@@ -744,9 +677,7 @@ class LoU_Bot implements SplObserver {
         $redis->hSet('hashes', $newhash, $uid);
         return $newhash;
       } else return false;
-    }
-    
-    public function set_hash($user, $extension) {
+    }    public function set_hash($user, $extension) {
       global $redis;
       if (empty($user)||!$redis->status()) return false;
       if($uid = $redis->hGet('aliase', mb_strtoupper($user))) {
@@ -756,30 +687,22 @@ class LoU_Bot implements SplObserver {
         $redis->hSet('hashes', $newhash, $uid);
         return $newhash;
       } else return false;
-    }
-    
-    public function get_user_name_by_id($uid) {
+    }    public function get_user_name_by_id($uid) {
       global $redis;
       if (empty($uid)||!$redis->status()) return false;
       return $redis->hGet("user:{$uid}:data", 'name');
-    }
-    
-    public function get_user_random_nick_by_id($uid) {
+    }    public function get_user_random_nick_by_id($uid) {
       global $redis;
       if (empty($uid)||!$redis->status()) return false;
       return $redis->sRandMember("user:{$uid}:alias");
-    }
-    
-    public function get_random_nick($user) {
+    }    public function get_random_nick($user) {
       global $redis;
       if (empty($user)) return false;
       else if ($redis->status()) {
         $uid = $redis->hGet('aliase', mb_strtoupper($user));
         return $redis->sRandMember("user:{$uid}:alias");
       } else return $user;
-    }
-    
-    public function get_nick($user) {
+    }    public function get_nick($user) {
       global $redis;
       if (empty($user)) return false;
       else if ($redis->status()) {
@@ -802,16 +725,12 @@ class LoU_Bot implements SplObserver {
         else return ($user == $this->owner) ? true : false;
       }
       else return ($user == $this->owner) ? true : false;
-    }
-    
-    public function get_role($role) {
+    }    public function get_role($role) {
       global $redis;
       if (!$redis->status()) return false;
       $alliance_key = "alliance:{$this->ally_id}";
       return $redis->hGet("{$alliance_key}:roles", $role);
-    }
-    
-    public function get_access($user, $rights = 63) {
+    }    public function get_access($user, $rights = 63) {
       global $redis;
       if (empty($user)) return false;
       if (!$redis->status()) return ($user == $this->owner) ? true : false;
@@ -823,26 +742,18 @@ class LoU_Bot implements SplObserver {
         return pow(2, ($role - $roles_min)) & $rights;
       }
       return false;
-    }
-    
-    public function is_owner($user) {
+    }    public function is_owner($user) {
       return ($user == $this->owner) ? true : false;
-    }
-    
-    public function setDebug($debug) {
+    }    public function setDebug($debug) {
       $this->debug = (bool) $debug;
       if (@$this && $this->lou)
         $this->lou->setDebug($debug);
-    }
-    
-    public function debug($message) {
+    }    public function debug($message) {
       if ($this->debug) {
         echo date("[d/m @ H:i:s]") . trim($message) . "\n\r";
         $this->log($message);
       }
-    }
-    
-    public function log($message) {
+    }    public function log($message) {
       if(@$this && !$this->logging)
         return;
       else if (@$this) {
@@ -852,15 +763,11 @@ class LoU_Bot implements SplObserver {
       else if (CLI)
         fwrite(STDOUT, $message);
       else echo $message;
-    }
-    
-    public function reload() {
+    }    public function reload() {
       $this->stop = true;
       if($this->load_hooks(true)) $this->stop = false;
       return true;
-    }
-    
-    private function load_hooks($reload = false) {
+    }    private function load_hooks($reload = false) {
       $dirh = opendir(FNC_DATA);
       while ($file = readdir($dirh)) {
         if (substr($file, -4) == ".php") {
