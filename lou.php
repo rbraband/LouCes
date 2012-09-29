@@ -124,6 +124,7 @@ class LoU implements SplSubject {
   private $url;
   private $cached;
   private $clone;
+  private $reLogins;
   
   const ajaxEndpoint = "Presentation/Service.svc/ajaxEndpoint/";
   const ajaxRetrys  = 3;
@@ -132,6 +133,7 @@ class LoU implements SplSubject {
   const autoCheck   = 20;
   const jsonClue    = "\f";
   const cacheTest   = true;
+  const maxRelogin  = 3;
 
   protected $observers= array ();
   
@@ -222,6 +224,37 @@ class LoU implements SplSubject {
     }
     curl_close($this->handle);
     return $this->doOpenGame($debug);
+  }
+  
+
+  private function disconnect($debug = false) {
+    $_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/logout';
+          
+    $this->output('LoU logout');
+    $this->handle = curl_init();
+    $_useragent = 'Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 5.0)';
+    curl_setopt($this->handle, CURLOPT_USERAGENT, $_useragent);
+    curl_setopt($this->handle, CURLOPT_URL, $_url);
+    curl_setopt($this->handle, CURLOPT_POST, true);
+    curl_setopt($this->handle, CURLOPT_VERBOSE, $debug);
+    curl_setopt($this->handle, CURLOPT_MAXREDIRS, self::ajaxTimeout);
+    curl_setopt($this->handle, CURLOPT_CONNECTTIMEOUT, self::ajaxTimeout); // Timeout if it takes too long
+    curl_setopt($this->handle, CURLOPT_AUTOREFERER, true);
+    curl_setopt($this->handle, CURLOPT_COOKIEFILE, PERM_DATA.'cookies.txt');
+    curl_setopt($this->handle, CURLOPT_COOKIEJAR, PERM_DATA.'cookies.txt');
+    curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->handle, CURLOPT_FOLLOWLOCATION, true);
+    $data = curl_exec($this->handle);
+    $header = curl_getinfo($this->handle);
+    if (curl_errno($this->handle)) {
+      $this->output("Curl Error: (".curl_errno($this->handle).") " . curl_error($this->handle));
+      return false;
+    } else if(intval($header['http_code']) >= 400) {
+      $this->output('Http Error: ' . $header['http_code']);
+      return false;
+    }
+    curl_close($this->handle);
+    return true;
   }
 
   private function doOpenGame($debug = false) {
@@ -415,8 +448,17 @@ class LoU implements SplSubject {
   public function isConnected($force = false) {
     if(!$this->connected) {
       if ($force) {
-        $this->output("LoU relogin");
-        return $this->login();
+        if ($this->reLogins >= self::maxRelogin) {
+          $this->reLogins = 0;
+          $this->output("LoU logout&login");
+          $this->logout();
+          return $this->login();
+        } else {
+          $this->reLogins ++;
+          $this->output("LoU relogin");
+
+          return $this->login();
+        }
       }
       else return false;
     }
@@ -471,6 +513,16 @@ class LoU implements SplSubject {
     } else {
       $this->output("Login failed.");
     }
+    return true;
+  }
+  
+  public function logout($debug = false) {
+    $this->connected = false;
+    while ($this->disconnect($debug) === false) {
+      $this->output("Logout error... retry!");
+      usleep(mt_rand(500, 15000) * 10000);
+    }
+    $this->output("Logout done.");
     return true;
   }
 
