@@ -21,6 +21,69 @@ $bot->add_privmsg_hook("Say",                  // command key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $bot->add_allymsg(implode(' ', $data['params']));
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("Ignore",              // command key
+                       "LouBot_ignore",       // callback function
+                       true,                  // is a command PRE needet?
+                       '/^ignore$/i',         // optional regex for key
+function ($bot, $data) {
+  if($bot->is_op_user($data['user'])) {
+    if (empty($data['params'][0]) || !$bot->get_user_id($data['params'][0])) return true;
+    if($bot->lou->set_ignore($data['params'][0])) $bot->add_privmsg("Done!", $data['user']);
+    else $bot->add_privmsg("Error!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("UnIgnore",              // command key
+                       "LouBot_unignore",       // callback function
+                       true,                    // is a command PRE needet?
+                       '/^unignore$/i',         // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if($bot->is_op_user($data['user'])) {
+    if (empty($data['params'][0]) || !($nick = $bot->get_nick($data['params'][0]))) return true;
+    $ignore_key = "ignore";
+    $alliance_key = "alliance:{$bot->ally_id}";  
+    if (!($ignoreId = $redis->hGet("{$ignore_key}:{$alliance_key}", $nick))) return $bot->add_privmsg("Not listed!", $data['user']);;
+    if($bot->lou->del_ignore($ignoreId)) {
+      if ($redis->hDel("{$ignore_key}:{$alliance_key}", $nick))
+        $bot->add_privmsg("Done!", $data['user']);
+      else $bot->add_privmsg("Error!", $data['user']);
+    }
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator');
+
+$bot->add_privmsg_hook("ResetForen",              // command key
+                       "LouBot_reset_ally_forum", // callback function
+                       true,                      // is a command PRE needet?
+                       '',                        // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if($bot->is_op_user($data['user'])) {
+    //foren
+    $foren = array('settler', 'black', 'military', 'doku');
+    $alliance_key = "alliance:{$bot->ally_id}";
+    foreach($foren as $forum) {
+      $redis->DEL("{$forum}:{$alliance_key}:forum:id");
+      $keys = $redis->getKeys("{$forum}:{$alliance_key}:forum:continent:*:id");
+      if (is_array($keys)) foreach($keys as $key) {
+        $redis->DEL("{$key}");
+      }
+    }
+    $bot->add_privmsg("Done!", $data['user']);
+  }
+}, 'operator');
+
+$bot->add_privmsg_hook("Whisper",             // command key
+                       "LouBot_whisper",      // callback function
+                       true,                  // is a command PRE needet?
+                       '/^(whisper|privat)$/i',            // optional regex for key
+function ($bot, $data) {
+  if($bot->is_op_user($data['user'])) {
+    $user = array_shift($data['params']);
+    $bot->add_privmsg(implode(' ', $data['params']), $user);
     
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');

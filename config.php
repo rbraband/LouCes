@@ -38,7 +38,7 @@ define('BOT_STATISTICS_FORUM', 'Stats');
 define('BOT_SETTLERS_FORUM', 'Settlers');
 define('BOT_REPORTS_FORUM', 'Reports');
 define('BOT_BLACK_FORUM', 'BlackBook');
-define('BOT_SURVEY_FORUM', 'Abstimmung');
+define('BOT_SURVEY_FORUM', 'Survey');
 // log and directory settings
 define('BOT_PATH',((CLI) ? $_SERVER["PWD"] : $_SERVER["DOCUMENT_ROOT"]).'/');
 define('LOG_PATH',BOT_PATH.'logs/');
@@ -71,6 +71,8 @@ define('UNKOWN', '$');
 define('ANONYM', 'ANONYM');
 define('CHAT', 'CHAT');
 define('ALLIANCE', 'ALLIANCE');
+define('IGNORE', 'IGNORE');
+define('LISTS', 'LISTS');
 define('ATTACK', 'ATTACK');
 define('ALLYATT', 'ALLYATT');
 define('PLAYER', 'PLAYER');

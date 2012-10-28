@@ -1,21 +1,21 @@
 <?php
 global $bot;
-$bot->add_category('attacks', array(), PUBLICY);
+$bot->add_category('lists', array(), PUBLICY);
 // crons
 $bot->add_tick_event(Cron::TICK1,                         // Cron key
                     "GetAllyAtts",                        // command key
                     "LouBot_alliance_atts_cron",          // callback function
 function ($bot, $data) {
   $bot->lou->get_alliance_atts();
-}, 'attacks');
+}, 'lists');
 
 // callbacks
-$bot->add_attack_hook("UpdateAttacks",                       // command key
-                      "LouBot_alliance_attacks_update",      // callback function
-function ($bot, $attacks) {
+$bot->add_lists_hook("UpdateAttacks",                       // command key
+                     "LouBot_alliance_attacks_update",      // callback function
+function ($bot, $list) {
   global $redis;
-  if (empty($attacks['id'])||!$redis->status()) return;
-  if (is_array($attacks)) foreach($attacks['data'] as $att) {
+  if (empty($list['id'])||$list['id'] != ALLYATT||!$redis->status()) return;
+  if (is_array($list)) foreach($list['data'] as $att) {
     if ($bot->ally_id != $att['source']['ally_id']) { // prevent friendly fire
       $alliance_key = "alliance:{$bot->ally_id}";
       $new = $redis->SETNX("attacks:{$alliance_key}:{$att['id']}", $att['state']);
@@ -47,6 +47,6 @@ function ($bot, $attacks) {
     'ete'        => $this->get_step_time($att['es'] - time()) // estimated time enroute
     */
   }
-}, 'attacks');
+}, 'lists');
 
 ?>

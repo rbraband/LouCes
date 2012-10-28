@@ -162,6 +162,7 @@ class LoU implements SplSubject {
   public function __construct() {
     $this->session   = '';
     $this->msgId     = 0;
+    $this->reLogins  = 0;
     $this->connected = false;
     $this->error     = false;
     $this->logging   = true;
@@ -228,22 +229,22 @@ class LoU implements SplSubject {
   
 
   private function disconnect($debug = false) {
-    $_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/logout';
-          
+    $_logout_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/logout';
+    $_referer_url = 'https://www.lordofultima.com/'.BOT_LANG.'/game';      
     $this->output('LoU logout');
     $this->handle = curl_init();
     $_useragent = 'Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 5.0)';
     curl_setopt($this->handle, CURLOPT_USERAGENT, $_useragent);
-    curl_setopt($this->handle, CURLOPT_URL, $_url);
-    curl_setopt($this->handle, CURLOPT_POST, true);
+    curl_setopt($this->handle, CURLOPT_URL, $_logout_url);
+    curl_setopt($this->handle, CURLOPT_POST, false);
     curl_setopt($this->handle, CURLOPT_VERBOSE, $debug);
     curl_setopt($this->handle, CURLOPT_MAXREDIRS, self::ajaxTimeout);
     curl_setopt($this->handle, CURLOPT_CONNECTTIMEOUT, self::ajaxTimeout); // Timeout if it takes too long
-    curl_setopt($this->handle, CURLOPT_AUTOREFERER, true);
     curl_setopt($this->handle, CURLOPT_COOKIEFILE, PERM_DATA.'cookies.txt');
     curl_setopt($this->handle, CURLOPT_COOKIEJAR, PERM_DATA.'cookies.txt');
     curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($this->handle, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($this->handle, CURLOPT_REFERER, $_referer_url);
     $data = curl_exec($this->handle);
     $header = curl_getinfo($this->handle);
     if (curl_errno($this->handle)) {
@@ -289,6 +290,21 @@ class LoU implements SplSubject {
     return $this->doOpenSession($_session, $debug);
   }
 
+  public function post($endpoint, $data = array(), $noerror = false, $debug = false) {
+    $this->stack = null;
+    $this->error = false;
+    if ($debug) $this->debug("Post: {$endpoint}(".json_encode($data).')');
+    $result = $this->getData($this->url.self::ajaxEndpoint."$endpoint", $data, $noerror, $debug);
+    if (!$this->error) {
+      $this->stack = $result;
+    }
+    return($this->stack);
+  }
+  
+  public function postDebug($endpoint, $data = array(), $noerror = false) {
+    return $this->post($endpoint, $data, $noerror, true);
+  }
+  
   public function get($endpoint, $data = array(), $noerror = false, $debug = false) {
     $this->stack = array();
     $this->error = false;
@@ -302,31 +318,21 @@ class LoU implements SplSubject {
     return($this->stack);
   }
 
-  public function post($endpoint, $data = array(), $noerror = false, $debug = false) {
-    $this->stack = null;
-    $this->error = false;
-    if ($debug) $this->debug("Post: {$endpoint}(".json_encode($data).')');
-    $result = $this->getData($this->url.self::ajaxEndpoint."$endpoint", $data, $noerror, $debug);
-    if (!$this->error) {
-      $this->stack = $result;
-    }
-    return($this->stack);
-  }
-
   public function getDebug($endpoint, $data = array(), $noerror = false) {
     return $this->get($endpoint, $data, $noerror, true);
   }
 
-  public function getCached($endpoint, $data = array(), $noerror = false, $expire = 180) {
+  public function getCached($endpoint, $data = array(), $noerror = false, $expire = 180, $debug = false) {
     global $redis;
 
-    if (!$redis->status() || !$this->cached) return $this->get($endpoint, $data, $noerror);
+    if (!$redis->status() || !$this->cached) return $this->get($endpoint, $data, $noerror, $debug);
     $this->stack = array();
     $this->error = false;
     $hash = md5(json_encode($data));
     $key = "cache:{$endpoint}:{$hash}";
     if (self::cacheTest || $redis->TTL($key) === -1) {
-      $json = $this->getData($this->url.self::ajaxEndpoint."$endpoint", $data, $noerror);
+      if ($debug) $this->debug("GetCached: {$endpoint}(".json_encode($data).')');
+      $json = $this->getData($this->url.self::ajaxEndpoint."$endpoint", $data, $noerror, $debug);
       if (!$this->error) {
         if (false === ($decode = $this->analyse_json($json)) || $this->error) return false;
         // test cache
@@ -352,10 +358,14 @@ class LoU implements SplSubject {
         $redis->EXPIRE($key, $expire);
       } else {
         $redis->DEL($key);
-        return $this->getCached($endpoint, $data, $noerror, $expire);
+        return $this->getCached($endpoint, $data, $noerror, $expire, $debug);
       }
     }
     return($this->stack);
+  }
+
+  public function getCachedDebug($endpoint, $data = array(), $noerror = false, $expire = 180) {
+    return $this->getCached($endpoint, $data, $noerror, $expire, true);
   }
 
   public function getMulti($endpoint, $multi = array(), $debug = false) {
@@ -366,6 +376,7 @@ class LoU implements SplSubject {
       $hash = md5(json_encode($data));
       $_multi[$hash] = $data;
     }
+    if ($debug) $this->debug("GetMulti: {$endpoint}(".json_encode($_multi).')');
     $results = $this->getDataMulti($this->url.self::ajaxEndpoint."$endpoint", $_multi, $debug);
     if (!$this->error) {
       if (is_array($results)) foreach ($results as $json) {
@@ -380,7 +391,11 @@ class LoU implements SplSubject {
     return($this->stack);
   }
 
-  public function getMultiCached($endpoint, $multi = array(), $debug = false, $expire = 180) {
+  public function getMultiDebug($endpoint, $multi = array()) {
+    return $this->getMulti($endpoint, $multi, true);
+  }
+
+  public function getMultiCached($endpoint, $multi = array(), $expire = 180, $debug = false) {
     global $redis;
 
     if (!is_array($multi) || empty($multi)) return false;
@@ -403,6 +418,7 @@ class LoU implements SplSubject {
       }
     }
     if (!empty($_multi)) {
+      if ($debug) $this->debug("GetMultiCached: {$endpoint}(".json_encode($_multi).')');
       $results = $this->getDataMulti($this->url.self::ajaxEndpoint."$endpoint", $_multi, $debug);
       if (!$this->error) {
         if (is_array($results)) foreach ($results as $hash => $json) {
@@ -430,6 +446,10 @@ class LoU implements SplSubject {
       }
     }
     return($this->stack);
+  }
+
+  public function getMultiCachedDebug($endpoint, $multi = array(), $expire = 180) {
+    return $this->getMultiCached($endpoint, $multi, $expire, true);
   }
 
   public function getMsgId() {
@@ -518,10 +538,7 @@ class LoU implements SplSubject {
   
   public function logout($debug = false) {
     $this->connected = false;
-    while ($this->disconnect($debug) === false) {
-      $this->output("Logout error... retry!");
-      usleep(mt_rand(500, 15000) * 10000);
-    }
+    $this->disconnect($debug);
     $this->output("Logout done.");
     return true;
   }
@@ -746,6 +763,14 @@ class LoU implements SplSubject {
     $this->get("GetReport", $d);
   }
   
+  public function doSetIgnore($user) {
+    $d = array(
+        "session"   => $this->session,
+        "strPlayer" => $user
+    );
+    $this->get("SocialCreateIgnore", $d);
+  }
+  
   public function doPlayerRange($start, $end, $continent, $sort = 0, $ascending = true, $type = 0) {
     $d = array(
         "session"   => $this->session,
@@ -811,10 +836,17 @@ class LoU implements SplSubject {
   }
 
   public function get_chat() {
+    static $version = 0;
     $message = $this->get_message();
     #if (!$message) $this->debug("LoU check ...");  
     #else $this->debug("LoU send ". $message);  
-    $this->doPoll(array("CHAT:{$message}"), true);
+    $this->doPoll(array("UA:", "CHAT:{$message}", "IGNOREL:"), true);
+    $ignorel = $this->get_stack('IGNOREL');
+    if(is_array($ignorel) && $ignorel['v'] > $version) {
+      $this->note = $this->analyse_self_ignorel($ignorel);
+      $this->output("LoU get ignore list: {$ignorel['v']}");
+      $this->notify();
+    }
     $chat = $this->get_stack(CHAT);
     if(is_array($chat)) foreach($chat as $i => $c) {
       $this->note = $this->analyse_chat($c);
@@ -855,7 +887,7 @@ class LoU implements SplSubject {
     $continents = (!$this->error && is_array($this->stack['a'])) ? @$this->stack['a'] : null;
     if(is_array($continents)) {
       $this->note = $this->stat_continents($continents);
-      $this->output("LoU stat continents: ". implode(", K", $continents));
+      $this->output("LoU stat continents: ". implode(", " . LoU::get_continent_abbr(), $continents));
       $this->notify();
     }
     return true;
@@ -866,7 +898,7 @@ class LoU implements SplSubject {
     $continents = (!$this->error && is_array($this->stack['a'])) ? @$this->stack['a'] : null;
     if(is_array($continents)) {
       $this->note = $this->analyse_continents($continents);
-      $this->output("LoU get continents: ". implode(", K", $continents));
+      $this->output("LoU get continents: ". implode(", " . LoU::get_continent_abbr(), $continents));
       $this->notify();
     }
     return true;
@@ -902,10 +934,39 @@ class LoU implements SplSubject {
     return preg_match('/^[0-9]{1,3}:[0-9]{1,3}$/', strtolower($string));
   }
   
+  public static function is_string_time($string) {
+    // check if time < 23:59:59
+    return preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9]):?([0-5][0-9])?$/', strtolower($string));
+  }
+  
+  public static function get_duration_by_seconds($sec) {
+    $min = intval($sec / 60);
+    if ($min >= 60) {
+      $hours = intval($min / 60);
+      $min = $min % 60;
+    }
+    return "{$hours}:{$min}";
+  }
+  
+  public static function is_string_duration($string) {
+    // check if duration <= 59:59
+    return preg_match('/^[0-5][0-9]:[0-5][0-9][0-9]$/', strtolower($string));
+  }
+  
+  public static function get_time_by_string($string) {
+    list($hours, $minutes, $seconds) = explode(':', $string, 3);
+    return intval((intval($hours) * 3600) + (intval($minutes) * 60) + intval($seconds));
+  }
+  
   public static function get_koords_by_id($city_id) {
     $x = $city_id & 0xFFFF;
     $y = $city_id >> 16;
     return array($x, $y);
+  }
+  
+  public static function get_id_by_koords($x, $y) {// todo: not working!?
+    $city_id = ($x << 16) & $y;
+    return $city_id;
   }
   
   public function get_self() {
@@ -1061,7 +1122,7 @@ class LoU implements SplSubject {
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->analyse_range_player_continent($range, $type);
       if ($continent == '-1') $this->output("LoU get {$count} residents on world (type:{$type})");
-      else $this->output("LoU get {$count} residents on K{$continent} (type:{$type})");
+      else $this->output("LoU get {$count} residents on {$this->get_continent_abbr()}{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -1079,7 +1140,7 @@ class LoU implements SplSubject {
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->stat_range_player_continent($range, $continent, $type);
       if ($continent == '-1') $this->output("LoU get stat for {$count} residents on world (type:{$type})");
-      else $this->output("LoU get stat for {$count} residents on K{$continent} (type:{$type})");
+      else $this->output("LoU get stat for {$count} residents on {$this->get_continent_abbr()}{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -1093,7 +1154,7 @@ class LoU implements SplSubject {
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->analyse_range_alliance_continent($range, $type);
       if ($continent == '-1') $this->output("LoU get {$count} alliances for world (type:{$type})");
-      else $this->output("LoU get {$count} alliances for continent K{$continent} (type:{$type})");
+      else $this->output("LoU get {$count} alliances for continent {$this->get_continent_abbr()}{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -1111,7 +1172,7 @@ class LoU implements SplSubject {
       $range = ($this->stack) ? @$this->stack : null;
       $this->note = $this->stat_range_alliance_continent($range, $continent, $type);
       if ($continent == '-1') $this->output("LoU get stat for {$count} alliances for world (type:{$type})");
-      else $this->output("LoU get stat for {$count} alliances for continent K{$continent} (type:{$type})");
+      else $this->output("LoU get stat for {$count} alliances for continent {$this->get_continent_abbr()}{$continent} (type:{$type})");
       $this->notify();
     }
     return true;
@@ -1122,7 +1183,25 @@ class LoU implements SplSubject {
     $alliance = $this->get_stack('ALLIANCE');
     if(is_array($alliance) && $alliance['id'] != 0) {
       $this->note = $this->analyse_self_alliance($alliance);
-      $this->output("LoU get alliance info for ".$this->note['name']."(".$this->note['short'].")");
+      $this->output("LoU get alliance info for {$this->note['name']}({$this->note['short']})");
+      $this->notify();
+    }
+    return true;
+  }
+  
+  public function get_self_ignorel($unignore = '') {
+    static $version = 0;
+    if (empty($unignore)) {
+      $unignorel = 'inval';
+    } else {
+      if (!is_array($unignore)) $unignore = array($unignore);
+      $unignorel = 'del:' . implode(',', $unignore);
+    }
+    $this->doPoll(array("IGNOREL:{$unignorel}"), true);
+    $ignorel = $this->get_stack('IGNOREL');
+    if(is_array($ignorel) && $ignorel['v'] > $version) {
+      $this->note = $this->analyse_self_ignorel($ignorel);
+      $this->output("LoU get ignore list: {$ignorel['v']}");
       $this->notify();
     }
     return true;
@@ -1179,7 +1258,7 @@ class LoU implements SplSubject {
     if(is_array($citys)) {
       $this->note = $this->stat_range_city_continent_ids($citys, $continent, $range);
       if ($continent == '-1') $this->output("LoU get stat for ".count($citys)." cities on world");
-      else $this->output("LoU get stat for ".count($citys)." cities on K{$continent}");
+      else $this->output("LoU get stat for ".count($citys)." cities on {$this->get_continent_abbr()}{$continent}");
       $this->notify();
     }
     return true;
@@ -1262,6 +1341,21 @@ class LoU implements SplSubject {
       $this->notify();
     }
     return true;
+  }
+  
+  public function set_ignore($user) {
+    $this->doSetIgnore($user);
+    $ignorel = (!$this->error && $this->stack) ? @$this->stack : null;
+    if(is_array($ignorel)) {
+      foreach(LoU::prepare_ignore_list($ignorel['d']) as $k => $v) {
+        if ($v['player_name'] == $user) return $k;
+      }
+    }
+    return false;
+  }
+  
+  public function del_ignore($ignId) {
+    return $this->get_self_ignorel($ignId);
   }
   
   public function get_report_link($id) {
@@ -1549,6 +1643,25 @@ class LoU implements SplSubject {
                   'diplomacy' => LoU::prepare_diplomacy($data['re']),
                   'credentials' => LoU::prepare_credentials($data['r']));
     return $note;
+  }
+  
+  static function analyse_self_ignorel($data) {
+    $note = array('type'      => LISTS,
+                  'id'        => IGNORE,
+                  'data'      => LoU::prepare_ignore_list($data['a']));
+    return $note;
+  }
+  static function prepare_ignore_list($list) {
+    $_list = array();
+    if(is_array($list)) foreach($list as $item) {
+      $_list[$item['i']] = array('id'           => $item['i'],
+                                 'player_id'    => $item['pi'],
+                                 'player_name'  => $item['pn'],
+                                 'ally_id'      => $item['ai'],
+                                 'ally_name'    => $item['an']
+                                );
+    }
+    return $_list;
   }
   
   private function stat_player($data) {
@@ -1938,6 +2051,11 @@ class LoU implements SplSubject {
     }
   }
   
+  static function get_continent_abbr() {
+    global $_GAMEDATA;
+    return substr($_GAMEDATA->translations['tnf:continent'], 0, 1);
+  }
+  
   private function analyse_json($string) {
     try {
       $decode = JSON::Decode($string, true);
@@ -1948,8 +2066,7 @@ class LoU implements SplSubject {
             $this->output("LoU kicked :(");
             $this->connected = false;
             return false;
-          } else 
-          if (@array_key_exists('C', $v) && $v['C'] == SYS && $v['D'] == CLOSED) {
+          } else if (@array_key_exists('C', $v) && $v['C'] == SYS && $v['D'] == CLOSED) {
             $this->error = CLOSED;
             $this->output("LoU close :(");
             $this->connected = false;

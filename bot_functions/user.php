@@ -159,7 +159,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "DeAlias",             // command key
                    "LouBot_dealias",      // callback function
                    true,                  // is a command PRE needet?
-                   '',                     // optional regex for key
+                   '',                    // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -206,8 +206,8 @@ function ($bot, $data) {
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Seen",                 // command key
                    "LouBot_seen",          // callback function
-                   true,                  // is a command PRE needet?
-                   '/^(lastseen|seen)$/i',// optional regex for key
+                   true,                   // is a command PRE needet?
+                   '/^(lastseen|seen)$/i', // optional regex for key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -230,7 +230,7 @@ function ($bot, $data) {
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Chat",                 // command key
                    "LouBot_chat",          // callback function
-                   true,                  // is a command PRE needet?
+                   true,                   // is a command PRE needet?
                    '/^chat$/',             // optional regex for key
 function ($bot, $data) {
   global $redis;
