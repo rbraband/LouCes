@@ -16,7 +16,22 @@ function ($bot, $data) {
   }
 }, 'settlers');
 
-$bot->add_tick_event(Cron::TICK5,                                    // Cron key
+$bot->add_cron_event(Cron::HOURLY,                          // Cron key
+                    "UpdateResidents",                      // command key
+                    "LouBot_update_residents_cron",         // callback function
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  $continents = $redis->sMembers("continents");
+  $settler_key = "settler";
+  $alliance_key = "alliance:{$bot->ally_id}";
+  if (is_array($continents)) foreach ($continents as $continent) {
+    $continent_key = "continent:{$continent}";
+    $redis->sInterStore("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$continent_key}:residents", "{$alliance_key}:member");
+    $redis->rename("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$settler_key}:{$alliance_key}:{$continent_key}:residents");
+  }
+}, 'settlers');
+$bot->add_tick_event(Cron::TICK5 ,                                   // Cron key
                     "GetSettlersUpdate",                             // command key
                     "LouBot_settlers_continent_player_update_cron",  // callback function
 function ($bot, $data) {
