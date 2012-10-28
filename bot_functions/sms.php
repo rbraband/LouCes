@@ -67,9 +67,9 @@ function ($bot, $data) {
   return true;
 }, 'sms');
 
-$bot->add_tick_event(Cron::TICK1,                 // Cron key
-                    "GetAlertUpdate",             // command key
-                    "LouBot_alert_update_cron",   // callback function
+$bot->add_tick_event(Cron::TICK1,                     // Cron key
+                    "GetSMSAlertUpdate",              // command key
+                    "LouBot_alert_sms_update_cron",   // callback function
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;

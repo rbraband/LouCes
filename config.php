@@ -153,8 +153,25 @@ define('SMS_STATUS_OPEN', 'OPEN');
 define('SMS_STATUS_DELIVERED', 'DELIVERED');
 define('SMS_STATUS_TRANSMITTED', 'TRANSMITTED');
 define('SMS_STATUS_BUFFERED', 'BUFFERED');
-define('SMS_STATUS_DELIVERED', 'NOT_DELIVERED');
+define('SMS_STATUS_NOT_DELIVERED','NOT_DELIVERED');
 define('SMS_STATUS_ANSWERED', 'ANSWERED');
+// email
+define('EMAIL_LOG_FILE', LOG_PATH.'email.txt');
+define('EMAIL_SPAMTTL', 30);
+define('EMAIL_SYS',  1);
+define('EMAIL_LEAD', 1+2+4);
+define('EMAIL_OFF',  1+2+4+8);
+define('EMAIL_ALL',  1+2+4+8+16+32);
+define('EMAIL_ALERT_OFF',  0);
+define('EMAIL_ALERT_OWN',  1);
+define('EMAIL_ALERT_ALL',  2);
+define('EMAIL_SHARE_OFF',  0);
+define('EMAIL_SHARE_ON',   1);
+define('EMAIL_IS_SENDMAIL', true);
+define('EMAIL_STATUS_OPEN',         'OPEN');
+define('EMAIL_STATUS_TRANSMITTED',  'TRANSMITTED');
+define('EMAIL_STATUS_BUFFERED',     'BUFFERED');
+define('EMAIL_STATUS_ANSWERED',     'ANSWERED');
 // read argv
 function arguments($argv) { 
   $ARG = array();

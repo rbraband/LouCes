@@ -23,6 +23,7 @@ include_once('igm.php');
 include_once('sms.php');
 #include_once('mysql.php');
 include_once('fork.php');
+include_once('email.php');
 
 /**
  * Klasse, welche überprüft, ob noch eine andere Instanz des Bot läuft
