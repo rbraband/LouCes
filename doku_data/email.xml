@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doku>
+  <key>email</key>
+  <title>...und auch Email ;)</title>
+  <author>BloodHeart</author>
+  <date>21.10.2012</date>
+  <version>1.3</version>
+  <lang>de</lang>
+  <entry id="1"><![CDATA[[b]EMAIL[/b] ist die Funktion.
+
+Der ##BOTNAME## kann EMAIL verschicken an Mitglieder die ihre Email-Adresse hinterlegt haben.
+Eine Email-Adresse sollte nur dann auch hinterlegt werden wenn Du diese öfters mal abfragst.
+
+##BOTNAME## hält natürlich deine Daten unter Verschluß, niemand kann oder wird von ##BOTNAME## deine Adresse genannt bekommen!
+
+[u]Email-Adressen speichern[/u]
+Wenn du deine Adresse speichern möchtest kannst du das ##BOTNAME## flüstern oder im Ally-Chat tun.
+[quote]![b]Email[/b] [i]addr[/i] bloodheart@online.ms[/quote]
+##BOTNAME## bestätigt, du kannst die Adresse jederzeit ändern wenn du eine andere Adresse nutzen willst. 
+
+[u]Email schreiben, aber wie?[/u]
+Wenn du Email schreiben möchtest kannst du das ##BOTNAME## flüstern oder im Ally-Chat tun.
+[quote]![b]Email[/b] [i]bloodheart[/i] Cheffe nun nimm den Arsch hoch und komm Online![/quote]
+Diese Email wird ankommen, was dann passiert sag ich jetzt nicht :-W
+Man kann auch einen der Aliase eines Spielers nutzen also [quote]![b]Email[/b] [i]blood[/i] Sorry war nicht so gemeint :D[/quote] kommt auch an ;)
+
+[u]Kann man auf Email antworten?[/u]
+Zur Zeit noch nicht, ich experimientiere da noch rum.
+
+[u]Email-Adressen mit anderen teilen[/u]
+##BOTNAME## geht davon aus das jeder eine eigene Adresse hat, sollte jamand versuchen Deine Adresse zu nutzen wird er das nicht akzeptieren.
+Wenn Du allerdings möchstest das zB. dein Partner, Bruder, Schwester oder ein Vertrauter die gleiche Adresse nutzt kannst du ##BOTNAME##  das mitteilen.
+[quote]![b]Email[/b] [i]multi[/i] an[/quote]
+Ab dann lässt ##BOTNAME## es zu das jemand anderes Deine Adresse nutzt. 
+Mit [quote]![b]Email[/b] [i]multi[/i] aus[/quote] deaktivierst du dieses Funktion wieder.
+
+[u]Wer darf mir schreiben?[/u]
+##BOTNAME## erlaubt normalerweise jedem Ally-Mitglied dir eine Email zu schreiben, es sei denn du wünscht das nicht?!
+[quote]![b]Email[/b] [i]erlaube[/i] offiziere[/quote]
+Erlaubt nur noch Offizieren oder höher Dir eine Email zu schreiben. Möglich ist auch: [i]alle, offiziere (oder kurz offi), leitung und alarm[/i].
+Alarm ist eine Funktion die nur ##BOTNAME## erlaubt oder im Sonderfall der Leitung, dir eine Nachricht zu schicken. Alarme werden noch weiter ausgebaut, zur Zeit ist das nur eine Idee.
+
+Ihr seht man kann schon einiges damit machen, Eventuell baue ich über die Alsius-Tools noch etwas mehr Komfort ein ;)
+
+Viel Spass =)
+]]>
+  </entry>
+</doku>

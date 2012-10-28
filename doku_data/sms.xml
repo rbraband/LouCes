@@ -3,13 +3,51 @@
   <key>sms</key>
   <title>Piep piep... ##BOTNAME## kann SMS!?</title>
   <author>BloodHeart</author>
-  <date>15.07.2012</date>
-  <version>1.0</version>
+  <date>21.10.2012</date>
+  <version>1.2</version>
   <lang>de</lang>
   <entry id="1"><![CDATA[[b]SMS[/b] ist die Funktion.
 
-Der ##BOTNAME## kann SMS verschicken an Mitglieder die ihre Handy-Nr hinterlegt haben :)
-Eine Handy-Nr soll ... jetzt muss ich mal weiter schauen ;)
+Der ##BOTNAME## kann SMS verwchicken an Mitglieder die ihre Handy-Nr hinterlegt haben :)
+
+##BOTNAME## hält natürlich deine Daten unter Verschluß, niemand kann oder wird von ##BOTNAME## deine Nr. genannt bekommen!
+
+[u]SMS-Nr speichern[/u]
+Wenn du deine Nr speichern möchtest kannst du das ##BOTNAME## flüstern oder im Ally-Chat tun.
+[quote]![b]SMS[/b] [i]nr[/i] 01711234567[/quote]
+##BOTNAME## bestätigt, du kannst die Nr. jederzeit ändern wenn du eine andere Nr. nutzen willst. 
+
+[u]SMS schreiben, aber wie?[/u]
+Wenn du SMS schreiben möchtest kannst du das ##BOTNAME## flüstern oder im Ally-Chat tun.
+[quote]![b]SMS[/b] [i]bloodheart[/i] Cheffe nun nimm den Arsch hoch und komm Online![/quote]
+Diese SMS wird ankommen, was dann passiert sag ich jetzt nicht :-W
+Man kann auch einen der Aliase eines Spielers nutzen also [quote]![b]SMS[/b] [i]blood[/i] Sorry war nicht so gemeint :D[/quote] kommt auch an ;)
+
+[u]Kann man auf SMS antworten?[/u]
+Ja, man kann! Die Antwort-SMS kommt im je nachdem ob du sie geflüstert hast als flüstern oder wird im Ally-Chat gezeigt.
+
+[u]SMS-Nr. mit anderen teilen[/u]
+##BOTNAME## geht davon aus das jeder eine eigene Nr. hat, sollte jamand versuchen Deine Nr. zu nutzen wird er das nicht akzeptieren.
+Wenn Du allerdings möchstest das zB. dein Partner, Bruder, Schwester oder ein Vertrauter die gleiche Nr. nutzt kannst du ##BOTNAME##  das mitteilen.
+[quote]![b]SMS[/b] [i]multi[/i] an[/quote]
+Ab dann lässt ##BOTNAME## es zu das jemand anderes Deine Nr. nutzt. 
+Mit [quote]![b]SMS[/b] [i]multi[/i] aus[/quote] deaktivierst du dieses Funktion wieder.
+
+[u]Wer darf mir schreiben?[/u]
+##BOTNAME## erlaubt normalerweise jedem Ally-Mitglied dir eine SMS zu schreiben, es sei denn du wünscht das nicht?!
+[quote]![b]SMS[/b] [i]erlaube[/i] offiziere[/quote]
+Erlaubt nur noch Offizieren oder höher Dir eine SMS zu schreiben. Möglich ist auch: [i]alle, offiziere (oder kurz offi), leitung und alarm[/i].
+Alarm ist eine Funktion die nur ##BOTNAME## erlaubt oder im Sonderfall der Leitung, dir eine Nachricht zu schicken. Alarme werden noch weiter ausgebaut, zur Zeit ist das nur eine Idee.
+
+[u]Du wohnst im Ausland?[/u]
+Du kannst deine Ländervorwahl extra eingeben wenn du nicht in Deutschland wohnst oder auf Reisen bist!
+[quote]![b]SMS[/b] [i]region[/i] 49[/quote] setzt die Region für Deutschland.
+
+Ihr seht man kann schon einiges damit machen, Eventuell baue ich über die Alsius-Tools noch etwas mehr Komfort ein ;)
+
+Viel Spass =)
+
+P.S.: Wenn die Email nicht ankommt schaut mal in den SPAM-Ordner
 
 
 ]]>
