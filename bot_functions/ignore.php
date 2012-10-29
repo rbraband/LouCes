@@ -36,7 +36,8 @@ function ($bot, $list) {
         } else $_ignorel[] = $item['player_name'];
       }
     }
-    $bot->log('Ignorelist: ' . implode(', ', $_ignorel)); 
+    if (!empty($_ignorel)) $bot->log('Ignorelist: ' . implode(', ', $_ignorel));
+    else $bot->debug('Ignorelist: empty'); 
   }
 }, 'lists');
 
