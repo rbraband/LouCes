@@ -226,7 +226,6 @@ class LoU implements SplSubject {
     curl_close($this->handle);
     return $this->doOpenGame($debug);
   }
-  
 
   private function disconnect($debug = false) {
     $_logout_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/logout';
@@ -476,7 +475,6 @@ class LoU implements SplSubject {
         } else {
           $this->reLogins ++;
           $this->output("LoU relogin");
-
           return $this->login();
         }
       }
@@ -486,6 +484,10 @@ class LoU implements SplSubject {
   }
 
   private function doOpenSession($session, $debug = false) {
+    if (empty($session)) {
+      $this->output("LoU can't open session!");
+      return false;
+    }
     $this->output("LoU open session: {$session}");
     $d = array(
         "session"   => $session,
@@ -548,7 +550,6 @@ class LoU implements SplSubject {
     $retry = self::ajaxRetrys;
     $_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)';
     do {
-      $retry--;
       $this->handle = curl_init();
       curl_setopt($this->handle, CURLOPT_USERAGENT, $_useragent);
       curl_setopt($this->handle, CURLOPT_URL, $url);
@@ -564,14 +565,15 @@ class LoU implements SplSubject {
       $this->data = curl_exec($this->handle); // Execute!
       // check http response
       // check if responce ok = 200
-      if (curl_getinfo($this->handle, CURLINFO_HTTP_CODE) === 200) {
+      if (curl_getinfo($this->handle, CURLINFO_HTTP_CODE) == 200) {
         // check it is empty and we not accept empty data!
         if (empty($this->data) && !$accept_empty_data) {
           // check retrys
-          if ($retry <= 0) {
+          if ($retry == 0) {
             // error
             $this->error = true;
             $this->output("Curl Error: cannot recieve Data!");
+            return false;
           }
         } else {
           // all ok, no retry
@@ -582,12 +584,17 @@ class LoU implements SplSubject {
       // error here
       } else {
         // check retrys
-        if($retry <= 0) {
-          // error
+        if($retry == 0) {
+          if (curl_errno($this->handle)) {
+            $this->output("Curl Error after ".self::ajaxRetrys." retrys: (".curl_errno($this->handle).") " . curl_error($this->handle));
+          } else if (curl_getinfo($this->handle, CURLINFO_HTTP_CODE) >= 400) {
+            $header = curl_getinfo($this->handle);
+            $this->output('Http Error: ' . $header['http_code']);
+          }
           $this->error = true;
           $this->connected = false;
-          $this->output("Curl Error after ".self::ajaxRetrys." retrys: (".curl_errno($this->handle).") " . curl_error($this->handle));
-        }
+          return false;
+        } else $retry--;
       }
     } while($retry && usleep(100));
     return $this->data;
