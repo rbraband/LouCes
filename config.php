@@ -22,6 +22,8 @@ setlocale(LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
 define('SPAMTTL', 15);
 define('POLLTRIP', 1);
 define('SETTLERTTL', 86400);
+// ignore
+define('IGNORE_PUNISHTTL', 3600);
 // stats
 define('STATS_URL', 'stats.localhost');
 // alice

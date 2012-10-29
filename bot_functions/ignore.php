@@ -9,25 +9,40 @@ function ($bot, $list) {
   if (empty($list['id'])||$list['id'] != IGNORE||!$redis->status()) return;
   if (is_array($list)) {
     $_ignorel = array();
+    $ignore_key = "ignore";
+    $alliance_key = "alliance:{$bot->ally_id}";
     foreach($list['data'] as $item) {
-      $ignore_key = "ignore";
-      $alliance_key = "alliance:{$bot->ally_id}";
-      $_ignorel[] = $item['player_name'];
       if (!($ignoreId = $redis->hGet("{$ignore_key}:{$alliance_key}", $item['player_name']))) {
         //new ignore
+        $_ignorel[] = $item['player_name'];
+        $bot->log('Ignore: addttl ' . $item['player_name']);
         $redis->hSet("{$ignore_key}:{$alliance_key}", $item['player_name'], $item['id']);
+        $uid = $bot->get_user_id($item['player_name']);
+        $punish = "{$ignore_key}:{$alliance_key}:{$uid}";
+        $redis->SET($punish, $item['id'], IGNORE_PUNISHTTL);
       } else {
-        // todo: check if expired and remove
-        if ($ignoreId != $item['id']) $redis->hSet("{$ignore_key}:{$alliance_key}", $item['player_name'], $item['id']);
+        // check if expired and remove
+        $uid = $bot->get_user_id($item['player_name']);
+        $punish = "{$ignore_key}:{$alliance_key}:{$uid}";
+        if ($ignoreId != $item['id']) {
+          $redis->hSet("{$ignore_key}:{$alliance_key}", $item['player_name'], $item['id']);
+          $redis->SET($punish, $item['id']);
+        }
+        if ($redis->TTL($punish) === -1) {
+          if($bot->lou->del_ignore($ignoreId)) {
+            $redis->hDel("{$ignore_key}:{$alliance_key}", $item['player_name']);
+            $bot->log('Ignore: expired ' . $item['player_name']);
+          }
+        } else $_ignorel[] = $item['player_name'];
       }
-    } 
+    }
     $bot->log('Ignorelist: ' . implode(', ', $_ignorel)); 
   }
 }, 'lists');
 
-$bot->add_tick_event(Cron::HOURLY,							 				// Cron key
-										"GetSelfIgnorList",                 // command key
-										"LouBot_self_ignorel_cron",    		  // callback function
+$bot->add_tick_event(Cron::HOURLY,                       // Cron key
+                    "GetSelfIgnorList",                 // command key
+                    "LouBot_self_ignorel_cron",          // callback function
 function ($bot, $data) {
   $bot->lou->get_self_ignorel();
 }, 'lists');
