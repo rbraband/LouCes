@@ -947,12 +947,13 @@ class LoU implements SplSubject {
   }
   
   public static function get_duration_by_seconds($sec) {
+    $hours = 0;
     $min = intval($sec / 60);
     if ($min >= 60) {
       $hours = intval($min / 60);
       $min = $min % 60;
     }
-    return "{$hours}:{$min}";
+    return str_pad($hours, 2 ,'0', STR_PAD_LEFT) . ":" . str_pad($min, 2 ,'0', STR_PAD_LEFT);
   }
   
   public static function is_string_duration($string) {
