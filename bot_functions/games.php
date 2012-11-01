@@ -398,13 +398,22 @@ if(!function_exists('quizzer_main4')) {
 }
 
 if(!function_exists('generate_regexp')) {
-  function generate_regexp($text) {
-    $text = (strpos($text, '#') === false) ? strtolower($text) : '(' . preg_replace('/#(.*)#/i', '$1', strtolower($text)) . '|' . preg_replace('/.*#(.*)#.*/i', '$1', strtolower($text)) . ')';
-    $text = str_replace('ä', '(ä|ae)', $text);
-    $text = str_replace('ü', '(ü|ue)', $text);
-    $text = str_replace('ö', '(ö|oe)', $text);
-    $text = str_replace('ß', '(ß|ss|s)', $text);
-    return $text;
+  function generate_regexp($string) {
+    preg_match_all('/(.*)#(.*)#(.*)/i', strtolower($string), $matches, PREG_SET_ORDER);
+    if (!empty($matches)) {
+      $regex = "(";
+      if ($matches[0][1] != '') $regex .= "(" . $matches[0][1] . ")?";
+      $regex .= "(" . $matches[0][2] . ")";
+      if ($matches[0][3] != '') $regex .= "(" . $matches[0][3] . ")?";
+      $regex .= ")";
+    } else {
+      $regex = strtolower($string);
+    }
+    $regex = str_replace('ä', '(ä|ae)', $regex);
+    $regex = str_replace('ü', '(ü|ue)', $regex);
+    $regex = str_replace('ö', '(ö|oe)', $regex);
+    $regex = str_replace('ß', '(ß|ss|s)', $regex);
+    return $regex;
   }
 }
 
