@@ -103,6 +103,17 @@ class Forum {
     return false;
   }
   
+  /* deprecated @use get_last_thread_post_id */
+  public function get_thread_post_by_num($forum_id, $thread_id, $offset = 0) {
+    if ($this->get_alliance_forum_posts($forum_id, $thread_id)) {
+      if ($this->get_thread_post_count($forum_id, $thread_id) >= $offset) {
+        $posts = array_keys($this->posts[$forum_id][$thread_id]['data']); 
+        return $this->posts[$forum_id][$thread_id]['data'][$posts[$offset]]['post_id'];
+      }
+    }
+    return false;
+  }
+  
   public function get_thread_post_count($forum_id, $thread_id) {
     return count($this->posts[$forum_id][$thread_id]['data']);
   }
