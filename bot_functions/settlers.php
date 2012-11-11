@@ -247,7 +247,6 @@ $post_settlers_footer = '
                 $bot->log("Settlers forum {$thread_name}: info(R:".count($new_residents).'|LL:'.count($new_lawless).'|S:'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
                 $post[$_post_id] = $post_update;
                 // @internal: otherwise update the last post with $post_update
-                $bot->log("Settlers forum {$thread_name}: info(".count($new_residents).'|'.count($new_lawless).'|'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
                 for($idx = count($post); $idx <= $_posts_count; $idx ++) {
                   $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $idx));
                 }
