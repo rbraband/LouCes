@@ -238,7 +238,7 @@ function ($bot, $stat) {
           // generate stat key: name|state|water|alliance_id|user_id|points
           $cstats = sprintf('%s|%d|%d|%d|%d|%d', $city['name'], $city['state'], $city['water'], $city['alliance_id'], $item['id'], $city['points']); 
           if (!$zadd = $redis->ZADD("{$city_key}:stats", $str_time, $cstats)) {
-            $bot->log("Redis zadd error: {$city_key}@{$str_time}|{$cstats}");
+            $bot->debug("Redis zadd error: {$city_key}@{$str_time}|{$cstats}");
           }
           $city_info = $redis->HGETALL("{$city_key}:data");
           if (is_array($city_info) && !empty($city_info)) {
@@ -473,7 +473,7 @@ function ($bot, $stat) {
     // generate stat key: alliance_id|city_count|points|rank
     $stats = sprintf('%s|%d|%d|%d', $stat['data']['alliance_id'], count($stat['data']['cities']), $stat['data']['points'], $stat['data']['rank']);
     if (!$zadd = $redis->ZADD("{$user_key}:stats", $str_time, $stats)) {
-      $bot->log("Redis zadd error: {$user_key}@{$str_time}|{$stats}");
+      $bot->debug("Redis zadd error: {$user_key}@{$str_time}|{$stats}");
     }
   }
 }, 'statistic');
