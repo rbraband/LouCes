@@ -609,7 +609,7 @@ class LoU implements SplSubject {
     $_chunks = array_chunk($multi, $max, true);
     foreach($_chunks as $_k => $_chunk) {
       $this->mhandle = curl_multi_init();
-      $this->output('Curl: start parallel with chunk-' . ($_k + 1) .'/'.count($_chunks).' of ' . count($multi) . '/' . $max . ' requests!');
+      $this->debug('Curl: start parallel with chunk-' . ($_k + 1) .'/'.count($_chunks).' of ' . count($multi) . '/' . $max . ' requests!');
       $_handles = array();
       foreach($_chunk as $key => $data) {
         $_handles[$key] = curl_init($key);
