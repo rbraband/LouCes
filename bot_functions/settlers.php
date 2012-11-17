@@ -66,6 +66,7 @@ function ($bot, $data) {
         $alliance_key = "alliance:{$bot->ally_id}";
         $settler_key = "settler";
         $settler_chunks = 12;
+        $max_lawless = 10;
         $str_time = (string)time();
         $bot->log("Fork: " . $_this->getName() .": start");
         foreach ($continents as $continent) {  
@@ -114,8 +115,8 @@ function ($bot, $data) {
               $new_lawless = $redis->SDIFF("{$settler_key}:{$continent_key}:_lawless", "{$settler_key}:{$continent_key}:lawless");
               $redis->RENAME("{$settler_key}:{$continent_key}:_lawless", "{$settler_key}:{$continent_key}:lawless");
               if (!empty($new_lawless)) $update = true;
-              $lawless = $redis->SMEMBERS("{$settler_key}:{$continent_key}:lawless");
-
+              $_lawless = $redis->SMEMBERS("{$settler_key}:{$continent_key}:lawless");
+              $lawless = array_slice($_lawless, 0, $max_lawless);
               if (!empty($lawless)) foreach($lawless as $k => $v) {
                 $city_id = $redis->HGET('cities', $v);
                 $city_key = "city:{$city_id}";
@@ -164,7 +165,9 @@ $post_residents = "[b][u]{$bot->ally_shortname} Spieler auf dem Kontinent:[/u] {
 $post_lawless_head = "[b][u]Lawless auf dem Kontinent:[/u] {$thread_name}[/b]
 
 ";
-$post_lawless_footer = '
+$post_lawless_footer = '';
+if (count($_lawless) >= $max_lawless) $post_lawless_footer .= PHP_EOL . "(max. {$max_lawless} pro Kontinent)";
+$post_lawless_footer .= '
 
 [u]Legende[/u]: ☐ - [i]frei[/i], ☒ - [i]nicht frei[/i], ☑ - [i]eledigt![/i]';
               $chunks = array();
