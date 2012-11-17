@@ -165,7 +165,7 @@ function ($bot, $data) {
             $redis->SET("{$games_key}:hangman:rightstr", serialize($right));
             $redis->SET("{$games_key}:hangman:wrongstr", serialize($wrong));
             if (empty($hwords)) {
-              $lines = file(PERM_DATA.'hangman.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+              $lines = file(PERM_DATA.'hangman.' . BOT_LANG, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
               foreach ($lines as $line_num => $line) {
                 if ($line[0] != '#') $hwords[$line_num] = trim(strtoupper(htmlspecialchars($line)));
               }
@@ -293,7 +293,7 @@ function ($bot, $data) {
               #  Tip*                                   (provide one or more hints)
               #  TipCycle? #                            (Specify number of generated tips)
               $tags = array('CATEGORY', 'QUESTION', 'ANSWER', 'REGEXP', 'AUTHOR', 'LEVEL', 'COMMENT', 'SCORE', 'TIP', 'TIPCYCLE');
-              $lines = file(PERM_DATA.'questions.de', FILE_IGNORE_NEW_LINES);
+              $lines = file(PERM_DATA.'questions.' . BOT_LANG, FILE_IGNORE_NEW_LINES);
               $levels = array('baby' => 3,'easy' => 5,'normal' => 15,'hard' => 20,'extreme' => 25);
               $i = 0;
               foreach ($lines as $line_num => $line) {
