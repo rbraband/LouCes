@@ -833,7 +833,7 @@ class LoU_Bot implements SplObserver {
       if ($redis->sIsMember("{$alliance_key}:member", $user)) {
         $uid = $redis->hGet('aliase', mb_strtoupper($user));
         $role = $redis->hGet("user:{$uid}:data", 'role');
-        $roles_min = min($redis->hKeys("{$alliance_key}:roles")) -1;
+        $roles_min = min($redis->hKeys("{$alliance_key}:roles"));
         return pow(2, ($role - $roles_min)) & $rights;
       }
       return false;
