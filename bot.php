@@ -83,18 +83,28 @@ class executeThread extends PHP_Fork {
   }
 
   public function run() {
+    global $redis;
+    $redis = $redis->getInstance();
     return call_user_func_array(array($this, 'worker'), func_get_args());
   }
   
   public function __call($method, $args) {
+		global $bot;
     if ($this->{$method} instanceof Closure) {
-      return call_user_func_array($this->{$method}, $args);
+      try {
+        $bot->debug("PHP_Fork child::command ('{$method}' on '{$this->getName()}')");  
+        return call_user_func_array($this->{$method}, $args);
+      } catch (PHP_ForkException $e){
+        $bot->debug("PHP_Fork child::command ('{$method}' on '{$this->getName()}') Error: " . $e->getMessage());  
+        return false;
+      }
     } else {
       try {
+        $bot->debug("PHP_Fork parent::command ('{$method}' on '{$this->getName()}')");  
         return parent::__call($method, $args);
       } catch (PHP_ForkException $e){
-        $line = trim(date("[d/m @ H:i:s]") . "PHP_Fork command ('{$method}' on '{$this->getName()}') Error: " . $e->getMessage()) . "\n";  
-        error_log($line, 3, LOG_FILE);
+        $bot->debug("PHP_Fork parent::command ('{$method}' on '{$this->getName()}') Error: " . $e->getMessage());
+				
         return false;
       }
     }
@@ -357,6 +367,7 @@ class LoU_Bot implements SplObserver {
       $this->load_hooks();
       $this->globalchat = (defined('GLOBALCHAT')) ? GLOBALCHAT : false;
       $this->lou->get_self_alliance();
+      $this->lou->setAllianceAllowOnline(true);
       while ($this->lou->isConnected(true)) {
         $slepp_until = time() + POLLTRIP;
         $event = $this->cron->check();
@@ -602,11 +613,11 @@ class LoU_Bot implements SplObserver {
               $event->callFunction($this, $input);
               if ($event->breakThis()) break;
             } else if($event instanceof executeThread) {
-              if ($events[$_key]->isRunning()) {
-                $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
+              if ($event->isRunning()) {
+                $this->debug($event->getName() . " already running, terminate with PID " . $event->getPid() . "...");
                 break;
               }
-              $events[$_key]->start($event, $this, $input);
+              $event->start($this, $input);
               $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
               $redis->reInstance();
             }
@@ -626,10 +637,10 @@ class LoU_Bot implements SplObserver {
             if ($event->breakThis()) return;
           } else if($event instanceof executeThread) {
             if ($event->isRunning()) {
-              $this->debug($event->getName() . " already running with PID " . $event->getPid() . "...");
+              $this->debug($event->getName() . " already running, terminate with PID " . $event->getPid() . "...");
               return;
             }
-            $event->start($event, $this, $input);
+            $event->start($this, $input);
             $this->debug("Started " . $event->getName() . " with PID " . $event->getPid() . "...");
             $redis->reInstance();
           }
@@ -806,6 +817,7 @@ class LoU_Bot implements SplObserver {
       global $redis;
       if (empty($user)) return false;
       if (!$redis->status()) return ($user == $this->owner) ? true : false;
+      if ($user == BOT_SERVICE) return true;
       $roles = $redis->hKeys("alliance:{$this->ally_id}:roles");
       sort($roles);
       $_op = array_slice($roles, 0, 3);
