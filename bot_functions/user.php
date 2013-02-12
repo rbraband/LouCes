@@ -93,7 +93,13 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    false,                 // is a command PRE needet?
                    '/^[!]?Alias$/',       // optional regex for key
 function ($bot, $data) {
-  global $redis;
+  global $redis, $bwords;
+  if (empty($bwords)) {
+    $lines = file(PERM_DATA.'blacklist.'.BOT_LANG, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line_num => $line) {
+      if ($line[0] != '#') $bwords[$line_num] = trim(strtoupper(htmlspecialchars($line)));
+    }
+  }
   if (!$redis->status()) return;
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     if ($data['command'][0] != PRE) {
@@ -119,7 +125,7 @@ function ($bot, $data) {
         $bot->add_privmsg((($nick == $data['user']) ? "Deine Aliase: [i]" : "{$nick}'s Aliase: [i]") . ucwords(mb_strtolower(implode(', ', $aliase))) . "[/i]", $data['user']);
       return true;
     } else if (!$bot->is_ally_user($data['params'][0])) {
-      if (!preg_match('/^[a-zA-Z]{1}[a-zA-Z0-9-_.]{1,15}$/', $data['params'][0]) || strtoupper($data['params'][0]) == 'DEL') {
+      if (!preg_match('/^[a-zA-Z]{1}[♥a-zA-Z0-9-_.]{1,15}$/', $data['params'][0]) || strtoupper($data['params'][0]) == 'DEL' || array_search(strtoupper($data['params'][0]), $bwords) !== false) {
         $message = 'Der Alias [i]' . mb_strtolower($data['params'][0]) . '[/i] ist ungültig!';
         if ($data["channel"] == ALLYIN)
           $bot->add_allymsg($message);
