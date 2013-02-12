@@ -4648,7 +4648,7 @@ Level: hard
 
 Category: Medizin
 Question: Wie nennt man die Angst davor, sich bei Luftkrankheit übergeben zu müssen?
-Answer: (Aeronauseaphobie|Aeronausiphobie)
+Answer: Aeronauseaphobie
 Level: extreme
 Score: 2
 
@@ -20332,7 +20332,7 @@ Answer: Rodeo Drive
 Question: Wie heißt die neapolitanische Mafia?
 Answer: Camorra
 
-Question: Wie heißt ein Fkußarm, der durch Regulierung eines Flusses stillgelegt wurde?
+Question: Wie heißt ein Flußarm, der durch Regulierung eines Flusses stillgelegt wurde?
 Answer: Altwasser
 
 Question: Wie hiess der deutsche Aussenminister, der 1925 den Locarno-Vertrag aushandelte?
@@ -25948,7 +25948,7 @@ Author: Micheee
 Category: Geschichte
 Question: In welchem Reich bildeten die Janitscharen bis 1826 eine militaerische Eliteeinheit?
 Answer: Osmanisches Reich
-Regexp: osman(en|ische)
+Regexp: osman(en|ische|isches) reich
 Author: Micheee
 Level: hard
 Tip: O...n...h.. R...h
@@ -26590,7 +26590,7 @@ Tip: ..i.. ..l..e.
 Category: Literatur
 Question: "Die Saeulen der Erde" verfasste?
 Answer: Ken #Follett#
-Regexp: foll?ett?
+Regexp: ken foll?ett?
 Author: Moxon
 Level: hard
 
@@ -26957,14 +26957,14 @@ Answer: Die gestohlene #Zeit#
 Author: Micheee
 
 Category: Maerchen
-Question: Was isst Witwe Bolte am liebsten aufgewaermt?
+Question: Was isst Witwe Bolte am liebsten aufgewärmt?
 Answer: Sauerkraut
 Author: Micheee
 Level: hard
 
 Category: Maerchen
-Question: Was ist gefaehrlich fuer kleine Wassermaenner?
-Answer: trockene Fuesse
+Question: Was ist gefährlich fuer kleine Wassermänner?
+Answer: trockene Füße
 Author: Micheee
 Level: hard
 
@@ -27412,6 +27412,7 @@ Author: Julika
 Category: Musik
 Question: Wer schrieb das Lied "Die Moritat von Meckie Messer"?
 Answer: Bertolt #Brecht#
+Regexp: bertolt? brecht
 Author: Micheee
 
 Category: Musik
