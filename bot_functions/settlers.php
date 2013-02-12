@@ -8,17 +8,17 @@ $bot->add_cron_event(Cron::DAILY,                           // Cron key
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
-  $continents = $redis->SMEMBERS("continents");
+  $continents = $redis->sMembers("continents");
   $settler_key = "settler";
   if (is_array($continents)) foreach ($continents as $continent) {
     $continent_key = "continent:{$continent}";
-    $redis->DEL("{$settler_key}:{$continent_key}:lawless");
+    $redis->del("{$settler_key}:{$continent_key}:lawless");
   }
 }, 'settlers');
 
-$bot->add_cron_event(Cron::HOURLY,                          // Cron key
-                    "UpdateResidents",                      // command key
-                    "LouBot_update_residents_cron",         // callback function
+$bot->add_thread_event(Cron::HOURLY,                          // Cron key
+                      "UpdateResidents",                      // command key
+                      "LouBot_update_residents_cron",         // callback function
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -31,18 +31,18 @@ function ($bot, $data) {
     $redis->rename("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$settler_key}:{$alliance_key}:{$continent_key}:residents");
   }
 }, 'settlers');
-$bot->add_tick_event(Cron::TICK5 ,                                   // Cron key
-                    "GetSettlersUpdate",                             // command key
-                    "LouBot_settlers_continent_player_update_cron",  // callback function
+$bot->add_thread_event(Cron::TICK5 ,                                   // Cron key
+                      "GetSettlersUpdate",                             // command key
+                      "LouBot_settlers_continent_player_update_cron",  // callback function
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
-  $continents = $redis->SMEMBERS("continents");
+  $continents = $redis->sMembers("continents");
   $alliance_key = "alliance:{$bot->ally_id}";
   $settler_key = "settler";
-  if (!($forum_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:id"))) {
+  if (!($forum_id = $redis->get("{$settler_key}:{$alliance_key}:forum:id"))) {
     $forum_id = $bot->forum->get_forum_id_by_name(BOT_SETTLERS_FORUM, true);
-    $redis->SET("{$settler_key}:{$alliance_key}:forum:id", $forum_id);
+    $redis->set("{$settler_key}:{$alliance_key}:forum:id", $forum_id);
   }
   
   sort($continents);
@@ -53,14 +53,14 @@ function ($bot, $data) {
     $bot->log("Fork: starting fork " . count($childs) . " childs!");
     foreach($childs as $c_id => $c_continents) {
       // define child
-      $bot->lou->check();
+      #$bot->lou->check();
       $thread = new executeThread("{$settler_key}Thread-" . $c_id);
       $thread->worker = function($_this, $bot, $continents, $forum_id) {
         // working child
         $error = 0;
         $redis = RedisWrapper::getInstance();
         if (!$redis->status()) exit(2);
-        $last_update = $redis->SMEMBERS('stats:ContinentPlayerUpdate');
+        $last_update = $redis->sMembers('stats:ContinentPlayerUpdate');
         sort($last_update);
         $last_update = end($last_update);
         $alliance_key = "alliance:{$bot->ally_id}";
@@ -72,23 +72,23 @@ function ($bot, $data) {
         foreach ($continents as $continent) {  
           // ** continents
           if ($continent >= 0) {
-            $thread_name = 'K'.$continent;
+            $thread_name = LoU::get_continent_abbr().$continent;
             $bot->debug("Settlers forum {$thread_name}: start");
             $continent_key = "continent:{$continent}";
-            if (!($thread_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
+            if (!($thread_id = $redis->get("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
               $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name, true);
-              $redis->SET("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
+              $redis->set("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id", $thread_id);
             }
             $update = false;
 #            if ($thread_id) {
             if ($bot->forum->exist_forum_thread_id($forum_id, $thread_id)) {
               // ** residents
               $residents = array();
-              $redis->SINTERSTORE("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$continent_key}:residents", "{$alliance_key}:member");
-              $new_residents = $redis->SDIFF("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$settler_key}:{$alliance_key}:{$continent_key}:residents");
-              $redis->RENAME("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$settler_key}:{$alliance_key}:{$continent_key}:residents");
+              $redis->sInterStore("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$continent_key}:residents", "{$alliance_key}:member");
+              $new_residents = $redis->sDiff("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$settler_key}:{$alliance_key}:{$continent_key}:residents");
+              $redis->rename("{$settler_key}:{$alliance_key}:{$continent_key}:_residents", "{$settler_key}:{$alliance_key}:{$continent_key}:residents");
               if (!empty($new_residents)) $update = true;
-              $residents = $redis->SMEMBERS("{$settler_key}:{$alliance_key}:{$continent_key}:residents");
+              $residents = $redis->sMembers("{$settler_key}:{$alliance_key}:{$continent_key}:residents");
               
               // ** settlers
               $settlers = array();
@@ -250,6 +250,7 @@ $post_settlers_footer = '
                 $bot->log("Settlers forum {$thread_name}: info(R:".count($new_residents).'|LL:'.count($new_lawless).'|S:'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
                 $post[$_post_id] = $post_update;
                 // @internal: otherwise update the last post with $post_update
+                $bot->log("Settlers forum {$thread_name}: info(".count($new_residents).'|'.count($new_lawless).'|'.count($new_settler).') posts:' . $_posts_count . '|' . count($post));
                 for($idx = count($post); $idx <= $_posts_count; $idx ++) {
                   $bot->forum->delete_alliance_forum_threads_post($forum_id, $thread_id, $bot->forum->get_thread_post_id_by_num($forum_id, $thread_id, $idx));
                 }
@@ -299,7 +300,7 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Siedeln",               // command key
                    "LouBot_settler",        // callback function
                    false,                   // is a command PRE needet?
-                   '/^[!]?(settle|si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
+                   '/^[!]?(claim|settle|si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
 function ($bot, $data) {
   global $redis, $sms;
   if (!$redis->status()) return;
@@ -307,7 +308,7 @@ function ($bot, $data) {
   $alliance_key = "alliance:{$bot->ally_id}";
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     if (in_array(strtolower($data['params'][0]), $commands)) {
-      $continents = $redis->SMEMBERS("continents");
+      $continents = $redis->sMembers("continents");
       $second_argument = strtolower(Lou::prepare_chat($data['params'][1]));
       $settler_key = "settler";
       switch (strtolower($data['params'][0])) {
@@ -458,13 +459,13 @@ function ($bot, $data) {
         $pos = Lou::get_pos_by_string(Lou::prepare_chat($ll));
         $continent = $bot->lou->get_continent_by_pos($pos);
         $continent_key = "continent:{$continent}";
-        if ($redis->SADD("{$continent_key}:lawless", $pos)) {
+        if ($redis->sAdd("{$continent_key}:lawless", $pos)) {
           $message .= " {$pos}|Ok";
           $str_time = (string)time();
-          $city_id = $redis->HGET('cities', $pos);
+          $city_id = $redis->hGet('cities', $pos);
           $city_key = "city:{$city_id}";
-          $city = $redis->HGETALL("{$city_key}:data");
-          $redis->HMSET("{$city_key}:data", array(
+          $city = $redis->hGetALL("{$city_key}:data");
+          $redis->hMset("{$city_key}:data", array(
             'll_time'        => $str_time,
             'll_name'        => $city['name'],
             'll_state'       => $city['state'],
@@ -488,24 +489,24 @@ function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
   if($bot->is_op_user($data['user'])) {
-    $continents = $redis->SMEMBERS("continents");
+    $continents = $redis->sMembers("continents");
     $alliance_key = "alliance:{$bot->ally_id}";
     $settler_key = "settler";
     
-    if (!($forum_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:id"))) {
+    if (!($forum_id = $redis->get("{$settler_key}:{$alliance_key}:forum:id"))) {
       $forum_id = $bot->forum->get_forum_id_by_name(BOT_SETTLERS_FORUM);
-    } else $redis->DEL("{$settler_key}:{$alliance_key}:forum:id");
+    } else $redis->del("{$settler_key}:{$alliance_key}:forum:id");
     sort($continents);
     if (is_array($continents) && $bot->forum->exist_forum_id($forum_id)) {
       foreach ($continents as $continent) {
         // ** continents
         if ($continent >= 0) {
-          $thread_name = 'K'.$continent;
+          $thread_name = $bot->lou->get_continent_abbr().$continent;
           $bot->debug("Settlers forum {$thread_name}: delete");
           $continent_key = "continent:{$continent}";
-          if (!($thread_id = $redis->GET("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
+          if (!($thread_id = $redis->get("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
             $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
-          } else $redis->DEL("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id");
+          } else $redis->del("{$settler_key}:{$alliance_key}:forum:{$continent_key}:id");
           if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
@@ -531,7 +532,7 @@ function ($bot, $data) {
     $settler_key = "settler";
     $settler_key_keys = $redis->getKeys("{$settler_key}:{$alliance_key}:forum:*");
     if (!empty($settler_key_keys)) foreach($settler_key_keys as $settler_key_key) {
-      $redis->DEL("{$settler_key_key}");
+      $redis->del("{$settler_key_key}");
     }
     $bot->add_privmsg("Step1# ".BOT_SETTLERS_FORUM." REDIS ids deleted!", $data['user']);
     $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'LouBot_settlers_continent_player_update_cron');
