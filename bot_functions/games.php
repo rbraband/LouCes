@@ -311,7 +311,7 @@ function ($bot, $data) {
                 if (trim($line) == '') {
                   if (empty($data[$i]['QUESTION'])) continue;
                   else {
-                    $questions[$i] = array(
+                    $questions[] = array(
                       'CATEGORY' => (empty($data[$i]['CATEGORY'][0])) ? 'Allgemein' : $data[$i]['CATEGORY'][0],
                       'QUESTION' => $data[$i]['QUESTION'][0],
                       'ANSWER'   => (strpos($data[$i]['ANSWER'][0], '#') === false) ? $data[$i]['ANSWER'][0] : preg_replace('/#(.*)#/i', '[i]$1[/i]', $data[$i]['ANSWER'][0]),
