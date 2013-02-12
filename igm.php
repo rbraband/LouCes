@@ -10,7 +10,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-define('IGMPART', 2950);
+define('IGMPART', 2900);
 
 class Igm {
   private $lou;
@@ -30,17 +30,14 @@ class Igm {
   public function send($target, $subject, $body, $maxlength = 3000) {
     $length = IGMPART;
     $maxlength = abs((int)$maxlength);
-    $rounded = ceil(strlen($body) / $length) -1;
-
     if(strlen($body) > $maxlength) {
       $texts = array();
-      $parts = $rounded + 1;
-      for($i = 0; $i <= $rounded; $i++) {
-        $texts[$i] .= preg_replace("/^(.{1,$length})(\n.*|$)/s", '\\1', $body);
-        $part = $i+1;
-        $body = substr($body, strlen($texts[$i]));
+      $igm_chunks = explode('***chunk***', wordwrap ($body, $length, '***chunk***'));
+      for($i = 0, $parts = count($igm_chunks); $i < $parts; ++$i) {
+        $part = $i + 1;
+        $texts[$i] = $igm_chunks[$i];
         if ($part != 1) $texts[$i] = "✂ - - - - -\n" . $texts[$i];
-        $texts[$i] .= "\n\nTeil: [i]{$part}/{$parts}[/i]";
+        $texts[$i] .= "\n[hr]Teil: [i]{$part}/{$parts}[/i]";
         $subjects = $subject." - Teil: {$part}";
         $this->doSendMsg($target, $subjects, $texts[$i]);
       }
