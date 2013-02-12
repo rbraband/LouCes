@@ -1,10 +1,9 @@
 <?php
 global $bot;
-$bot->add_category('toys', array('humanice' => true, 'spamsafe' => true), PUBLICY);
-$bot->add_category('toys2', array('humanice' => true, 'spamsafe' => false), PUBLICY);
-// crons
-
-// callbacks
+$bot->add_category('toys',          array('humanice' => true,  'fuzzy'    => true,  'spamsafe' => true),  PUBLICY);
+$bot->add_category('toys_humanice', array('humanice' => true,  'fuzzy'    => false, 'spamsafe' => false), PUBLICY);
+$bot->add_category('toys_spam',     array('humanice' => false, 'fuzzy'    => false, 'spamsafe' => true),  PUBLICY);
+$bot->add_category('toys_fuzzy',    array('humanice' => false, 'fuzzy'    => true,  'spamsafe' => true),  PUBLICY) ;
 $bot->add_privmsg_hook("Kaffee",                // command key
                        "LouBot_coffee",         // callback function
                        true,                    // is a command PRE needet?
@@ -14,7 +13,7 @@ function ($bot, $data) {
     $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
     $bot->add_allymsg("Ein Kaffee für " . $nick . "? Bitte sehr *Kaffeegeb*");
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_privmsg_hook("Bier",                // command key
                        "LouBot_beer",         // callback function
@@ -25,7 +24,7 @@ function ($bot, $data) {
     $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
     $bot->add_allymsg("Ein Bier für " . $nick . "? Bitte sehr *Biergeb*");
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_privmsg_hook("HappyBirtday",         // command key
                        "LouBot_happy_birthday",// callback function
@@ -42,7 +41,7 @@ function ($bot, $data) {
     $bot->add_allymsg("( `´•.¸( `´•.¸{$nick}¸.•´´ )¸.•´´ )");
     $bot->add_allymsg("´´ )( `´•.¸¸.•´´ )( `´•.¸( `´•");
 } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_privmsg_hook("Gold",                  // command key
                        "LouBot_gold",           // callback function
@@ -53,7 +52,7 @@ function ($bot, $data) {
     $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
     $bot->add_allymsg("Ein Sack Gold für " . ucfirst(strtolower($bot->get_random_nick($nick))) . "? Bitte sehr *Goldgeb*");
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_privmsg_hook("Keks",                  // command key
                        "LouBot_keks",           // callback function
@@ -75,7 +74,7 @@ function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("Uhhh was für'n Geheimniss Xd");
   }
-}, 'toys2');
+}, 'toys_fuzzy');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Ruh3los",                      // command key
@@ -86,7 +85,7 @@ function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("Ruh3los ... Ich wünschte er wäre hier");
   }
-}, 'toys2');
+}, 'toys_fuzzy');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Silence",                      // command key
@@ -97,7 +96,7 @@ function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("... I KIll You!");
   }
-}, 'toys2');
+}, 'toys_humanice');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Magier",                      // command key
@@ -108,7 +107,7 @@ function ($bot, $data) {
   if($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
     $bot->add_allymsg("Magier sind gut gegen Schiffe! ...  sagt Bier immer :D");
   }
-}, 'toys2');
+}, 'toys_humanice');
 
 $bot->add_privmsg_hook("SpamTest",                   // command key
                        "LouBot_spam_test",           // callback function
@@ -118,7 +117,7 @@ function ($bot, $data) {
   if($bot->is_ally_user($data['user'])) {
     $bot->add_privmsg("SpamCheck!", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_privmsg_hook("Giveaway",              // command key
                        "LouBot_giveaway",       // callback function
@@ -135,7 +134,7 @@ function ($bot, $data) {
     if ($giveaway == '') $bot->add_privmsg("zu wenig Parameter (!Gib Alse 100 Gold)!", $data['user']);
     else $bot->add_allymsg(implode(' ',$data['params'])." für " . $nick . "? Bitte sehr *".$giveaway."geb*");
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_allymsg_hook("Hello",                  // command key
                        "LouBot_hello",           // callback function
@@ -153,7 +152,7 @@ function ($bot, $data) {
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg($text[$rand_key] . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
-}, 'default'); // explicitly
+}, 'toys_humanice'); // explicitly
 
 $bot->add_allymsg_hook("ByeBye",                 // command key
                        "LouBot_bye",             // callback function
@@ -172,7 +171,7 @@ function ($bot, $data) {
   $rand_key = array_rand($text, 1);
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg($text[$rand_key] . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
-}, 'default'); // explicitly
+}, 'toys_humanice'); // explicitly
 
 
 $bot->add_allymsg_hook("Re",                  // command key
@@ -182,7 +181,7 @@ $bot->add_allymsg_hook("Re",                  // command key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
     $bot->add_allymsg("wb " . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' :)');
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_allymsg_hook("Sex",                  // command key
                        "LouBot_sex",           // callback function
@@ -191,7 +190,7 @@ $bot->add_allymsg_hook("Sex",                  // command key
 function ($bot, $data) {
   if (!$bot->is_himself($data['user']))
   $bot->add_allymsg("Katzenbaaaaabbbbyyyyysss");
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_globlmsg_hook("Willkommen",         // command key
                        "LouBot_startup",      // callback function
@@ -201,7 +200,7 @@ function ($bot, $data) {
   if($data['user'] == '@Info') {
     //$bot->add_allymsg("^^ da isser :)");
   };
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_allymsg_hook("Puschel",                // command key
                        "LouBot_puschel",         // callback function
@@ -217,7 +216,7 @@ function ($bot, $data) {
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
   }
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_allymsg_hook("Schugar",                // command key
                        "LouBot_schugar",         // callback function
@@ -244,7 +243,7 @@ function ($bot, $data) {
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
   }
-}, 'toys');
+}, 'toys_fuzzy');
 
 $bot->add_allymsg_hook("VB",                    // command key
                        "LouBot_VB",             // callback function
@@ -312,7 +311,7 @@ function ($bot, $data) {
       if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:utr_1000', $data['user']);}
     }
   }
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_allymsg_hook("Krieg",                  // command key
                        "LouBot_krieg",           // callback function
@@ -379,7 +378,7 @@ function ($bot, $data) {
       if ($c == 1000) {$bot->add_allymsg("and the Winner is {$nick} 50.000.000 Gold");$redis->setnx('toys:krieg_1000', $data['user']);}
     }
   }
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Slap",                  // command key
@@ -409,7 +408,7 @@ function ($bot, $data) {
     $nick = ($data['params'][0] != '') ? $data['params'][0] : $data['user'];
     $bot->add_allymsg("schlägt {$nick} " . $text[$rand_key]);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Danke",                  // command key
@@ -475,7 +474,7 @@ function ($bot, $data) {
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
   }
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_allymsg_hook("AfKaffee",                  // command key
                        "LouBot_afkaffee",           // callback function
@@ -493,7 +492,7 @@ function ($bot, $data) {
     $rand_key = array_rand($text, 1);
     $bot->add_allymsg($text[$rand_key]);
   }
-}, 'toys');
+}, 'toys_humanice');
 
 $bot->add_allymsg_hook("Zitat",                  // command key
                        "LouBot_phrases",         // callback function
@@ -512,7 +511,7 @@ function ($bot, $data) {
     $rand_key = array_rand($phrases, 1);
     $bot->add_allymsg($phrases[$rand_key]);
   }
-}, 'toys');
+}, 'toys_spam');
 
 $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                        "Slogan",                // command key
@@ -552,7 +551,7 @@ function ($bot, $data) {
       $bot->add_allymsg($matches[1]);
     } else return $bot->add_allymsg(magic_slogan()); // fallback
   }
-}, 'toys');
+}, 'toys_spam');
 
 if(!function_exists('slogan_call')) {
   function slogan_call($request) {
