@@ -41,6 +41,7 @@ define('BOT_SETTLERS_FORUM', 'Settlers');
 define('BOT_REPORTS_FORUM', 'Reports');
 define('BOT_BLACK_FORUM', 'BlackBook');
 define('BOT_SURVEY_FORUM', 'Survey');
+define('BOT_EXTENSION_FORUM', 'Tools');
 // log and directory settings
 define('BOT_PATH',((CLI) ? $_SERVER["PWD"] : $_SERVER["DOCUMENT_ROOT"]).'/');
 define('LOG_PATH',BOT_PATH.'logs/');
@@ -48,6 +49,7 @@ define('LOG_FILE',LOG_PATH.'log.txt');
 define('PERM_DATA',BOT_PATH.'perm_data/');
 define('DOKU_DATA',BOT_PATH.'doku_data/');
 define('FNC_DATA',BOT_PATH.'bot_functions/');
+define('BACK_DATA', BOT_PATH.'backup_data'.DIRECTORY_SEPARATOR);
 // lock
 define('LOCK_FILE', BOT_PATH.str_replace('.php', '.lock', $_SERVER['PHP_SELF']));
 // shorthands
@@ -151,12 +153,12 @@ define('SMS_ALERT_OWN',  1);
 define('SMS_ALERT_ALL',  2);
 define('SMS_SHARE_OFF',  0);
 define('SMS_SHARE_ON',   1);
-define('SMS_STATUS_OPEN', 'OPEN');
-define('SMS_STATUS_DELIVERED', 'DELIVERED');
-define('SMS_STATUS_TRANSMITTED', 'TRANSMITTED');
-define('SMS_STATUS_BUFFERED', 'BUFFERED');
+define('SMS_STATUS_OPEN',         'OPEN');
+define('SMS_STATUS_DELIVERED',    'DELIVERED');
+define('SMS_STATUS_TRANSMITTED',  'TRANSMITTED');
+define('SMS_STATUS_BUFFERED',     'BUFFERED');
 define('SMS_STATUS_NOT_DELIVERED','NOT_DELIVERED');
-define('SMS_STATUS_ANSWERED', 'ANSWERED');
+define('SMS_STATUS_ANSWERED',     'ANSWERED');
 // email
 define('EMAIL_LOG_FILE', LOG_PATH.'email.txt');
 define('EMAIL_SPAMTTL', 30);
