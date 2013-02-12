@@ -44,12 +44,22 @@ function ($bot, $data) {
           $rank = $redis->ZREVRANK("points:alliance:{$bot->ally_id}", $data['user']);
       }
       $game = (!empty($data['params'][0])) ? ' ' . ucfirst($data['params'][0]) : ' Games';
-    }
+			$user = $data['user'];
+    } else if ($bot->is_ally_user($data['params'][0])) {
+			$uid = $bot->get_user_id($data['params'][0]);
+      $user = $redis->HGET("user:{$uid}:data", 'name');
+			if (!($points = $redis->ZSCORE("points:alliance:{$bot->ally_id}", $user))) $points = 0;
+      $rank = $redis->ZREVRANK("points:alliance:{$bot->ally_id}", $user);
+			$game = ' Games';
+		}
     if ($rank === false) $rank = '-'; else $rank +=1;
-    if ($data["channel"] == ALLYIN)
-      $bot->add_allymsg("{$data['user']}, du hast {$points}{$game} Punkte und bist auf Platz: {$rank}");
-    else 
-      $bot->add_privmsg("Du hast {$points}{$game} Punkte und bist auf Platz: {$rank}", $data['user']);
+		if ($data["channel"] == ALLYIN) {
+      if ($user == $data['user']) $bot->add_allymsg("{$user}, du hast {$points}{$game} Punkte und bist auf Platz: {$rank}");
+			else $bot->add_allymsg("{$user}, hat {$points}{$game} Punkte und ist auf Platz: {$rank}");
+    } else {
+      if ($user == $data['user']) $bot->add_privmsg("Du hast {$points}{$game} Punkte und bist auf Platz: {$rank}", $data['user']);
+			else $bot->add_privmsg("{$user} hat {$points}{$game} Punkte und ist auf Platz: {$rank}", $data['user']);
+		}
     return true;
   };
 }, 'games');
@@ -216,7 +226,7 @@ if(!function_exists('hangman_main')) {
         $points = round(strlen($word) * $redis->SCARD("{$games_key}:hangman:player") * $magic / $redis->GET("{$games_key}:hangman:versuche"), 0);
         $incr = $redis->ZINCRBY("{$games_key}:hangman:points", $points, $user);
         $total = $redis->ZINCRBY("points:alliance:{$bot->ally_id}", $points, $user);
-        $bot->add_allymsg("Games Hangman: wurde gelöst von {$user} ☻");
+        $bot->add_allymsg("Games Hangman: wurde gelöst von {$user} (*)");
         $bot->add_allymsg("{$user} hat {$points} Punkte gewonnen und insgesammt {$incr}/{$total} Punkte gesammelt!");
         $bot->add_allymsg('Gesucht war: ' . $word);
         return true;
@@ -226,7 +236,7 @@ if(!function_exists('hangman_main')) {
       $wrong[$guess] = $guess;
       if (count($wrong) >= $wrong_count || $force) {
         $redis->DEL("{$games_key}:running");
-        $bot->add_allymsg("Games Hangman: wurde nicht gelöst ☹");
+        $bot->add_allymsg("Games Hangman: wurde nicht gelöst :!!");
         $bot->add_allymsg('Gesucht war: ' . $word);
         return true;
       } else {
@@ -374,7 +384,7 @@ if(!function_exists('quizzer_main4')) {
       $points = ($points <= 0) ? (($minimum_points <= 0) ? 1 : $minimum_points) : $points;
       $incr = $redis->ZINCRBY("{$games_key}:quizzer:points", $points, $user);
       $total = $redis->ZINCRBY("points:alliance:{$bot->ally_id}", $points, $user);
-      $bot->add_allymsg("Games Quiz: wurde gelöst von {$user} ☻");
+      $bot->add_allymsg("Games Quiz: wurde gelöst von {$user} (*)");
       $bot->add_allymsg("{$user} hat {$points} Punkte gewonnen und insgesammt {$incr}/{$total} Punkte gesammelt!");
       $bot->add_allymsg('Gesucht war: ' . $questions[$question]['ANSWER']);
       return true;
@@ -383,7 +393,7 @@ if(!function_exists('quizzer_main4')) {
       $wrong[$guess] = $guess;
       if (count($wrong) >= $wrong_count || $force) {
         $redis->DEL("{$games_key}:running");
-        $bot->add_allymsg("Games Quiz: wurde nicht gelöst ☹");
+        $bot->add_allymsg("Games Quiz: wurde nicht gelöst :!!");
         $bot->add_allymsg('Gesucht war: ' . $questions[$question]['ANSWER']);
         return true;
       } else {
