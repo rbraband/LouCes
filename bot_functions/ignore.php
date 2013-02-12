@@ -2,6 +2,39 @@
 global $bot;
 $bot->add_category('lists', array(), PUBLICY);
 
+// crons
+$bot->add_tick_event(Cron::HOURLY,                       // Cron key
+                    "GetSelfIgnorList",                 // command key
+                    "LouBot_self_ignorel_cron",          // callback function
+function ($bot, $data) {
+  $bot->lou->get_self_ignorel();
+}, 'lists');
+
+if(!function_exists('lou_punisher')) {
+	function lou_punisher($user) {
+		global $redis, $bot;
+    if (!$redis->status()) return true;
+		$punish_key = "punisher";
+    $key = "{$punish_key}:{$alliance_key}:{$user}";
+    $bot->log(REDIS_NAMESPACE."{$key} TTL: {$redis->ttl($key)}");
+    if ($redis->ttl($key) === -1) {
+      $bot->log("NoSPAM");
+      $redis->set($key, 0, SPAMTTL);
+			$bot->add_privmsg("Ne Ne Ne!", $user);
+      return true;
+    } else {
+      $incr = $redis->incr($key) * SPAMTTL;
+      if($bot->lou->set_ignore($user)) {
+				$bot->log('Ignore: punish ' . $user);
+			} else {
+				$bot->log('Ignore: failed ' . $user);
+			}
+      $redis->expire($key, $incr);
+      return false;
+    }
+	}
+}
+// callbacks
 $bot->add_lists_hook("UpdateIgnores",               // command key
                     "LouBot_self_ignore_update",    // callback function
 function ($bot, $list) {
@@ -40,13 +73,5 @@ function ($bot, $list) {
     else $bot->debug('Ignorelist: empty'); 
   }
 }, 'lists');
-
-$bot->add_tick_event(Cron::HOURLY,                       // Cron key
-                    "GetSelfIgnorList",                 // command key
-                    "LouBot_self_ignorel_cron",          // callback function
-function ($bot, $data) {
-  $bot->lou->get_self_ignorel();
-}, 'lists');
-
 // todo: FRIENDINV   FRIENDL   SUBSTITUTION   MAIL
 ?>
