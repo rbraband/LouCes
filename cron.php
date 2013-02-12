@@ -29,6 +29,8 @@ class Cron implements SplSubject {
   const WEEKLY   = 'cron.weekly';
   const MONTHLY  = 'cron.monthly';
   const YEARLY   = 'cron.yearly';
+  // Only for cleanup all cons
+  const CRONALL  = 'cron.all';
   
   private $crons = array(
     array('cron.hourly',  'is',   1),
