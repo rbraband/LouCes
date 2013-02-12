@@ -7,7 +7,7 @@ $bot->add_category('alice', array('humanice' => true), PUBLICY);
 $bot->add_allymsg_hook("Alice",                 // command key
                        "LouBot_alice",          // callback function
                        false,                   // is a command PRE needet?
-                       "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[ ]?[.!?]?)$/i",  // optional regex for key
+                       "/^([@]?{$bot->bot_user_name}[,.?\s]+(.*)|(.*)[,.\s]+{$bot->bot_user_name}[ ]?[.!?:\/()DP]{0,})$/i",  // optional regex for key
 function ($bot, $data) {
   global $redis;
   if(!$bot->is_himself($data['user'])) {
@@ -23,21 +23,42 @@ function ($bot, $data) {
       );
       $anrede[] = ucfirst(strtolower($bot->get_random_nick($data['user']))) . ', ';
       $anrede[] = '@' . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' - ';
+      $anrede[] = '... ';
+      $anrede[] = '';
       shuffle($anrede);
       $rand_key_anrede = array_rand($anrede, 1);
     $response = alice_call($request);
     if ($response) {
-      $bot->log("LoU -> get response from ALICE\n\r");
-      $xml = simplexml_load_string($response);
-      $result = $xml->xpath('//that');
-        $reply = $xml->that;
+        $bot->log("LoU -> get response from ALICE");
+        $xml = @simplexml_load_string($response);
+        if ($xml) {
+          $thats = array();
+          foreach ($xml->that as $that) {
+             echo $thats[] = $that;
+          }
+          shuffle($thats);
+          $rand_key = array_rand($thats, 1);
+          $reply = $thats[$rand_key];
+        } else {
+          $bot->log('XML Error: cannot xpath Data!');
+          $message = magic_8ball();
+        }
+        if ($reply) {
         $reply = str_replace('<botmaster></botmaster>', BOT_OWNER, $reply);
         $reply = str_replace('<setname></setname>', $bot->get_random_nick($data['user']), $reply);
-        $reply = str_replace('Blox', 'mir', $reply);
+          $reply = str_replace('Blox', 'mir', $reply);
         $reply = str_replace('<getname></getname>', 'weiss aber nicht was das ist', $reply);
         //<set_thema>... <set_thema>
-        $bot->add_allymsg($anrede[$rand_key_anrede] . lcfirst($reply));
-      } else return $bot->add_allymsg($anrede[$rand_key_anrede] . lcfirst(magic_8ball())); // fallback
+          $message = $reply;
+        } else if ($xml->message) {
+          $bot->log('ALICE Error: ' . $xml->message);
+          $message = magic_8ball();
+        }
+      } else {
+        $bot->log('ALICE Error: cannot receive Data!');
+        $message = magic_8ball();
+      }
+      return $bot->add_allymsg(($anrede[$rand_key_anrede] != '') ? $anrede[$rand_key_anrede] . lcfirst($message) : $message);
     } else {
       $incr = $redis->incr($key) * ALICETTL;
       $redis->EXPIRE($key, $incr);
@@ -48,6 +69,7 @@ function ($bot, $data) {
 
 if(!function_exists('alice_call')) {
   function alice_call($request) {
+    global $bot;
       $header[] = "Content-type: text/xml";
       $_request = "";
       foreach($request as $_key=>$_value) { $_request .= $_key.'='.$_value.'&'; }
@@ -61,16 +83,18 @@ if(!function_exists('alice_call')) {
       curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 100); // Timeout if it takes too long
       curl_setopt($ch, CURLOPT_TIMEOUT, 100);
       curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-      
+    $header = curl_getinfo($ch);
       $data = curl_exec($ch);       
-      if (curl_errno($ch) || !$data) {
-          print curl_error($ch);
+    if (curl_errno($ch) || empty($data)) {
+      $bot->debug('Curl Error: cannot receive Data!');
           return false;
-      } else {
+    } else if(intval($header['http_code']) >= 400) {
+      $bot->debug('Http Error: ' . $header['http_code']);
+      return false;
+    } 
           curl_close($ch);
           return $data;
       }
-  }
 }
 
 if(!function_exists('magic_8ball')) {
