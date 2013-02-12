@@ -1,6 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('statistic', array(), PUBLICY);
+
 // crons
 $bot->add_thread_event(Cron::HOURLY,                            // Cron key
                       "GetMilitaryUpdate",                      // command key
