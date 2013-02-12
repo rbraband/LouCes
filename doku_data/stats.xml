@@ -3,8 +3,8 @@
   <key>stats</key>
   <title>##BOTNAME## beobachtet Dich ;)</title>
   <author>BloodHeart</author>
-  <date>11.10.2012</date>
-  <version>1.7</version>
+  <date>27.12.2012</date>
+  <version>1.8</version>
   <lang>de</lang>
   <entry id="1"><![CDATA[##BOTNAME## erstellt stündliche Statistiken für euch.
 
@@ -13,7 +13,7 @@
 Die Webseite und die Grafik aktualisieren sich automatisch :)
 
 [u]Features[/u]
-Man kann sich die Statistik für 24, 48 und 72 Stunden anzeigen lassen, die Buttons dafür sind oben links angeordnet. Ausserdem ist es möglich einen jeden Spieler auf W14 zu erfassen, einfach in das Feld oben mittig eintragen. Hier hilft eine automatische Suchhilfe bei der richtigen Schreibweise des Namens.
+Man kann sich die Statistik für 24, 48 und 72 Stunden anzeigen lassen, die Buttons dafür sind oben links angeordnet. Ausserdem ist es möglich einen jeden Spieler auf der Welt zu erfassen, einfach in das Feld oben mittig eintragen. Hier hilft eine automatische Suchhilfe bei der richtigen Schreibweise des Namens.
 
 [u]Befehle[/u]
 Wenn man sich den Link nicht merken kann oder möchte schreibt ihn ##BOTNAME## in den Chat:
