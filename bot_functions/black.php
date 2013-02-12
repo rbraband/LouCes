@@ -2,9 +2,9 @@
 global $bot;
 $bot->add_category('black', array(), PUBLICY);
 // crons
-$bot->add_cron_event(Cron::HOURLY,                     // Cron key
-                    "GetBlackUpdate",                  // command key
-                    "LouBot_black_continent_player_update_cron",  // callback function
+$bot->add_thread_event(Cron::HOURLY,                     // Cron key
+                      "GetBlackUpdate",                  // command key
+                      "LouBot_black_continent_player_update_cron",  // callback function
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -25,7 +25,7 @@ function ($bot, $data) {
     $bot->log("Fork: starting fork " . count($childs) . " childs!");
     foreach($childs as $c_id => $c_continents) {
       // define child
-      $bot->lou->check();
+      #$bot->lou->check();
       $thread = new executeThread("{$black_key}Thread-" . $c_id);
       $thread->worker = function($_this, $bot, $continents, $forum_id) {
         global $_black_user_points, $_black_user_state, $_black_user_last;
@@ -338,7 +338,7 @@ function ($bot, $data) {
           if (!($thread_id = $redis->GET("{$black_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
             $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
           } else $redis->DEL("{$black_key}:{$alliance_key}:forum:{$continent_key}:id");
-         if ($thread_id) $thread_ids[] = $thread_id;
+          if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
