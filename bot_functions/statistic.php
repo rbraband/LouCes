@@ -2,9 +2,9 @@
 global $bot;
 $bot->add_category('statistic', array(), PUBLICY);
 // crons
-$bot->add_cron_event(Cron::HOURLY,                            // Cron key
-                    "GetMilitaryUpdate",                      // command key
-                    "LouBot_military_continent_update_cron",  // callback function
+$bot->add_thread_event(Cron::HOURLY,                            // Cron key
+                      "GetMilitaryUpdate",                      // command key
+                      "LouBot_military_continent_update_cron",  // callback function
 function ($bot, $data) {
   global $redis;
   if (!$redis->status()) return;
@@ -25,7 +25,7 @@ function ($bot, $data) {
     $bot->log("Fork: starting fork " . count($childs) . " childs!");
     foreach($childs as $c_id => $c_continents) {
       // define child
-      $bot->lou->check();
+      #$bot->lou->check();
       $thread = new executeThread("{$military_key}Thread-" . $c_id);
       $thread->worker = function($_this, $bot, $continents, $forum_id) {
         // working child
