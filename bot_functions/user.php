@@ -1,6 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('user', array(), PUBLICY);
+
 // crons
 
 // callbacks
