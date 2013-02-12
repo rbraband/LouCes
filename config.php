@@ -21,7 +21,10 @@ setlocale(LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
 // features like spam
 define('SPAMTTL', 15);
 define('POLLTRIP', 1);
-define('SETTLERTTL', 86400);
+define('CLAIMTTL', 86400); //24h
+define('SETTLERTTL', 86400); //deprecated
+define('SETTLETTL', 129600); //36h
+
 // ignore
 define('IGNORE_PUNISHTTL', 3600);
 // stats
@@ -30,9 +33,9 @@ define('STATS_URL', 'stats.localhost');
 define('ALICETTL', 3);
 define('ALICEID', 'youralice_id'); // need an published alicebot id
 // global chat
-define('GLOABLCHAT', false);
+define('GLOBALCHAT', false);
 // fork
-define('MAXCHILDS', 5);
+define('MAXCHILDS', 8);
 // server pain barrier
 define('MAX_PARALLEL_REQUESTS', 16);
 // forums
@@ -43,12 +46,12 @@ define('BOT_BLACK_FORUM', 'BlackBook');
 define('BOT_SURVEY_FORUM', 'Survey');
 define('BOT_EXTENSION_FORUM', 'Tools');
 // log and directory settings
-define('BOT_PATH',((CLI) ? $_SERVER["PWD"] : $_SERVER["DOCUMENT_ROOT"]).'/');
-define('LOG_PATH',BOT_PATH.'logs/');
-define('LOG_FILE',LOG_PATH.'log.txt');
-define('PERM_DATA',BOT_PATH.'perm_data/');
-define('DOKU_DATA',BOT_PATH.'doku_data/');
-define('FNC_DATA',BOT_PATH.'bot_functions/');
+define('BOT_PATH',((CLI) ? $_SERVER['PWD'] : $_SERVER['DOCUMENT_ROOT']).DIRECTORY_SEPARATOR);
+define('LOG_PATH', BOT_PATH.'logs'.DIRECTORY_SEPARATOR);
+define('LOG_FILE', LOG_PATH.'log.txt');
+define('PERM_DATA', BOT_PATH.'perm_data'.DIRECTORY_SEPARATOR);
+define('DOKU_DATA', BOT_PATH.'doku_data'.DIRECTORY_SEPARATOR);
+define('FNC_DATA', BOT_PATH.'bot_functions'.DIRECTORY_SEPARATOR);
 define('BACK_DATA', BOT_PATH.'backup_data'.DIRECTORY_SEPARATOR);
 // lock
 define('LOCK_FILE', BOT_PATH.str_replace('.php', '.lock', $_SERVER['PHP_SELF']));
