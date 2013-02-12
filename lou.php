@@ -226,7 +226,7 @@ class LoU implements SplSubject {
     curl_close($this->handle);
     return $this->doOpenGame($debug);
   }
-
+	
   private function disconnect($debug = false) {
     $_logout_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/logout';
     $_referer_url = 'https://www.lordofultima.com/'.BOT_LANG.'/game';      
@@ -362,7 +362,7 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-
+	
   public function getCachedDebug($endpoint, $data = array(), $noerror = false, $expire = 180) {
     return $this->getCached($endpoint, $data, $noerror, $expire, true);
   }
@@ -389,7 +389,7 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-
+	
   public function getMultiDebug($endpoint, $multi = array()) {
     return $this->getMulti($endpoint, $multi, true);
   }
@@ -446,7 +446,7 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-
+	
   public function getMultiCachedDebug($endpoint, $multi = array(), $expire = 180) {
     return $this->getMultiCached($endpoint, $multi, $expire, true);
   }
@@ -609,7 +609,7 @@ class LoU implements SplSubject {
     $_chunks = array_chunk($multi, $max, true);
     foreach($_chunks as $_k => $_chunk) {
       $this->mhandle = curl_multi_init();
-      $this->debug('Curl: start parallel with chunk-' . ($_k + 1) .'/'.count($_chunks).' of ' . count($multi) . '/' . $max . ' requests!');
+      $this->output('Curl: start parallel with chunk-' . ($_k + 1) .'/'.count($_chunks).' of ' . count($multi) . '/' . $max . ' requests!');
       $_handles = array();
       foreach($_chunk as $key => $data) {
         $_handles[$key] = curl_init($key);
@@ -734,6 +734,14 @@ class LoU implements SplSubject {
     $this->getMultiCached("GetPublicCityInfo", $d);
   }
   
+	public function setAllianceAllowOnline($allow) {
+    $d = array(
+        "session" => $this->session,
+        "b"       => (boolean)$allow
+    );
+    $this->post("setAllianceAllowOnline", $d);
+  }
+	
   public function doPlayerCount($continent, $type = 0) {
     $d = array(
         "session"    => $this->session,
