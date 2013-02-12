@@ -19,8 +19,8 @@ function ($bot, $data) {
       $redis->set($key, 0, ALICETTL);
       $request = array('botid' => ALICEID,
                        'input' => urlencode(str_replace($bot->bot_user_name , '' , $data['message'])),
-                     'custid' => urlencode($data['user'])
-    );
+                       'custid' => urlencode($data['user'])
+      );
       $anrede[] = ucfirst(strtolower($bot->get_random_nick($data['user']))) . ', ';
       $anrede[] = '@' . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' - ';
       shuffle($anrede);
