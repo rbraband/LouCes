@@ -167,9 +167,9 @@ class Category implements SplObserver {
   
   private function setRules() {
     $this->timeout = intval(@$this->rules['timeout']);
-    $this->fuzzyit = (@$this->rules['fuzzyit']) ? true : false;
+    $this->fuzzyit = (@$this->rules['fuzzy']) ? true : false;
     $this->schedule = intval(@$this->rules['schedule']);
-    $this->randomice = (@$this->rules['randomice']) ? true : false;
+    $this->randomice = (@$this->rules['humanice']) ? true : false;
     $this->spamsafe = (@$this->rules['spamsafe']) ? true : false;
     $this->dobreak = (@$this->rules['dobreak']) ? true : false;
     $this->enabled = (@$this->rules['enabled']) ? $this->rules['enabled'] : true;
