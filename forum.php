@@ -103,8 +103,7 @@ class Forum {
     return false;
   }
   
-  /* deprecated @use get_last_thread_post_id */
-  public function get_thread_post_by_num($forum_id, $thread_id, $offset = 0) {
+	public function get_thread_post_by_num($forum_id, $thread_id, $offset = 0) {
     if ($this->get_alliance_forum_posts($forum_id, $thread_id)) {
       if ($this->get_thread_post_count($forum_id, $thread_id) >= $offset) {
         $posts = array_keys($this->posts[$forum_id][$thread_id]['data']); 
@@ -134,7 +133,14 @@ class Forum {
     }
     return false;
   }
-  
+	
+	public function get_all_forums() {
+    if ($this->get_alliance_forums()) {
+			return $this->forums['data'];
+		}
+		return false;
+  }
+	
   public function get_alliance_forum_threads($forum_id) {
     $this->doInfoForumThreads($forum_id);
     $threads = ($this->stack) ? @$this->stack : null;
@@ -146,6 +152,13 @@ class Forum {
       return true;
     }
     return false;
+  }
+	
+	public function get_all_forum_threads($forum_id) {
+    if ($this->get_alliance_forum_threads($forum_id)) {
+			return $this->threads[$forum_id]['data'];
+		}
+		return false;
   }
   
   public function mark_alliance_forum_threads_as_read($forum_id) {
@@ -180,6 +193,13 @@ class Forum {
       return true;
     }
     return false;
+  }
+	
+	public function get_all_forum_posts($forum_id, $thread_id) {
+    if ($this->get_alliance_forum_posts($forum_id, $thread_id)) {
+			return $this->posts[$forum_id][$thread_id]['data'];
+		}
+		return false;
   }
   
   public function delete_alliance_forums($forum_ids) {
@@ -397,11 +417,12 @@ class Forum {
   }
   
   private function analyse_forums($forums) {
-    
+	
+    global $_GAMEDATA;
     foreach($forums as $data)
       $items[$data['fi']] = array(
         'id'            => $data['fi'],
-        'name'          => $data['ft'],
+        'name'          => (!empty($_GAMEDATA->translations['tnf:'.strtolower(substr($data['ft'], 1))])) ? $_GAMEDATA->translations['tnf:'.strtolower(substr($data['ft'], 1))] : $data['ft'],
         'updated'       => $data['hup'],
         'rights'        => Forum::prepare_rights($data['rw'])
       );
