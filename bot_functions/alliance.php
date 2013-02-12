@@ -61,6 +61,8 @@ function ($bot, $data) {
       $redis->HDEL('bookmarks', $bookmark);
     }
     $redis->DEL("user:{$uid}:bookmarks");
+    // NoMail
+    $redis->SREM("settler:{$alliance_key}:nomail", $old);
   }
   $diff_new = $redis->SDIFF("{$alliance_key}:member","{$alliance_key}:_member");
   if (is_array($diff_new)) foreach($diff_new as $new) {
