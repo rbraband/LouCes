@@ -52,7 +52,12 @@ class JSON {
       }
     } catch (JsonDecodeException $e){
       $line = trim(date("[d/m @ H:i:s]") . $e->getMessage()) . "\n";
-      $line = trim("Debug:" . $json) . "\n";        
+      if (preg_match('/<html[^>]{0,}>/i', $json)) {
+          $message = preg_match('/<title>(.*)<\/title>/i', $json);
+          $line = trim("Error: " . $message[1]) . "\n";
+      } else {
+          $line = trim("Debug:\n-->\n" . $json) . "\n<--\n";
+      }   
       error_log($line, 3, LOG_FILE);
       return false;
     }
@@ -609,7 +614,7 @@ class LoU implements SplSubject {
     $_chunks = array_chunk($multi, $max, true);
     foreach($_chunks as $_k => $_chunk) {
       $this->mhandle = curl_multi_init();
-      $this->output('Curl: start parallel with chunk-' . ($_k + 1) .'/'.count($_chunks).' of ' . count($multi) . '/' . $max . ' requests!');
+      $this->debug('Curl: start parallel with chunk-' . ($_k + 1) .'/'.count($_chunks).' of ' . count($multi) . '/' . $max . ' requests!');
       $_handles = array();
       foreach($_chunk as $key => $data) {
         $_handles[$key] = curl_init($key);
@@ -954,6 +959,11 @@ class LoU implements SplSubject {
     return preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9]):?([0-5][0-9])?$/', strtolower($string));
   }
   
+  public static function is_string_duration($string) {
+    // check if duration <= 59:59:59
+    return preg_match('/^([0-5][0-9]):([0-5][0-9]):?([0-5][0-9])?$/', strtolower($string));
+  }
+  
   public static function get_duration_by_seconds($sec) {
     $hours = 0;
     $min = intval($sec / 60);
@@ -962,11 +972,6 @@ class LoU implements SplSubject {
       $min = $min % 60;
     }
     return str_pad($hours, 2 ,'0', STR_PAD_LEFT) . ":" . str_pad($min, 2 ,'0', STR_PAD_LEFT);
-  }
-  
-  public static function is_string_duration($string) {
-    // check if duration <= 59:59
-    return preg_match('/^[0-5][0-9]:[0-5][0-9][0-9]$/', strtolower($string));
   }
   
   public static function get_time_by_string($string) {
