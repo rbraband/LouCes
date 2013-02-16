@@ -83,7 +83,7 @@ $bot->add_privmsg_hook("Whisper",             // command key
 function ($bot, $data) {
   if($bot->is_op_user($data['user'])) {
     $user = array_shift($data['params']);
-    $bot->add_privmsg(trim(implode(' ', $data['params'])), $user);
+    $bot->add_privmsg((implode(' ', $data['params']), $user);
     
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
