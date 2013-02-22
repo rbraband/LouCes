@@ -1,6 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('doku', array(), PUBLICY);
+
 // crons
 $bot->add_thread_event(Cron::HOURLY,                    // Cron key
                     "GetDokuUpdate",                  // command key
