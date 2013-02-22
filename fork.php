@@ -745,7 +745,8 @@ class PHP_Fork {
         $i = 0;
         do {
           $i++;
-          $this->_internal_ipc_key = @shmop_open($shm_key, "c", 0644, 10240);
+          $this->_internal_ipc_key = @shmop_open($shm_key, "a", 0666, 0);
+          if (empty($this->_internal_ipc_key)) $this->_internal_ipc_key = @shmop_open($shm_key, "c", 0644, 10240);
         } while ($this->_internal_ipc_key === false && $i <= self::SHARED_MAX_ATTEMPS);
         
         if (!$this->_internal_ipc_key) {
@@ -772,7 +773,8 @@ class PHP_Fork {
         $i = 0;
         do {
           $i++;
-          $this->_internal_sem_key = @shmop_open($sem_key, "c", 0644, 10);
+          $this->_internal_sem_key = @shmop_open($sem_key, "a", 0666, 0);
+          if (empty($this->_internal_sem_key)) $this->_internal_sem_key = @shmop_open($sem_key, "c", 0644, 10);
         } while ($this->_internal_ipc_key === false && $i <= self::SHARED_MAX_ATTEMPS);
         
         if (!$this->_internal_sem_key) {
