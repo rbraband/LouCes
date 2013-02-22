@@ -1,6 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('digest', array(), PUBLICY);
+
 // crons
 /*
 $bot->add_cron_event(Cron::DAILY,                           // Cron key
