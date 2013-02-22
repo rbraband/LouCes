@@ -306,7 +306,9 @@ class LoU implements SplSubject {
   }
   
   public function postDebug($endpoint, $data = array(), $noerror = false) {
-    return $this->post($endpoint, $data, $noerror, true);
+    $result = $this->post($endpoint, $data, $noerror, true);
+    print_r($result);
+    return $result;
   }
   
   public function get($endpoint, $data = array(), $noerror = false, $debug = false) {
