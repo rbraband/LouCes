@@ -1,6 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('black', array(), PUBLICY);
+
 // crons
 $bot->add_thread_event(Cron::HOURLY,                     // Cron key
                       "GetBlackUpdate",                  // command key
@@ -343,7 +344,7 @@ function ($bot, $data) {
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
         $bot->add_privmsg("Step1# ".BOT_BLACK_FORUM." deleted!", $data['user']);
-        $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_black_continent_player_update_cron');
+        $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'GetBlackUpdate');
         $bot->add_privmsg("Step2# ".BOT_BLACK_FORUM." rebase done!", $data['user']);
       }
       else $bot->add_privmsg("Fehler beim löschen von: ".BOT_BLACK_FORUM."", $data['user']);
@@ -366,7 +367,7 @@ function ($bot, $data) {
       $redis->DEL("{$black_key_key}");
     }
     $bot->add_privmsg("Step1# ".BOT_BLACK_FORUM." REDIS ids deleted!", $data['user']);
-    $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_black_continent_player_update_cron');
+    $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'GetBlackUpdate');
     $bot->add_privmsg("Step2# ".BOT_BLACK_FORUM." reload done!", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
