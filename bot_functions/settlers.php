@@ -127,7 +127,7 @@ function ($bot, $data) {
                 if ($city_data['user_id'] == 0) {
                   $user_name = $redis->hGet("user:{$city_data['ll_user_id']}:data", 'name');
                   $ally_name = $redis->hGet("alliance:{$city_data['ll_alliance_id']}:data", 'name');
-                  $lawless[$k] = "[b]{$city_data['category']}[/b] - [city]{$city_data['pos']}[/city] ({$city_data['points']}/{$city_data['ll_points']}) - [i]{$city_data['ll_name']}[/i] - [s][spieler]{$user_name}[/spieler][/s]" . (($ally_name) ? "[s][[allianz]{$ally_name}[/allianz]][/s]":"");
+                  $lawless[$k] = "[b]{$city_data['category']}[/b] - [city]{$city_data['pos']}[/city] ({$city_data['points']}/{$city_data['ll_points']}) - [i]{$city_data['ll_name']}[/i] - [s][spieler]{$user_name}[/spieler][/s]" . (($ally_name) ? "[s][[alliance]{$ally_name}[/alliance]][/s]":"");
                   if (is_array($settlers[$v])) {
                     $lawless[$k] = '? ' . $lawless[$k] . "
  ? [player]{$settlers[$v][0]}[/player], ? Baron läuft seit: [i]{$settlers[$v][1]}[/i]";
@@ -302,18 +302,23 @@ $bot->add_msg_hook(array(PRIVATEIN, ALLYIN),
                    "Siedeln",               // command key
                    "LouBot_settler",        // callback function
                    false,                   // is a command PRE needet?
-                   '/^[!]?(claim|settle|si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
+                   '/^[!]?(unclaim|claim|settle|si[e]?del[n]?|lawle[s]{1,2}|ll)$/i',       // optional regex for key
 function ($bot, $data) {
   global $redis, $sms;
   if (!$redis->status()) return;
   $commands = array('off', 'on', 'del', 'mail');
   $alliance_key = "alliance:{$bot->ally_id}";
   if ($bot->is_ally_user($data['user']) && !$bot->is_himself($data['user'])) {
+    if ($data['command'] == strtolower('unclaim')) {
+      $data['command'] = 'claim';
+      $first_argument = 'del';
+    }
+    else $first_argument = strtolower(Lou::prepare_chat($data['params'][0]));
     if (in_array(strtolower($data['params'][0]), $commands)) {
       $continents = $redis->sMembers("continents");
       $second_argument = strtolower(Lou::prepare_chat($data['params'][1]));
       $settler_key = "settler";
-      switch (strtolower($data['params'][0])) {
+      switch ($first_argument) {
         case 'off':
           // mailing OFF
           if ($data['command'][0] == PRE) {
@@ -352,8 +357,8 @@ function ($bot, $data) {
           break;
         case 'del':
           // claiming and is position?
-          if ($data['command'][0] == PRE && Lou::is_string_pos(Lou::prepare_chat($second_argument))) {// is position?
-            $pos = Lou::get_pos_by_string(Lou::prepare_chat($second_argument));
+          if ($data['command'][0] == PRE && Lou::is_string_pos($second_argument)) {
+            $pos = Lou::get_pos_by_string($second_argument);
             $continent = $bot->lou->get_continent_by_pos($pos);
             $continent_key = "continent:{$continent}";
             $continent_name = "[u]{$bot->lou->get_continent_abbr()}{$continent}[/u]";
@@ -379,13 +384,15 @@ function ($bot, $data) {
               $bot->log('IGM: send '.count($receivers).' messages to '.LoU::get_continent_abbr().$continent);
               $bot->igm->send(implode(';',$receivers), "? {$bot->lou->get_continent_abbr()}{$continent} {$pos} {$lawless}gelöscht!", "{$bot->lou->get_continent_abbr()}{$continent} - {$lawless}[coords]{$pos}[/coords] - von [player]{$data['user']}[/player] gelöscht");
             }
+          // error !
           } else {
             $message = 'Siedeln Fehler: falsche Parameter!';
           }
           break;
       }
-    } else if (Lou::is_string_pos(Lou::prepare_chat($data['params'][0]))) {// is position?
-      $pos = Lou::get_pos_by_string(Lou::prepare_chat($data['params'][0]));
+    // is position?
+    } else if (Lou::is_string_pos($first_argument)) { //&& Lou::is_string_time($third_argument)
+      $pos = Lou::get_pos_by_string($first_argument);
       $continent = $bot->lou->get_continent_by_pos($pos);
       $settler_key = "settler";
       $continent_key = "continent:{$continent}";
@@ -394,11 +401,11 @@ function ($bot, $data) {
         // set 'settler:continent:10:settlers:123:123' name
         if (preg_match('/^!(lawle[s]{1,2}|ll)$/i', $data['command']) && !$redis->sIsMember("{$continent_key}:lawless", $pos)) {
           $str_time = (string)time();
-          $redis->SADD("{$continent_key}:lawless", $pos);
-          $city_id = $redis->HGET('cities', $pos);
+          $redis->sAdd("{$continent_key}:lawless", $pos);
+          $city_id = $redis->hGet('cities', $pos);
           $city_key = "city:{$city_id}";
-          $city = $redis->HGETALL("{$city_key}:data");
-          $redis->HMSET("{$city_key}:data", array(
+          $city = $redis->hGetALL("{$city_key}:data");
+          $redis->hMset("{$city_key}:data", array(
             'll_time'        => $str_time,
             'll_name'        => $city['name'],
             'll_state'       => $city['state'],
@@ -441,7 +448,7 @@ function ($bot, $data) {
           $message = "[player]{$settler}[/player] siedelt auf {$continent_name} {$lawless}[coords]{$pos}[/coords] seit: {$settletime}";
         } else $message = "niemand siedelt auf {$continent_name} [coords]{$pos}[/coords]!";
       }
-    } else if ($data['command'][0] == PRE) $bot->add_privmsg('Siedeln Fehler: falsche Parameter ('.Lou::prepare_chat($data['params'][0]).')!', $data['user']);
+    } else if ($data['command'][0] == PRE) $bot->add_privmsg('Fehler: falsche Parameter ('.$first_argument.')!', $data['user']);
     else return;
     if ($data["channel"] == ALLYIN)
       $bot->add_allymsg($message);
@@ -518,7 +525,7 @@ function ($bot, $data) {
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
         $bot->add_privmsg("Step1# ".BOT_SETTLERS_FORUM." deleted!", $data['user']);
-        $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'LouBot_settlers_continent_player_update_cron');
+        $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'UpdateResidents');
         $bot->add_privmsg("Step2# ".BOT_SETTLERS_FORUM." rebase done!", $data['user']);
       }
       else $bot->add_privmsg("Fehler beim löschen von: ".BOT_SETTLERS_FORUM."", $data['user']);
@@ -541,7 +548,7 @@ function ($bot, $data) {
       $redis->del("{$settler_key_key}");
     }
     $bot->add_privmsg("Step1# ".BOT_SETTLERS_FORUM." REDIS ids deleted!", $data['user']);
-    $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'LouBot_settlers_continent_player_update_cron');
+    $bot->call_event(array('type' => TICK, 'name' => Cron::TICK5), 'UpdateResidents');
     $bot->add_privmsg("Step2# ".BOT_SETTLERS_FORUM." reload done!", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');                   
