@@ -1,6 +1,7 @@
 <?php
 global $bot;
 $bot->add_category('lists', array(), PUBLICY);
+
 // crons
 $bot->add_thread_event(Cron::TICK1,                         // Cron key
                     "GetAllyAtts",                        // command key
