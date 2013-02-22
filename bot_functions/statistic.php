@@ -13,6 +13,7 @@ function ($bot, $data) {
   $alliance_key = "alliance:{$bot->ally_id}";
   $military_key = "military";
   $settler_key = "settler";
+  $else_key = "else";
   if (!($forum_id = $redis->GET("{$military_key}:{$alliance_key}:forum:id"))) {
     $forum_id = $bot->forum->get_forum_id_by_name(BOT_STATISTICS_FORUM, true);
     $redis->SET("{$military_key}:{$alliance_key}:forum:id", $forum_id);
@@ -37,6 +38,7 @@ function ($bot, $data) {
         $last_update = end($last_update);
         $alliance_key = "alliance:{$bot->ally_id}";
         $military_key = "military";
+        $else_key = "else";
         $settler_key = "settler";
         $military_chars = 2900; 
         $str_time = (string)time();
@@ -127,6 +129,12 @@ $post_residents[3] = "
 Städte: (".((!empty($pcities[$bot->ally_id])) ? $pcities[$bot->ally_id] : 0).")
 ".((!empty($ally_cities_user[$bot->ally_id])) ? "[spieler]".implode('[/spieler]; [spieler]', array_values($ally_cities_user[$bot->ally_id]))."[/spieler]" : "[i]keine Spieler[/i]")."
 ";
+$warlords = $redis->SMEMBERS("{$else_key}:{$alliance_key}:{$continent_key}:warlord");
+$post_residents[4] = "
+  [b][u]{$bot->ally_shortname} Warlords auf dem Kontinent:[/u] {$thread_name}[/b]
+  ".((!empty($warlords)) ? "[spieler]".implode('[/spieler]; [spieler]', $warlords)."[/spieler]" : "[i]kein Warlord[/i]")."
+  ";
+              
               
               // ** create and/or edit
               // new second post = offence
@@ -349,12 +357,13 @@ function ($bot, $data) {
           if (!($thread_id = $redis->GET("{$military_key}:{$alliance_key}:forum:{$continent_key}:id"))) {
             $thread_id = $bot->forum->get_forum_thread_id_by_title($forum_id, $thread_name);
           } else $redis->DEL("{$military_key}:{$alliance_key}:forum:{$continent_key}:id");
+          $bot->debug("Military forum ({$forum_id}) {$thread_name}: delete ({$thread_id})");
           if ($thread_id) $thread_ids[] = $thread_id;
         }
       }
       if ($bot->forum->delete_alliance_forum_threads($forum_id, $thread_ids)) {
         $bot->add_privmsg("Step1# ".BOT_STATISTICS_FORUM." deleted!", $data['user']);
-        $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_military_continent_update_cron');
+        $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'GetMilitaryUpdate');
         $bot->add_privmsg("Step2# ".BOT_STATISTICS_FORUM." rebase done!", $data['user']);
       }
       else $bot->add_privmsg("Fehler beim löschen von: ".BOT_STATISTICS_FORUM."", $data['user']);
@@ -377,7 +386,7 @@ function ($bot, $data) {
       $redis->DEL("{$military_key_key}");
     }
     $bot->add_privmsg("Step1# ".BOT_STATISTICS_FORUM." REDIS ids deleted!", $data['user']);
-    $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'LouBot_military_continent_update_cron');
+    $bot->call_event(array('type' => CRON, 'name' => Cron::HOURLY), 'GetMilitaryUpdate');
     $bot->add_privmsg("Step2# ".BOT_STATISTICS_FORUM." reload done!", $data['user']);
   } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
 }, 'operator');
