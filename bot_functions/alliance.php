@@ -63,6 +63,12 @@ function ($bot, $data) {
     $redis->DEL("user:{$uid}:bookmarks");
     // NoMail
     $redis->SREM("settler:{$alliance_key}:nomail", $old);
+    // Warlord
+    $continents = $redis->SMEMBERS("continents");
+    if (is_array($continents)) foreach ($continents as $continent) {
+      $continent_key = "continent:{$continent}";
+      $redis->SREM("else:{$alliance_key}:{$continent_key}:warlord", $old);
+    }
   }
   $diff_new = $redis->SDIFF("{$alliance_key}:member","{$alliance_key}:_member");
   if (is_array($diff_new)) foreach($diff_new as $new) {
