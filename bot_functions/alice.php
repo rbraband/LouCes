@@ -16,10 +16,11 @@ function ($bot, $data) {
     $bot->log(REDIS_NAMESPACE."{$key} TTL: {$redis->ttl($key)}");
     if ($redis->ttl($key) === -1) {
       $bot->log("NoSPAM");
+      $reply = false;
       $redis->set($key, 0, ALICETTL);
       $request = array('botid' => ALICEID,
-                       'input' => urlencode(str_replace($bot->bot_user_name , '' , $data['message'])),
-                       'custid' => urlencode($data['user'])
+                       'input' => str_replace($bot->bot_user_name , '' , $data['message']),
+                       'custid' => $data['user']
       );
       $anrede[] = ucfirst(strtolower($bot->get_random_nick($data['user']))) . ', ';
       $anrede[] = '@' . ucfirst(strtolower($bot->get_random_nick($data['user']))) . ' - ';
@@ -32,15 +33,12 @@ function ($bot, $data) {
         $bot->log("LoU -> get response from ALICE");
         $xml = @simplexml_load_string($response);
         if ($xml) {
-          $thats = array();
-          foreach ($xml->that as $that) {
-             echo $thats[] = $that;
-          }
-          shuffle($thats);
-          $rand_key = array_rand($thats, 1);
-          $reply = $thats[$rand_key];
+          $reply = $xml->that;
         } else {
           $bot->log('XML Error: cannot xpath Data!');
+          foreach(libxml_get_errors() as $error) {
+            $bot->debug($error->message);
+          }
           $message = magic_8ball();
         }
         if ($reply) {
@@ -68,33 +66,33 @@ function ($bot, $data) {
 }, 'alice');
 
 if(!function_exists('alice_call')) {
-  function alice_call($request) {
-    global $bot;
-      $header[] = "Content-type: text/xml";
-      $_request = "";
-      foreach($request as $_key=>$_value) { $_request .= $_key.'='.$_value.'&'; }
-      rtrim($_request,'&');
-      $url = "http://www.pandorabots.com/pandora/talk-xml?$_request";
-      
-      $header[] = "Content-length: ".strlen($_request);
-      $ch = curl_init();   
-      curl_setopt($ch, CURLOPT_URL, $url);
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 100); // Timeout if it takes too long
-      curl_setopt($ch, CURLOPT_TIMEOUT, 100);
-      curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-    $header = curl_getinfo($ch);
-      $data = curl_exec($ch);       
-    if (curl_errno($ch) || empty($data)) {
-      $bot->debug('Curl Error: cannot receive Data!');
-          return false;
-    } else if(intval($header['http_code']) >= 400) {
-      $bot->debug('Http Error: ' . $header['http_code']);
-      return false;
-    } 
-          curl_close($ch);
-          return $data;
-      }
+  function alice_call($request, array $options = array()) {
+      global $bot;
+      $url = "http://www.pandorabots.com/pandora/talk-xml";
+      $defaults = array(
+          CURLOPT_POST => 1,
+          CURLOPT_HEADER => 0,
+          CURLOPT_URL => $url,
+          CURLOPT_FRESH_CONNECT => 1,
+          CURLOPT_RETURNTRANSFER => 1,
+          CURLOPT_FORBID_REUSE => 1,
+          CURLOPT_TIMEOUT => 10,
+          CURLOPT_POSTFIELDS => http_build_query($request)
+      );
+
+      $ch = curl_init();
+      curl_setopt_array($ch, ($options + $defaults));
+      $result = curl_exec($ch);
+      if (curl_errno($ch) || empty($result)) {
+        $bot->debug("Curl Error: (".curl_errno($ch).") " . curl_error($ch));
+        return false;
+      } else if(intval($header['http_code']) >= 400) {
+        $bot->debug('Http Error: ' . $header['http_code']);
+        return false;
+      } 
+      curl_close($ch);
+      return $result;
+  }
 }
 
 if(!function_exists('magic_8ball')) {
