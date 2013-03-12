@@ -196,11 +196,12 @@ class LoU implements SplSubject {
   }
 
   private function connect($debug = false) {
-    $_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/login';
+    $_login_url = 'https://www.lordofultima.com/j_security_check';
+    $_referer_url = 'https://www.lordofultima.com/login/auth?lang='.BOT_LANG;
     $_fields = array(
-        'mail' => $this->email,
-        'password' => $this->passwd,
-        'remember_me' => 'on'
+        'j_username' => $this->email,
+        'j_password' => $this->passwd,
+        '_web_remember_me' => 'on'
     );
     $_map_fields = array_map(create_function('$key, $value', 'return $key."=".$value;'), array_keys($_fields), array_values($_fields));
           
@@ -208,7 +209,7 @@ class LoU implements SplSubject {
     $this->handle = curl_init();
     $_useragent = 'Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 5.0)';
     curl_setopt($this->handle, CURLOPT_USERAGENT, $_useragent);
-    curl_setopt($this->handle, CURLOPT_URL, $_url);
+    curl_setopt($this->handle, CURLOPT_URL, $_login_url);
     curl_setopt($this->handle, CURLOPT_POST, true);
     curl_setopt($this->handle, CURLOPT_VERBOSE, $debug);
     curl_setopt($this->handle, CURLOPT_MAXREDIRS, self::ajaxTimeout);
@@ -219,6 +220,7 @@ class LoU implements SplSubject {
     curl_setopt($this->handle, CURLOPT_COOKIEJAR, PERM_DATA.'cookies.txt');
     curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($this->handle, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($this->handle, CURLOPT_REFERER, $_referer_url);
     $data = curl_exec($this->handle);
     $header = curl_getinfo($this->handle);
     if (curl_errno($this->handle)) {
@@ -231,7 +233,7 @@ class LoU implements SplSubject {
     curl_close($this->handle);
     return $this->doOpenGame($debug);
   }
-	
+  
   private function disconnect($debug = false) {
     $_logout_url = 'https://www.lordofultima.com/'.BOT_LANG.'/user/logout';
     $_referer_url = 'https://www.lordofultima.com/'.BOT_LANG.'/game';      
@@ -263,7 +265,7 @@ class LoU implements SplSubject {
   }
 
   private function doOpenGame($debug = false) {
-    $_url = 'http://www.lordofultima.com/'.BOT_LANG.'/';
+    $_url = 'http://www.lordofultima.com/'.BOT_LANG.'/game/world';
 
     $this->output('LoU open Game');
     $this->handle = curl_init();
@@ -289,7 +291,7 @@ class LoU implements SplSubject {
       return false;
     }
     curl_close($this->handle);
-    preg_match("/<input type=\"hidden\" name=\"sessionId\" id=\"sessionId\" value=\"([^\"].*)\" \/>/i", $data, $_match, PREG_OFFSET_CAPTURE);
+    preg_match('/<iframe src=".*sessionID=([^&].*)&.*" frameborder="0" scrolling="no" allowTransparency="true"><\/iframe>/i', $data, $_match, PREG_OFFSET_CAPTURE);
     $_session = @$_match[1][0];
     return $this->doOpenSession($_session, $debug);
   }
@@ -369,7 +371,7 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-	
+  
   public function getCachedDebug($endpoint, $data = array(), $noerror = false, $expire = 180) {
     return $this->getCached($endpoint, $data, $noerror, $expire, true);
   }
@@ -453,7 +455,7 @@ class LoU implements SplSubject {
     }
     return($this->stack);
   }
-	
+  
   public function getMultiCachedDebug($endpoint, $multi = array(), $expire = 180) {
     return $this->getMultiCached($endpoint, $multi, $expire, true);
   }
@@ -741,14 +743,15 @@ class LoU implements SplSubject {
     $this->getMultiCached("GetPublicCityInfo", $d);
   }
   
-	public function setAllianceAllowOnline($allow) {
+  public function setAllianceAllowOnline($allow) {
+
     $d = array(
         "session" => $this->session,
         "b"       => (boolean)$allow
     );
     $this->post("setAllianceAllowOnline", $d);
   }
-	
+  
   public function doPlayerCount($continent, $type = 0) {
     $d = array(
         "session"    => $this->session,
