@@ -12,7 +12,7 @@ You should have received a copy of the GNU General Public License along with thi
 */
 
 /**
- * Exception, die geworfen wird, wenn JSON Decode fehlschlägt
+ * Exception, die geworfen wird, wenn JSON Decode fehlschlï¿½gt
  */
 class JsonDecodeException extends Exception {
   function __construct($strMessage, $code = 0){
@@ -990,8 +990,8 @@ class LoU implements SplSubject {
     return array($x, $y);
   }
   
-  public static function get_id_by_koords($x, $y) {// todo: not working!?
-    $city_id = ($x << 16) & $y;
+  public static function get_id_by_koords($x, $y) {
+    $city_id = ($y << 16) | $y;
     return $city_id;
   }
   
