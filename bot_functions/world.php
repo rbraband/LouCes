@@ -10,13 +10,17 @@ function ($bot, $data) {
   if (!$redis->status()) return;
   $zsets = array('stats', 'inactive', 'new', 'left', 'lawless', 'overtake', 'castles', 'palace', 'rename', 'military');
   foreach($zsets as $zset) {
+    $count = 0;
     $keys = $redis->getKeys("*:{$zset}");
     // delete stats < 72h
     // $latest = mktime(date("H") - 72, 0, 0, date("n"), date("j"), date("Y"));
     // delete stats < 1 month
     $latest = mktime(date("H"), 0, 0, date("n")-1, date("j"), date("Y"));
+    // delete stats > 1 week
+    // $latest = mktime(date("H"), 0, 0, date("n"), date("j") -7, date("Y"));
     if (is_array($keys)) foreach($keys as $key) {
-      $redis->ZREMRANGEBYSCORE("{$key}", "-inf", "({$latest}");
+      $count = $count + $redis->ZREMRANGEBYSCORE("{$key}", "-inf", "({$latest}");
+      $bot->log("Delete {$count} entrys from ".count($keys)." {$zset} keys");
     }
   }
 }, 'statistic');
@@ -64,7 +68,7 @@ function ($bot, $data) {
   if (is_array($continents)) foreach ($continents as $continent) {
     if ($continent >= 0) {
       $bot->log('Redis get continent update K'.$continent);
-      $bot->lou->get_player_by_continent_stat($continent, STAT_POINTS); // stat points 
+      $bot->lou->get_player_by_continent_stat($continent, STAT_POINTS);  // stat points 
       $bot->lou->get_player_by_continent_stat($continent, STAT_OFFENCE); // stat offence 
       $bot->lou->get_player_by_continent_stat($continent, STAT_DEFENCE); // stat defence
       $bot->lou->get_alliance_by_continent_stat($continent);
@@ -523,4 +527,17 @@ function ($bot, $stat) {
     }
   }
 }, 'statistic');
+
+$bot->add_privmsg_hook("KickHourly",                  // command key
+                       "LouBot_kick_hourly",          // callback function
+                       true,                          // is a command PRE needet?
+                       '',                            // optional regex for key
+function ($bot, $data) {
+  global $redis;
+  if (!$redis->status()) return;
+  if($bot->is_op_user($data['user'])) {
+    $bot->call_event(array('type' => TICK, 'name' => Cron::HOURLY));
+    $bot->add_privmsg("KickHourly done!", $data['user']);
+  } else $bot->add_privmsg("Ne Ne Ne!", $data['user']);
+}, 'operator'); 
 ?>
