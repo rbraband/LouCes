@@ -291,7 +291,7 @@ class LoU implements SplSubject {
       return false;
     }
     curl_close($this->handle);
-    preg_match('/<iframe src=".*sessionID=([^&].*)&.*" frameborder="0" scrolling="no" allowTransparency="true"><\/iframe>/i', $data, $_match, PREG_OFFSET_CAPTURE);
+    preg_match('/<iframe src=".*sessionID=([^&]*)&.*" frameborder="0" scrolling="no" allowTransparency="true"><\/iframe>/i', $data, $_match, PREG_OFFSET_CAPTURE);
     $_session = @$_match[1][0];
     return $this->doOpenSession($_session, $debug);
   }
